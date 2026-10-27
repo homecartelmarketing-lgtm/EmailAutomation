@@ -102,9 +102,48 @@ export async function registerAdminRoutes(app, { db }) {
         { title: 'Solomon Pendant Light', price: '₱4,200' }
       ],
       recoveryUrl: 'https://homecartel.net/checkout/demo',
-      unsubscribeUrl: 'http://localhost:3000/api/unsubscribe?email=demo@homecartel.ph'
+      unsubscribeUrl: `${app.config.appBaseUrl}/api/unsubscribe?email=demo@homecartel.ph`
     });
 
     reply.type('text/html').send(html);
+  });
+
+  // Endpoint to send an immediate real or mock test email to any inbox
+  app.post('/api/admin/send-test', async (req, reply) => {
+    const { to, template = 'abandoned_cart' } = req.body || {};
+    if (!to) {
+      return reply.code(400).send({ error: 'Recipient "to" email address is required' });
+    }
+
+    const { html, subject } = renderTemplate(template, {
+      customerName: 'HomeCartel Shopper',
+      storeName: 'HomeCartel',
+      items: [
+        { title: 'Aura Modern Brass Chandelier', price: '₱18,500.00', quantity: 1 },
+        { title: 'Solomon Nordic Pendant Light', price: '₱4,200.00', quantity: 2 }
+      ],
+      recoveryUrl: 'https://homecartel.net/cart',
+      unsubscribeUrl: `${app.config.appBaseUrl}/api/unsubscribe?email=${encodeURIComponent(to)}`
+    });
+
+    try {
+      const result = await app.emailSender.send({
+        to,
+        subject: `[HomeCartel Test] ${subject}`,
+        html,
+        text: `HomeCartel test email for ${template}`
+      });
+
+      return {
+        success: true,
+        provider: app.config.emailProvider,
+        messageId: result.messageId,
+        message: app.config.emailProvider === 'resend'
+          ? `Real email sent to ${to} via Resend!`
+          : `Simulated in MOCK mode. To send to your real inbox, add RESEND_API_KEY to Railway.`
+      };
+    } catch (err) {
+      return reply.code(500).send({ error: err.message });
+    }
   });
 }

@@ -121,6 +121,32 @@
           <p class="text-[12px] text-[var(--muted-foreground)]">Simulates new customer subscription and queues welcome guide.</p>
         </button>
       </div>
+
+      <!-- Send Real Test Email Section -->
+      <div class="mt-5 pt-4 border-t border-[var(--border)]">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2.5">
+          <div>
+            <h3 class="text-xs font-bold text-[var(--foreground)] flex items-center gap-1.5">
+              <span>🚀</span> Send Real Test Email to Any Inbox
+            </h3>
+            <p class="text-[12px] text-[var(--muted-foreground)]">Dispatch a live branded email directly to your personal email address.</p>
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2.5">
+          <input id="test-email-input" type="email" placeholder="Enter your email (e.g. yourname@gmail.com)" class="flex-1 text-xs bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] focus:outline-none focus:border-amber-500">
+          <select id="test-email-template" class="text-xs bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] focus:outline-none">
+            <option value="abandoned_cart">Flow 1: Abandoned Cart</option>
+            <option value="welcome">Flow 2: Welcome Series</option>
+            <option value="post_purchase">Flow 4: Post-Purchase Care</option>
+            <option value="browse_abandonment">Flow 3: Browse Abandonment</option>
+            <option value="winback">Flow 5: Winback</option>
+          </select>
+          <button onclick="sendRealTestEmail()" id="btn-send-test" class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition flex items-center justify-center gap-1.5 whitespace-nowrap">
+            <span>Send Email Now</span>
+          </button>
+        </div>
+      </div>
+
       <div id="action-notification" class="hidden mt-3 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-500 font-medium"></div>
     </div>
 
@@ -401,6 +427,44 @@
       }
 
       await refreshData();
+    }
+
+    async function sendRealTestEmail() {
+      const emailInput = document.getElementById('test-email-input');
+      const templateSelect = document.getElementById('test-email-template');
+      const notice = document.getElementById('action-notification');
+      const btn = document.getElementById('btn-send-test');
+
+      const to = emailInput.value.trim();
+      if (!to) {
+        alert('Please enter an email address first.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+
+      try {
+        const res = await fetch('/api/admin/send-test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ to, template: templateSelect.value })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          notice.textContent = data.message;
+          notice.classList.remove('hidden');
+          setTimeout(() => notice.classList.add('hidden'), 7000);
+          await refreshData();
+        } else {
+          alert('Error: ' + (data.error || 'Failed to dispatch email'));
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send Email Now';
+      }
     }
 
     async function refreshData() {
