@@ -20,14 +20,14 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     }
   });
 
-  // 1. Checkouts (Abandoned Checkout detection)
-  app.post('/api/webhooks/shopify/checkouts', async (req, reply) => {
+  // 1. Checkouts & Carts (Abandoned Cart & Checkout detection)
+  const handleCartOrCheckout = async (req, reply) => {
     const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const checkoutId = String(data.id);
+    const checkoutId = String(data.id || data.token || Date.now());
     const email = data.email || (data.customer ? data.customer.email : null);
 
     if (!email) {
-      return reply.code(200).send({ skipped: 'No email associated with checkout' });
+      return reply.code(200).send({ skipped: 'No email associated with cart/checkout' });
     }
 
     // Upsert customer record
@@ -37,7 +37,7 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     db.upsertCart({
       checkoutId,
       email,
-      cartToken: data.cart_token || '',
+      cartToken: data.cart_token || data.token || '',
       itemsJson: JSON.stringify(data.line_items || []),
       subtotal: data.total_price || data.subtotal_price || '0.00',
       recoveryUrl: data.abandoned_checkout_url || '',
@@ -61,7 +61,10 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     });
 
     return reply.code(200).send({ success: true, scheduled: 'abandoned_cart' });
-  });
+  };
+
+  app.post('/api/webhooks/shopify/checkouts', handleCartOrCheckout);
+  app.post('/api/webhooks/shopify/carts', handleCartOrCheckout);
 
   // 2. Orders (Order completed -> cancel pending cart reminders & mark cart recovered)
   app.post('/api/webhooks/shopify/orders', async (req, reply) => {

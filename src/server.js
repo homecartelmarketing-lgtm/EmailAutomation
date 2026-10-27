@@ -6,6 +6,7 @@ import { renderTemplate } from './templates/renderer.js';
 import { registerWebhookRoutes } from './routes/webhooks.js';
 import { registerTrackingRoutes } from './routes/tracking.js';
 import { registerUnsubscribeRoutes, generateUnsubscribeToken } from './routes/unsubscribe.js';
+import { registerAdminRoutes } from './routes/admin.js';
 import { runSchedulerCycle } from './scheduler/worker.js';
 
 /**
@@ -58,6 +59,7 @@ export async function buildServer(envOverrides = {}) {
   await registerWebhookRoutes(app, { db, secret: config.shopifyWebhookSecret });
   await registerTrackingRoutes(app, { db });
   await registerUnsubscribeRoutes(app, { db, secret: config.shopifyWebhookSecret });
+  await registerAdminRoutes(app, { db });
 
   // Expose services and runner for tests or internal execution
   app.decorate('db', db);
@@ -75,8 +77,12 @@ export async function buildServer(envOverrides = {}) {
   return app;
 }
 
+import url from 'node:url';
+import path from 'node:path';
+
 // Start server if executed directly
-if (process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
+const isMain = process.argv[1] && path.resolve(process.argv[1]) === url.fileURLToPath(import.meta.url);
+if (isMain) {
   const app = await buildServer();
   const port = app.config.port;
 
