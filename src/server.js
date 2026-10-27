@@ -68,18 +68,46 @@ export async function buildServer(envOverrides = {}) {
     }
   });
 
-  // Root status endpoint
-  app.get('/', async () => ({
-    status: 'online',
-    service: 'HomeCartel Behavioral Email Marketing Engine',
-    store: config.shopDomain,
-    endpoints: {
-      healthCheck: '/health',
-      adminOverview: '/api/admin/overview',
-      storefrontTracker: '/homecartel-tracker.js',
-      webhooks: '/api/webhooks/shopify/{checkouts,orders,customers,fulfillments}'
+  // Root landing endpoint: serves the interactive UI dashboard for browsers, or JSON for API clients
+  app.get('/', async (req, reply) => {
+    const wantsJson = req.query?.format === 'json' ||
+      (req.headers.accept?.includes('application/json') && !req.headers.accept?.includes('text/html'));
+
+    if (wantsJson) {
+      return {
+        status: 'online',
+        service: 'HomeCartel Behavioral Email Marketing Engine',
+        store: config.shopDomain,
+        endpoints: {
+          dashboard: '/',
+          healthCheck: '/health',
+          adminOverview: '/api/admin/overview',
+          storefrontTracker: '/homecartel-tracker.js',
+          webhooks: '/api/webhooks/shopify/{checkouts,orders,customers,fulfillments}'
+        }
+      };
     }
-  }));
+
+    const htmlPath = path.resolve(process.cwd(), 'public/index.html');
+    if (fs.existsSync(htmlPath)) {
+      reply.header('Content-Type', 'text/html; charset=utf-8');
+      return reply.send(fs.readFileSync(htmlPath, 'utf8'));
+    }
+    return { status: 'online', store: config.shopDomain };
+  });
+
+  // Dedicated UI dashboard aliases
+  const serveDashboard = async (req, reply) => {
+    const htmlPath = path.resolve(process.cwd(), 'public/index.html');
+    if (fs.existsSync(htmlPath)) {
+      reply.header('Content-Type', 'text/html; charset=utf-8');
+      return reply.send(fs.readFileSync(htmlPath, 'utf8'));
+    }
+    return reply.code(404).send('Dashboard UI not found');
+  };
+  app.get('/ui', serveDashboard);
+  app.get('/admin', serveDashboard);
+  app.get('/dashboard', serveDashboard);
 
   // Serve client tracker script directly
   app.get('/homecartel-tracker.js', async (req, reply) => {

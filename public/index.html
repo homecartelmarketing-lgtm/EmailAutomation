@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomeCartel Email Automation Console</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --background: #09090b;
+      --foreground: #f4f4f5;
+      --card: #18181b;
+      --card-foreground: #f4f4f5;
+      --border: #27272a;
+      --muted: #27272a;
+      --muted-foreground: #a1a1aa;
+      --secondary: #27272a;
+      --secondary-foreground: #fafafa;
+      --accent: #27272a;
+      --accent-foreground: #fafafa;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+    }
+  </style>
+</head>
+<body class="antialiased p-4 md:p-6 min-h-screen">
+  <div class="max-w-6xl mx-auto space-y-6">
+
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm">
+      <div class="flex items-center space-x-4">
+        <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 font-bold text-xl">
+          HC
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight text-[var(--foreground)] flex items-center gap-2">
+            HomeCartel Automation Console
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+              Live (Railway)
+            </span>
+          </h1>
+          <p class="text-sm text-[var(--muted-foreground)]">Behavioral triggers, delay scheduler & email generator for homecartel.net</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="refreshData()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90 transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Refresh Feed
+        </button>
+        <button onclick="triggerAction('run_scheduler')" class="px-4 py-2 text-xs font-bold rounded-lg bg-amber-600 text-white hover:bg-amber-700 shadow-sm transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Run Scheduler Cycle
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Stat Metric Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+        <p class="text-xs text-[var(--muted-foreground)] font-medium">Subscribers</p>
+        <p id="stat-customers" class="text-2xl font-bold mt-1 text-[var(--foreground)]">0</p>
+        <p class="text-[12px] text-emerald-500 mt-0.5">Subscribed users</p>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+        <p class="text-xs text-[var(--muted-foreground)] font-medium">Abandoned Carts</p>
+        <p id="stat-abandoned" class="text-2xl font-bold mt-1 text-amber-500">0</p>
+        <p class="text-[12px] text-[var(--muted-foreground)] mt-0.5">Pending recovery</p>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+        <p class="text-xs text-[var(--muted-foreground)] font-medium">Recovered Orders</p>
+        <p id="stat-recovered" class="text-2xl font-bold mt-1 text-emerald-500">0</p>
+        <p class="text-[12px] text-[var(--muted-foreground)] mt-0.5">Purchased after cart</p>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+        <p class="text-xs text-[var(--muted-foreground)] font-medium">Scheduled Queue</p>
+        <p id="stat-pending" class="text-2xl font-bold mt-1 text-sky-500">0</p>
+        <p class="text-[12px] text-[var(--muted-foreground)] mt-0.5">Due for send</p>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm col-span-2 md:col-span-1">
+        <p class="text-xs text-[var(--muted-foreground)] font-medium">Sent Campaigns</p>
+        <p id="stat-sent" class="text-2xl font-bold mt-1 text-violet-500">0</p>
+        <p class="text-[12px] text-[var(--muted-foreground)] mt-0.5">Delivered emails</p>
+      </div>
+    </div>
+
+    <!-- Interactive Simulation Hub -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 shadow-sm">
+      <h2 class="text-base font-semibold text-[var(--foreground)] mb-1">Interactive Trigger Simulation</h2>
+      <p class="text-xs text-[var(--muted-foreground)] mb-4">Click any trigger below to simulate incoming Shopify and storefront events in real time:</p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <button onclick="triggerAction('abandoned_cart')" class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-amber-500/50 hover:bg-amber-500/5 text-left transition group">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-xs font-bold text-amber-500 flex items-center gap-1.5">
+              <span>🛒</span> Abandoned Cart Webhook
+            </span>
+            <span class="text-[12px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500">Flow 1</span>
+          </div>
+          <p class="text-[12px] text-[var(--muted-foreground)]">Simulates Sophia leaving a ₱26,900 Chandelier in checkout.</p>
+        </button>
+
+        <button onclick="triggerAction('order_complete')" class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-emerald-500/50 hover:bg-emerald-500/5 text-left transition group">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-xs font-bold text-emerald-500 flex items-center gap-1.5">
+              <span>✅</span> Order Completed
+            </span>
+            <span class="text-[12px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500">Recovery</span>
+          </div>
+          <p class="text-[12px] text-[var(--muted-foreground)]">Simulates purchase, cancelling pending cart reminder instantly.</p>
+        </button>
+
+        <button onclick="triggerAction('welcome')" class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-sky-500/50 hover:bg-sky-500/5 text-left transition group">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-xs font-bold text-sky-500 flex items-center gap-1.5">
+              <span>✉️</span> New Newsletter Signup
+            </span>
+            <span class="text-[12px] px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-500">Flow 2</span>
+          </div>
+          <p class="text-[12px] text-[var(--muted-foreground)]">Simulates new customer subscription and queues welcome guide.</p>
+        </button>
+      </div>
+      <div id="action-notification" class="hidden mt-3 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-500 font-medium"></div>
+    </div>
+
+    <!-- Main View: Queue & Live Template Previewer -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Left Column: Scheduled Queue & Logs (6 cols) -->
+      <div class="lg:col-span-6 space-y-6">
+
+        <!-- Scheduled Jobs Queue -->
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">
+          <div class="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-[var(--foreground)]">Scheduled Delay Queue</h3>
+            <span class="text-xs text-[var(--muted-foreground)]">Evaluated every 60s</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-[var(--background)] text-[var(--muted-foreground)] uppercase border-b border-[var(--border)]">
+                <tr>
+                  <th class="py-2.5 px-4">Flow</th>
+                  <th class="py-2.5 px-4">Recipient</th>
+                  <th class="py-2.5 px-4">Execute At</th>
+                  <th class="py-2.5 px-4 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody id="jobs-tbody" class="divide-y divide-[var(--border)] text-[var(--foreground)]">
+                <tr><td colspan="4" class="p-4 text-center text-[var(--muted-foreground)]">Queue is empty.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Sent Email Logs -->
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">
+          <div class="px-5 py-4 border-b border-[var(--border)]">
+            <h3 class="text-sm font-semibold text-[var(--foreground)]">Delivered Campaign Logs</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-[var(--background)] text-[var(--muted-foreground)] uppercase border-b border-[var(--border)]">
+                <tr>
+                  <th class="py-2.5 px-4">Recipient</th>
+                  <th class="py-2.5 px-4">Flow</th>
+                  <th class="py-2.5 px-4 text-right">Sent Time</th>
+                </tr>
+              </thead>
+              <tbody id="logs-tbody" class="divide-y divide-[var(--border)] text-[var(--foreground)]">
+                <tr><td colspan="3" class="p-4 text-center text-[var(--muted-foreground)]">No emails sent yet. Click "Run Scheduler Cycle" above!</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Interactive Email Preview Drawer (6 cols) -->
+      <div class="lg:col-span-6 bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm flex flex-col">
+        <div class="px-5 py-3 border-b border-[var(--border)] flex items-center justify-between">
+          <h3 class="text-sm font-semibold text-[var(--foreground)] flex items-center gap-2">
+            <span>Template Live Preview</span>
+            <span class="px-2 py-0.5 text-[11px] font-normal rounded bg-emerald-500/10 text-emerald-500">Direct Render</span>
+          </h3>
+          <select id="template-select" onchange="updatePreview(this.value)" class="text-xs bg-[var(--background)] border border-[var(--border)] rounded-lg px-2.5 py-1 text-[var(--foreground)] focus:outline-none cursor-pointer">
+            <option value="abandoned_cart">Abandoned Cart (Flow 1)</option>
+            <option value="welcome">Welcome Guide (Flow 2)</option>
+            <option value="post_purchase">Post-Purchase Care (Flow 4)</option>
+            <option value="browse_abandonment">Browse Abandonment (Flow 3)</option>
+            <option value="winback">Customer Winback (Flow 5)</option>
+          </select>
+        </div>
+        <div class="p-3 bg-[var(--background)] flex-1">
+          <iframe id="preview-frame" class="w-full h-[520px] rounded-lg border border-[var(--border)] bg-white shadow-inner"></iframe>
+        </div>
+        <div class="p-3 text-[12px] text-center text-[var(--muted-foreground)] border-t border-[var(--border)]">
+          Rendered with HomeCartel branding, warm lighting styling & CAN-SPAM store address.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const STORE_ADDRESS = '673 Banawe Street, Santa Mesa Heights, Quezon City, Metro Manila, Philippines';
+
+    function getBaseLayout(title, contentHtml) {
+      return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { margin: 0; padding: 0; background-color: #f8f6f2; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #2b2b2b; }
+    .wrapper { width: 100%; padding: 24px 0; background-color: #f8f6f2; }
+    .main { background-color: #ffffff; margin: 0 auto; width: 92%; max-width: 540px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
+    .header { background-color: #1a1a1a; padding: 24px 16px; text-align: center; }
+    .header h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 2px; color: #ffffff; text-transform: uppercase; }
+    .content { padding: 28px 24px; line-height: 1.6; font-size: 14px; }
+    .content h2 { margin-top: 0; font-size: 18px; color: #1a1a1a; }
+    .btn { display: inline-block; padding: 12px 24px; background-color: #c59b27; color: #ffffff !important; text-decoration: none; border-radius: 4px; font-weight: 600; text-align: center; margin-top: 18px; }
+    .item-card { border: 1px solid #ebebeb; border-radius: 6px; padding: 12px 16px; margin: 10px 0; background: #fafafa; display: flex; justify-content: space-between; align-items: center; }
+    .item-title { font-weight: 600; font-size: 14px; color: #1a1a1a; }
+    .item-price { color: #c59b27; font-weight: bold; font-size: 14px; }
+    .footer { background-color: #f1ede6; padding: 20px; text-align: center; font-size: 11px; color: #7a7a7a; border-top: 1px solid #e5dfd5; }
+    .footer p { margin: 4px 0; }
+    .footer a { color: #555555; text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="main">
+      <div class="header">
+        <h1>HOMECARTEL</h1>
+      </div>
+      <div class="content">
+        ${contentHtml}
+      </div>
+      <div class="footer">
+        <p><strong>HomeCartel Lighting & Home Decor</strong></p>
+        <p>${STORE_ADDRESS}</p>
+        <p>You received this email because of your activity on homecartel.net.</p>
+        <p><a href="#">Unsubscribe from marketing emails</a></p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+    }
+
+    const templates = {
+      abandoned_cart: getBaseLayout('Complete Your Order', `
+        <h2>Did you leave something behind, Sophia?</h2>
+        <p>We saved your favorite lighting fixtures in your cart so you won't lose them.</p>
+        <div class="item-card">
+          <div class="item-title">Aura Modern Brass Chandelier &times; 1</div>
+          <div class="item-price">₱18,500.00</div>
+        </div>
+        <div class="item-card">
+          <div class="item-title">Solomon Nordic Pendant Light &times; 2</div>
+          <div class="item-price">₱8,400.00</div>
+        </div>
+        <p style="margin-top: 16px;">Ready to complete your space? Finish checking out now and we'll prepare your fixtures for careful delivery.</p>
+        <div style="text-align: center;">
+          <a href="https://homecartel.net/cart" class="btn">Restore My Cart & Checkout</a>
+        </div>
+      `),
+
+      welcome: getBaseLayout('Welcome to HomeCartel', `
+        <h2>Welcome to HomeCartel, Maria!</h2>
+        <p>Thank you for subscribing to our community. We believe great lighting elevates any interior from ordinary to extraordinary.</p>
+        <p>Explore our signature collections:</p>
+        <ul style="padding-left: 20px; margin: 12px 0;">
+          <li><strong>Pendant Lights:</strong> Perfect for kitchen islands, dining tables, and accent corners.</li>
+          <li><strong>Statement Chandeliers:</strong> Centerpieces designed for high ceilings and open living areas.</li>
+          <li><strong>Architectural Wall Sconces:</strong> Ambient layers of warm glow for hallways and bedframes.</li>
+        </ul>
+        <p>Use code <strong>LIGHT10</strong> for 10% off your first lighting order.</p>
+        <div style="text-align: center;">
+          <a href="https://homecartel.net/collections/all" class="btn">Explore All Collections</a>
+        </div>
+      `),
+
+      post_purchase: getBaseLayout('Order Follow-up', `
+        <h2>How is your recent order #1088, Joshua?</h2>
+        <p>We hope your new HomeCartel lighting fixtures arrived safely and look stunning in your home.</p>
+        <div style="background: #faf7f2; border-left: 3px solid #c59b27; padding: 12px; margin: 14px 0; font-size: 13px;">
+          <strong>Installation & Care Tips:</strong><br>
+          • Always turn off the circuit breaker before installing any fixture.<br>
+          • For best ambiance, we recommend 2700K or 3000K warm white LED bulbs.<br>
+          • Clean brass surfaces with a dry microfiber cloth; avoid chemical cleaners.
+        </div>
+        <p>Would you take a moment to share a photo or review of your installed fixture?</p>
+        <div style="text-align: center;">
+          <a href="https://homecartel.net" class="btn">Leave a Review</a>
+        </div>
+      `),
+
+      browse_abandonment: getBaseLayout('Browse Follow-up', `
+        <h2>Still thinking about the Nordic Glass Chandelier, Claire?</h2>
+        <p>We noticed you were exploring our fixtures recently. Statement lighting requires thought, and we're here to help you get the sizing and luminescence right.</p>
+        <div class="item-card">
+          <div class="item-title">Nordic Glass Cluster Chandelier</div>
+          <div class="item-price">₱12,500.00</div>
+        </div>
+        <p>Need advice on hanging height or bulb wattage? Reply to this email to speak directly with our lighting specialists in Quezon City.</p>
+        <div style="text-align: center;">
+          <a href="https://homecartel.net" class="btn">Take Another Look</a>
+        </div>
+      `),
+
+      winback: getBaseLayout('New Arrivals', `
+        <h2>We miss you, Angela!</h2>
+        <p>It's been a while since your last visit to HomeCartel. We've added new chandeliers, minimalist wall sconces, and outdoor architectural fixtures to our lineup.</p>
+        <p>Discover what's new in Philippine home design and find inspiration for your next room renovation.</p>
+        <div style="text-align: center;">
+          <a href="https://homecartel.net/collections/new-arrivals" class="btn">View New Arrivals</a>
+        </div>
+      `)
+    };
+
+    function updatePreview(templateKey) {
+      const frame = document.getElementById('preview-frame');
+      const html = templates[templateKey] || templates.abandoned_cart;
+      frame.srcdoc = html;
+    }
+
+    const localState = {
+      customers: 0,
+      abandoned: 0,
+      recovered: 0,
+      pending: 0,
+      sent: 0,
+      jobs: [],
+      logs: []
+    };
+
+    function renderLocalState() {
+      document.getElementById('stat-customers').textContent = localState.customers;
+      document.getElementById('stat-abandoned').textContent = localState.abandoned;
+      document.getElementById('stat-recovered').textContent = localState.recovered;
+      document.getElementById('stat-pending').textContent = localState.pending;
+      document.getElementById('stat-sent').textContent = localState.sent;
+
+      const jobsTbody = document.getElementById('jobs-tbody');
+      if (localState.jobs && localState.jobs.length > 0) {
+        jobsTbody.innerHTML = localState.jobs.map(j => {
+          const statusColors = {
+            pending: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+            sent: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+            cancelled: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'
+          };
+          const badge = statusColors[j.status] || 'bg-zinc-500/10 text-zinc-400';
+          return `
+            <tr class="hover:bg-[var(--secondary)]/40 transition">
+              <td class="py-2.5 px-4 font-semibold">${j.flow}</td>
+              <td class="py-2.5 px-4 text-[var(--muted-foreground)]">${j.recipient}</td>
+              <td class="py-2.5 px-4 text-[var(--muted-foreground)]">${j.time}</td>
+              <td class="py-2.5 px-4 text-right">
+                <span class="inline-flex px-2 py-0.5 rounded text-[11px] font-medium border ${badge}">${j.status}</span>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        jobsTbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-[var(--muted-foreground)]">Queue is empty.</td></tr>';
+      }
+
+      const logsTbody = document.getElementById('logs-tbody');
+      if (localState.logs && localState.logs.length > 0) {
+        logsTbody.innerHTML = localState.logs.map(l => `
+          <tr class="hover:bg-[var(--secondary)]/40 transition">
+            <td class="py-2 px-4 font-medium">${l.recipient}</td>
+            <td class="py-2 px-4 text-emerald-500 font-semibold">${l.flow}</td>
+            <td class="py-2 px-4 text-right text-[var(--muted-foreground)]">${l.time}</td>
+          </tr>
+        `).join('');
+      } else {
+        logsTbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-[var(--muted-foreground)]">No emails dispatched yet. Click "Run Scheduler Cycle" above!</td></tr>';
+      }
+    }
+
+    async function triggerAction(action) {
+      const notice = document.getElementById('action-notification');
+      try {
+        const res = await fetch('/api/admin/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scenario: action })
+        });
+        if (res.ok) {
+          const respData = await res.json();
+          if (respData.message) {
+            notice.textContent = respData.message;
+            notice.classList.remove('hidden');
+            setTimeout(() => notice.classList.add('hidden'), 5000);
+          }
+        }
+      } catch (e) {
+        console.warn('Simulate call:', e);
+      }
+
+      await refreshData();
+    }
+
+    async function refreshData() {
+      try {
+        const res = await fetch('/api/admin/overview');
+        if (res.ok) {
+          const data = await res.json();
+          localState.customers = data.counts?.customers ?? 0;
+          localState.abandoned = data.counts?.abandonedCarts ?? 0;
+          localState.recovered = data.counts?.recoveredCarts ?? 0;
+          localState.pending = data.counts?.pendingJobs ?? 0;
+          localState.sent = data.counts?.sentEmails ?? 0;
+
+          if (data.jobs && data.jobs.length > 0) {
+            localState.jobs = data.jobs.map(j => ({
+              flow: j.flow_type,
+              recipient: j.recipient_email,
+              time: new Date(j.execute_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              status: j.status
+            }));
+          } else {
+            localState.jobs = [];
+          }
+
+          if (data.logs && data.logs.length > 0) {
+            localState.logs = data.logs.map(l => ({
+              recipient: l.recipient_email,
+              flow: l.flow_type,
+              time: new Date(l.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }));
+          } else {
+            localState.logs = [];
+          }
+        }
+      } catch (e) {
+        console.warn('Overview fetch:', e);
+      }
+      renderLocalState();
+    }
+
+    // Initialize preview immediately upon load
+    updatePreview('abandoned_cart');
+    refreshData();
+  </script>
+</body>
+</html>
