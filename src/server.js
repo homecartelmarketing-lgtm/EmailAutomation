@@ -1,3 +1,12 @@
+import fs from 'node:fs';
+
+// Safely load .env in local dev if file exists; on Railway, variables are in process.env
+if (fs.existsSync('.env')) {
+  try {
+    process.loadEnvFile('.env');
+  } catch (e) {}
+}
+
 import Fastify from 'fastify';
 import { loadConfig } from './config.js';
 import { initDatabase } from './db/database.js';
@@ -14,7 +23,12 @@ import { runSchedulerCycle } from './scheduler/worker.js';
  * @param {object} envOverrides - Optional config overrides for testing
  */
 export async function buildServer(envOverrides = {}) {
-  const config = loadConfig({ ...process.env, ...envOverrides });
+  const config = loadConfig({
+    SHOP_DOMAIN: 'homecartel.net',
+    SHOPIFY_WEBHOOK_SECRET: 'homecartel_secret_key',
+    ...process.env,
+    ...envOverrides
+  });
   const db = initDatabase(config.dbPath);
   const emailSender = createEmailSender(config);
 
