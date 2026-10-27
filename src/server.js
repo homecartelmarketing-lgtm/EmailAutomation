@@ -1,4 +1,6 @@
 import fs from 'node:fs';
+import path from 'node:path';
+import url from 'node:url';
 
 // Safely load .env in local dev if file exists; on Railway, variables are in process.env
 if (fs.existsSync('.env')) {
@@ -66,6 +68,29 @@ export async function buildServer(envOverrides = {}) {
     }
   });
 
+  // Root status endpoint
+  app.get('/', async () => ({
+    status: 'online',
+    service: 'HomeCartel Behavioral Email Marketing Engine',
+    store: config.shopDomain,
+    endpoints: {
+      healthCheck: '/health',
+      adminOverview: '/api/admin/overview',
+      storefrontTracker: '/homecartel-tracker.js',
+      webhooks: '/api/webhooks/shopify/{checkouts,orders,customers,fulfillments}'
+    }
+  }));
+
+  // Serve client tracker script directly
+  app.get('/homecartel-tracker.js', async (req, reply) => {
+    const trackerPath = path.resolve(process.cwd(), 'public/homecartel-tracker.js');
+    if (fs.existsSync(trackerPath)) {
+      reply.header('Content-Type', 'application/javascript; charset=utf-8');
+      return reply.send(fs.readFileSync(trackerPath, 'utf8'));
+    }
+    return reply.code(404).send('Tracker script not found');
+  });
+
   // Health check endpoint
   app.get('/health', async () => ({ status: 'ok', store: config.shopDomain }));
 
@@ -90,9 +115,6 @@ export async function buildServer(envOverrides = {}) {
 
   return app;
 }
-
-import url from 'node:url';
-import path from 'node:path';
 
 // Start server if executed directly
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === url.fileURLToPath(import.meta.url);
