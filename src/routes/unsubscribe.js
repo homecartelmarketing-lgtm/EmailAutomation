@@ -1,16 +1,66 @@
+import crypto from 'node:crypto';
+
+/**
+ * Generates an HMAC SHA256 token for an email unsubscribe link.
+ * @param {string} email
+ * @param {string} secret
+ * @returns {string}
+ */
+export function generateUnsubscribeToken(email, secret) {
+  return crypto.createHmac('sha256', secret).update(email.toLowerCase().trim()).digest('hex');
+}
+
+/**
+ * Validates an unsubscribe HMAC token.
+ * @param {string} email
+ * @param {string} token
+ * @param {string} secret
+ * @returns {boolean}
+ */
+export function verifyUnsubscribeToken(email, token, secret) {
+  if (!email || !token || !secret) return false;
+  const expected = generateUnsubscribeToken(email, secret);
+  try {
+    const a = Buffer.from(token, 'hex');
+    const b = Buffer.from(expected, 'hex');
+    if (a.length !== b.length) return false;
+    return crypto.timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 /**
  * Registers One-Click Unsubscribe Routes
  * @param {import('fastify').FastifyInstance} app
- * @param {{ db: ReturnType<import('../db/database.js').initDatabase> }} options
+ * @param {{ db: ReturnType<import('../db/database.js').initDatabase>, secret?: string }} options
  */
-export async function registerUnsubscribeRoutes(app, { db }) {
+export async function registerUnsubscribeRoutes(app, { db, secret }) {
   app.get('/api/unsubscribe', async (req, reply) => {
-    const { email } = req.query || {};
+    const { email, token } = req.query || {};
     if (!email) {
       return reply.code(400).send({ error: 'Missing email parameter' });
     }
 
+    if (secret && token) {
+      if (!verifyUnsubscribeToken(email, token, secret)) {
+        return reply.code(403).send({ error: 'Invalid or expired unsubscribe token' });
+      }
+    }
+
+    // Persist unsubscription status
     db.setCustomerUnsubscribed(email);
+
+    const safeEmail = escapeHtml(email);
 
     reply.type('text/html').send(`
       <!DOCTYPE html>
@@ -29,7 +79,7 @@ export async function registerUnsubscribeRoutes(app, { db }) {
       <body>
         <div class="card">
           <h2>You have successfully unsubscribed</h2>
-          <p>The address <strong>${email}</strong> will no longer receive automated marketing or promotional emails from HomeCartel.</p>
+          <p>The address <strong>${safeEmail}</strong> will no longer receive automated marketing or promotional emails from HomeCartel.</p>
           <p><a href="https://homecartel.net">Return to HomeCartel</a></p>
         </div>
       </body>

@@ -16,8 +16,9 @@ export function initDatabase(dbPath = ':memory:') {
 
   const db = new DatabaseSync(dbPath);
 
-  // Enable foreign keys
+  // Enable foreign keys and WAL mode
   db.exec('PRAGMA foreign_keys = ON;');
+  db.exec('PRAGMA journal_mode = WAL;');
 
   // Run schema setup
   const schemaPath = path.resolve('src/db/schema.sql');
@@ -25,7 +26,6 @@ export function initDatabase(dbPath = ':memory:') {
     const schemaSql = fs.readFileSync(schemaPath, 'utf8');
     db.exec(schemaSql);
   } else {
-    // Fallback embedded schema for tests
     db.exec(`
       CREATE TABLE IF NOT EXISTS customers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -69,7 +69,7 @@ export function initDatabase(dbPath = ':memory:') {
         flow_name TEXT NOT NULL,
         template_name TEXT,
         message_id TEXT,
-        sent_at TEXT DEFAULT (datetime('now'))
+        sent_at TEXT NOT NULL
       );
     `);
   }
@@ -80,7 +80,7 @@ export function initDatabase(dbPath = ':memory:') {
     upsertCustomer({ email, name, status = 'subscribed' }) {
       const existing = db.prepare('SELECT id, status FROM customers WHERE email = ?').get(email);
       if (existing) {
-        db.prepare('UPDATE customers SET name = coalesce(?, name), last_active_at = datetime("now") WHERE id = ?').run(name, existing.id);
+        db.prepare("UPDATE customers SET name = coalesce(?, name), last_active_at = datetime('now') WHERE id = ?").run(name, existing.id);
         return existing.id;
       }
       const res = db.prepare('INSERT INTO customers (email, name, status) VALUES (?, ?, ?)').run(email, name, status);
@@ -92,7 +92,11 @@ export function initDatabase(dbPath = ':memory:') {
     },
 
     setCustomerUnsubscribed(email) {
-      db.prepare("UPDATE customers SET status = 'unsubscribed' WHERE email = ?").run(email);
+      db.prepare(`
+        INSERT INTO customers (email, status) 
+        VALUES (?, 'unsubscribed')
+        ON CONFLICT(email) DO UPDATE SET status = 'unsubscribed'
+      `).run(email);
       db.prepare("UPDATE scheduled_jobs SET status = 'cancelled' WHERE recipient_email = ? AND status = 'pending'").run(email);
     },
 
@@ -132,6 +136,10 @@ export function initDatabase(dbPath = ':memory:') {
       return db.prepare('SELECT * FROM carts WHERE checkout_id = ?').get(checkoutId);
     },
 
+    markCartRecovered(checkoutId) {
+      db.prepare("UPDATE carts SET status = 'recovered' WHERE checkout_id = ?").run(checkoutId);
+    },
+
     scheduleJob({ flowType, recipientEmail, contextJson = '{}', executeAt }) {
       const res = db.prepare(`
         INSERT INTO scheduled_jobs (flow_type, recipient_email, context_json, execute_at, status)
@@ -148,12 +156,27 @@ export function initDatabase(dbPath = ':memory:') {
       }
     },
 
+    cancelPendingJobsByCheckoutId(checkoutId) {
+      db.prepare(`
+        UPDATE scheduled_jobs 
+        SET status = 'cancelled' 
+        WHERE flow_type = 'abandoned_cart' 
+          AND status = 'pending' 
+          AND context_json LIKE ?
+      `).run(`%"checkoutId":"${checkoutId}"%`);
+    },
+
     getPendingDueJobs(isoNow) {
       return db.prepare(`
         SELECT * FROM scheduled_jobs 
         WHERE status = 'pending' AND execute_at <= ? 
         ORDER BY execute_at ASC
       `).all(isoNow);
+    },
+
+    claimJobForExecution(jobId) {
+      const res = db.prepare("UPDATE scheduled_jobs SET status = 'in_progress' WHERE id = ? AND status = 'pending'").run(jobId);
+      return res.changes > 0;
     },
 
     markJobSent(jobId) {
@@ -164,17 +187,23 @@ export function initDatabase(dbPath = ':memory:') {
       db.prepare("UPDATE scheduled_jobs SET status = 'skipped' WHERE id = ?").run(jobId);
     },
 
-    recordEmailLog({ recipientEmail, flowName, templateName = '', messageId = '' }) {
+    recordEmailLog({ recipientEmail, flowName, templateName = '', messageId = '', sentAt = new Date().toISOString() }) {
       const res = db.prepare(`
-        INSERT INTO email_logs (recipient_email, flow_name, template_name, message_id)
-        VALUES (?, ?, ?, ?)
-      `).run(recipientEmail, flowName, templateName, messageId);
+        INSERT INTO email_logs (recipient_email, flow_name, template_name, message_id, sent_at)
+        VALUES (?, ?, ?, ?, ?)
+      `).run(recipientEmail, flowName, templateName, messageId, sentAt);
       return Number(res.lastInsertRowid);
     },
 
     getLastMarketingEmailTime(email) {
       const row = db.prepare('SELECT sent_at FROM email_logs WHERE recipient_email = ? ORDER BY sent_at DESC LIMIT 1').get(email);
-      return row ? row.sent_at : null;
+      if (!row || !row.sent_at) return null;
+      // Ensure ISO UTC format
+      let str = row.sent_at;
+      if (!str.endsWith('Z') && !str.includes('+')) {
+        str = str.replace(' ', 'T') + 'Z';
+      }
+      return str;
     }
   };
 }

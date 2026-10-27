@@ -5,7 +5,7 @@ import { createEmailSender } from './email/sender.js';
 import { renderTemplate } from './templates/renderer.js';
 import { registerWebhookRoutes } from './routes/webhooks.js';
 import { registerTrackingRoutes } from './routes/tracking.js';
-import { registerUnsubscribeRoutes } from './routes/unsubscribe.js';
+import { registerUnsubscribeRoutes, generateUnsubscribeToken } from './routes/unsubscribe.js';
 import { runSchedulerCycle } from './scheduler/worker.js';
 
 /**
@@ -19,8 +19,9 @@ export async function buildServer(envOverrides = {}) {
 
   const rendererAdapter = {
     render: (templateName, context) => {
-      const baseUrl = `http://localhost:${config.port}`;
-      const unsubscribeUrl = `${baseUrl}/api/unsubscribe?email=${encodeURIComponent(context.email || '')}`;
+      const email = context.email || '';
+      const token = email ? generateUnsubscribeToken(email, config.shopifyWebhookSecret) : '';
+      const unsubscribeUrl = `${config.appBaseUrl}/api/unsubscribe?email=${encodeURIComponent(email)}&token=${token}`;
       return renderTemplate(templateName, { ...context, unsubscribeUrl });
     }
   };
@@ -29,13 +30,34 @@ export async function buildServer(envOverrides = {}) {
     logger: process.env.NODE_ENV !== 'test'
   });
 
+  // Preserve raw request body for accurate HMAC signature validation
+  app.addContentTypeParser('application/json', { parseAs: 'buffer' }, (req, body, done) => {
+    req.rawBody = body;
+    try {
+      const json = JSON.parse(body.toString('utf8'));
+      done(null, json);
+    } catch (err) {
+      done(err, undefined);
+    }
+  });
+
+  // CORS support for storefront tracking
+  app.addHook('onRequest', async (req, reply) => {
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    reply.header('Access-Control-Allow-Headers', 'Content-Type, X-Shopify-Hmac-Sha256');
+    if (req.method === 'OPTIONS') {
+      return reply.code(200).send();
+    }
+  });
+
   // Health check endpoint
   app.get('/health', async () => ({ status: 'ok', store: config.shopDomain }));
 
   // Register feature routes
   await registerWebhookRoutes(app, { db, secret: config.shopifyWebhookSecret });
   await registerTrackingRoutes(app, { db });
-  await registerUnsubscribeRoutes(app, { db });
+  await registerUnsubscribeRoutes(app, { db, secret: config.shopifyWebhookSecret });
 
   // Expose services and runner for tests or internal execution
   app.decorate('db', db);

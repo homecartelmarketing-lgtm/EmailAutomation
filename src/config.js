@@ -13,8 +13,12 @@ export function loadConfig(env = process.env) {
     throw new Error('Missing required environment variable: SHOPIFY_WEBHOOK_SECRET');
   }
 
+  const port = parseInt(env.PORT || '3000', 10);
+  const appBaseUrl = env.APP_BASE_URL || `http://localhost:${port}`;
+
   return {
-    port: parseInt(env.PORT || '3000', 10),
+    port,
+    appBaseUrl,
     shopDomain,
     shopifyWebhookSecret,
     emailProvider: env.EMAIL_PROVIDER || 'mock',

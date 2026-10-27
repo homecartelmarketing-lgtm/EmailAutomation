@@ -13,7 +13,7 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     }
 
     const hmacHeader = req.headers['x-shopify-hmac-sha256'];
-    const rawPayload = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+    const rawPayload = req.rawBody || (typeof req.body === 'string' ? req.body : JSON.stringify(req.body));
 
     if (!hmacHeader || !verifyShopifyHmac(rawPayload, hmacHeader, secret)) {
       return reply.code(401).send({ error: 'Unauthorized: Invalid Shopify HMAC signature' });
@@ -30,6 +30,9 @@ export async function registerWebhookRoutes(app, { db, secret }) {
       return reply.code(200).send({ skipped: 'No email associated with checkout' });
     }
 
+    // Upsert customer record
+    db.upsertCustomer({ email, name: data.customer ? `${data.customer.first_name || ''} ${data.customer.last_name || ''}`.trim() : '' });
+
     // Save cart state
     db.upsertCart({
       checkoutId,
@@ -40,6 +43,9 @@ export async function registerWebhookRoutes(app, { db, secret }) {
       recoveryUrl: data.abandoned_checkout_url || '',
       status: 'abandoned'
     });
+
+    // Cancel any prior pending abandoned cart job for this specific checkout to avoid duplicate spam
+    db.cancelPendingJobsByCheckoutId(checkoutId);
 
     // Schedule abandoned cart email 2 hours from now
     const executeAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
@@ -57,10 +63,15 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     return reply.code(200).send({ success: true, scheduled: 'abandoned_cart' });
   });
 
-  // 2. Orders (Order completed -> cancel pending cart reminders)
+  // 2. Orders (Order completed -> cancel pending cart reminders & mark cart recovered)
   app.post('/api/webhooks/shopify/orders', async (req, reply) => {
     const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const email = data.email || (data.customer ? data.customer.email : null);
+
+    if (data.checkout_id) {
+      db.markCartRecovered(String(data.checkout_id));
+      db.cancelPendingJobsByCheckoutId(String(data.checkout_id));
+    }
 
     if (email) {
       // Cancel any pending abandoned cart reminders for this buyer
@@ -80,7 +91,6 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     const email = data.email || (data.customer ? data.customer.email : null);
 
     if (email) {
-      // Schedule post-purchase review in 7 days (7 * 24 * 3600 * 1000 ms)
       const executeAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
       db.scheduleJob({
         flowType: 'post_purchase',

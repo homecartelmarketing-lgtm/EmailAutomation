@@ -39,9 +39,20 @@ export async function runSchedulerCycle({ db, sender, renderer, now = new Date()
       }
     }
 
-    // 3. Render and send
+    // 3. Atomic job claim to prevent race conditions
+    if (!db.claimJobForExecution(job.id)) {
+      // Job was cancelled or claimed concurrently
+      continue;
+    }
+
+    // 4. Render and send
     try {
-      const context = JSON.parse(job.context_json || '{}');
+      const parsedContext = JSON.parse(job.context_json || '{}');
+      const context = {
+        ...parsedContext,
+        email: job.recipient_email
+      };
+
       const { subject, html } = renderer.render(job.flow_type, context);
       const { messageId } = await sender.send({
         to: job.recipient_email,
@@ -53,7 +64,8 @@ export async function runSchedulerCycle({ db, sender, renderer, now = new Date()
         recipientEmail: job.recipient_email,
         flowName: job.flow_type,
         templateName: job.flow_type,
-        messageId: messageId || ''
+        messageId: messageId || '',
+        sentAt: new Date().toISOString()
       });
 
       db.markJobSent(job.id);
