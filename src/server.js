@@ -119,6 +119,27 @@ export async function buildServer(envOverrides = {}) {
     return reply.code(404).send('Tracker script not found');
   });
 
+  // Serve static images directly from public/images
+  app.get('/images/:file', async (req, reply) => {
+    const filename = path.basename(req.params.file);
+    const imagePath = path.resolve(process.cwd(), 'public/images', filename);
+    if (fs.existsSync(imagePath)) {
+      const ext = path.extname(filename).toLowerCase();
+      const mimeTypes = {
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.webp': 'image/webp',
+        '.svg': 'image/svg+xml',
+        '.gif': 'image/gif'
+      };
+      reply.header('Content-Type', mimeTypes[ext] || 'application/octet-stream');
+      reply.header('Cache-Control', 'public, max-age=86400');
+      return reply.send(fs.readFileSync(imagePath));
+    }
+    return reply.code(404).send('Image not found');
+  });
+
   // Health check endpoint
   app.get('/health', async () => ({ status: 'ok', store: config.shopDomain }));
 

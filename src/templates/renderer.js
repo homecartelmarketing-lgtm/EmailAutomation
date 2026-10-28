@@ -1,3 +1,5 @@
+import { renderCanvaCartTemplate } from './canvaCart.js';
+
 const STORE_ADDRESS = '673 Banawe Street, Santa Mesa Heights, Quezon City, Metro Manila, Philippines';
 
 function wrapBaseLayout({ title, contentHtml, unsubscribeUrl = '#' }) {
@@ -58,29 +60,7 @@ export function renderTemplate(templateName, context = {}) {
 
   switch (templateName) {
     case 'abandoned_cart': {
-      const items = context.items || [];
-      const recoveryUrl = context.recoveryUrl || 'https://homecartel.net/cart';
-      const itemsHtml = items.map(item => `
-        <div class="item-card">
-          <div class="item-title">${item.title || 'Selected Fixture'}</div>
-          <div class="item-price">${item.price || ''}</div>
-        </div>
-      `).join('');
-
-      const contentHtml = `
-        <h2>Did you leave something behind, ${customerName}?</h2>
-        <p>We saved your favorite lighting fixtures in your cart so you won't lose them.</p>
-        ${itemsHtml}
-        <p>Ready to complete your space? Finish checking out now and we'll prepare your fixtures for careful delivery.</p>
-        <div style="text-align: center;">
-          <a href="${recoveryUrl}" class="btn">Restore My Cart & Checkout</a>
-        </div>
-      `;
-
-      return {
-        subject: `Did you leave something behind, ${customerName}? | HomeCartel`,
-        html: wrapBaseLayout({ title: 'Complete your order', contentHtml, unsubscribeUrl })
-      };
+      return renderCanvaCartTemplate(context);
     }
 
     case 'welcome': {

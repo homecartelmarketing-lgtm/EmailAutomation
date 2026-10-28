@@ -345,8 +345,16 @@
       `)
     };
 
-    function updatePreview(templateKey) {
+    async function updatePreview(templateKey) {
       const frame = document.getElementById('preview-frame');
+      try {
+        const res = await fetch('/api/admin/preview/' + templateKey);
+        if (res.ok) {
+          const html = await res.text();
+          frame.srcdoc = html;
+          return;
+        }
+      } catch (e) {}
       const html = templates[templateKey] || templates.abandoned_cart;
       frame.srcdoc = html;
     }
