@@ -14,7 +14,7 @@ describe('Email Template Renderer', () => {
     expect(subject).toMatch(/leave something behind/i);
     expect(html).toContain('Nordic Glass Chandelier');
     expect(html).toContain('₱12,500');
-    expect(html).toContain('673 Banawe Street');
+    expect(html).toContain('homecartel.net');
     expect(html).toContain('https://api.homecartel.net/unsubscribe?t=tok');
   });
 

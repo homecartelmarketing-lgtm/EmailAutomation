@@ -66,11 +66,7 @@ export function renderCanvaCartTemplate(context = {}) {
     .replace(/\$737\.00/g, subtotalStr)
     .replace(/images\/db14bb4f8487787d5f106be9f940c58f\.jpg/g, baseUrl + '/images/db14bb4f8487787d5f106be9f940c58f.jpg')
     .replace(/{{ unsubscribe }}/g, unsubscribeUrl)
-    .replace(/{{ view_in_browser }}/g, recoveryUrl)
-    .replace(
-      'You received this email from your activity on',
-      'HomeCartel Lighting Studio &bull; ' + STORE_ADDRESS + '<br>You received this email from your activity on'
-    );
+    .replace(/{{ view_in_browser }}/g, recoveryUrl);
 
   const fullHtml = header + dynamicItemsHtml + remainder;
   const customerName = context.customerName ? ', ' + context.customerName : '';
