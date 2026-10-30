@@ -1,4 +1,5 @@
 import { renderTemplate } from '../templates/renderer.js';
+import { recentWebhookLogs } from './webhooks.js';
 
 /**
  * Registers Admin Dashboard & Simulation Endpoints
@@ -23,7 +24,20 @@ export async function registerAdminRoutes(app, { db }) {
       sentEmails: raw.prepare('SELECT COUNT(*) as c FROM email_logs').get().c
     };
 
-    return { counts, customers, carts, jobs, logs };
+    return { counts, customers, carts, jobs, logs, recentWebhookLogs };
+  });
+
+  // Diagnostics endpoint for live troubleshooting
+  app.get('/api/admin/diagnostics', async () => {
+    const sec = app.config.shopifyWebhookSecret || '';
+    return {
+      status: 'online',
+      shopDomain: app.config.shopDomain,
+      secretConfigured: sec ? `${sec.substring(0, 6)}... (${sec.length} chars)` : 'none',
+      emailProvider: app.config.emailProvider,
+      appBaseUrl: app.config.appBaseUrl,
+      recentWebhookAttempts: recentWebhookLogs
+    };
   });
 
   // Simulator helper to test behavioral triggers live

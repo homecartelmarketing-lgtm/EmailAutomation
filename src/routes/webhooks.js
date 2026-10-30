@@ -1,5 +1,7 @@
 import { verifyShopifyHmac } from '../shopify/hmac.js';
 
+export const recentWebhookLogs = [];
+
 /**
  * Registers Shopify Webhook Ingestion Routes
  * @param {import('fastify').FastifyInstance} app
@@ -13,13 +15,36 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     }
 
     const hmacHeader = req.headers['x-shopify-hmac-sha256'];
+    const topic = req.headers['x-shopify-topic'] || 'unknown';
     const rawPayload = req.rawBody || (typeof req.body === 'string' ? req.body : JSON.stringify(req.body));
+    const isValid = !!(hmacHeader && verifyShopifyHmac(rawPayload, hmacHeader, secret));
 
-    if (!hmacHeader || !verifyShopifyHmac(rawPayload, hmacHeader, secret)) {
-      console.warn(`[Shopify Webhook] HMAC failed for ${req.url}`);
+    let email = null;
+    let checkoutId = null;
+    try {
+      const parsed = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+      email = parsed?.email || parsed?.customer?.email || null;
+      checkoutId = parsed?.id || parsed?.token || null;
+    } catch (e) {}
+
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      url: req.url,
+      topic,
+      hmacHeaderPresent: !!hmacHeader,
+      hmacValid: isValid,
+      email,
+      checkoutId,
+      status: isValid ? (email ? 'accepted' : 'skipped_no_email') : 'rejected_401'
+    };
+    recentWebhookLogs.unshift(logEntry);
+    if (recentWebhookLogs.length > 50) recentWebhookLogs.pop();
+
+    if (!isValid) {
+      console.warn(`[Shopify Webhook] HMAC failed for ${req.url} (header: ${hmacHeader ? 'present' : 'missing'})`);
       return reply.code(401).send({ error: 'Unauthorized: Invalid Shopify HMAC signature' });
     }
-    console.log(`[Shopify Webhook] Verified incoming ${req.url}`);
+    console.log(`[Shopify Webhook] Verified incoming ${req.url} (topic: ${topic})`);
   });
 
   // 1. Checkouts & Carts (Abandoned Cart & Checkout detection)
@@ -32,7 +57,7 @@ export async function registerWebhookRoutes(app, { db, secret }) {
       console.log(`[Shopify Webhook] Checkout ${checkoutId} received but has no email yet.`);
       return reply.code(200).send({ skipped: 'No email associated with cart/checkout' });
     }
-    console.log(`[Shopify Webhook] Scheduling abandoned cart for ${email}`);
+    console.log(`[Shopify Webhook] Scheduling abandoned cart for ${email} (checkout: ${checkoutId})`);
 
     // Upsert customer record
     db.upsertCustomer({ email, name: data.customer ? `${data.customer.first_name || ''} ${data.customer.last_name || ''}`.trim() : '' });
