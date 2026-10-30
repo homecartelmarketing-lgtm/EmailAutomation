@@ -25,11 +25,16 @@ import { runSchedulerCycle } from './scheduler/worker.js';
  * @param {object} envOverrides - Optional config overrides for testing
  */
 export async function buildServer(envOverrides = {}) {
+  const mergedEnv = { ...process.env, ...envOverrides };
+  const detectedSecret = mergedEnv.SHOPIFY_WEBHOOK_SECRET ||
+    mergedEnv['SHOPIFY WEBHOOK SECRET'] ||
+    mergedEnv.SHOPIFY_SECRET ||
+    'homecartel_secret_key';
+
   const config = loadConfig({
     SHOP_DOMAIN: 'homecartel.net',
-    SHOPIFY_WEBHOOK_SECRET: 'homecartel_secret_key',
-    ...process.env,
-    ...envOverrides
+    ...mergedEnv,
+    SHOPIFY_WEBHOOK_SECRET: detectedSecret
   });
   const db = initDatabase(config.dbPath);
   const emailSender = createEmailSender(config);

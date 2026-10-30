@@ -16,8 +16,10 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     const rawPayload = req.rawBody || (typeof req.body === 'string' ? req.body : JSON.stringify(req.body));
 
     if (!hmacHeader || !verifyShopifyHmac(rawPayload, hmacHeader, secret)) {
+      console.warn(`[Shopify Webhook] HMAC failed for ${req.url}`);
       return reply.code(401).send({ error: 'Unauthorized: Invalid Shopify HMAC signature' });
     }
+    console.log(`[Shopify Webhook] Verified incoming ${req.url}`);
   });
 
   // 1. Checkouts & Carts (Abandoned Cart & Checkout detection)
@@ -27,8 +29,10 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     const email = data.email || (data.customer ? data.customer.email : null);
 
     if (!email) {
+      console.log(`[Shopify Webhook] Checkout ${checkoutId} received but has no email yet.`);
       return reply.code(200).send({ skipped: 'No email associated with cart/checkout' });
     }
+    console.log(`[Shopify Webhook] Scheduling abandoned cart for ${email}`);
 
     // Upsert customer record
     db.upsertCustomer({ email, name: data.customer ? `${data.customer.first_name || ''} ${data.customer.last_name || ''}`.trim() : '' });
