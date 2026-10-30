@@ -71,6 +71,7 @@ export async function runSchedulerCycle({ db, sender, renderer, now = new Date()
       db.markJobSent(job.id);
       sent++;
     } catch (err) {
+      console.error(`[Scheduler] Failed sending email for job ${job.id} to ${job.recipient_email}:`, err);
       db.rawDb.prepare("UPDATE scheduled_jobs SET status = 'failed' WHERE id = ?").run(job.id);
       cancelled++;
     }

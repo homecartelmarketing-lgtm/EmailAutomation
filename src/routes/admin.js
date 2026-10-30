@@ -98,8 +98,13 @@ export async function registerAdminRoutes(app, { db }) {
     }
 
     if (scenario === 'run_scheduler') {
-      const cycle = await app.runScheduler(new Date(Date.now() + 100000).toISOString());
-      return { success: true, cycle };
+      // Advance virtual time by 30 days so any queued jobs (even +2h or +7d) are processed immediately
+      const farFuture = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      const cycle = await app.runScheduler(farFuture);
+      const msg = cycle.sent > 0
+        ? `⚡ Dispatched ${cycle.sent} email(s) successfully!`
+        : `Scheduler cycle completed: 0 emails sent (${cycle.skipped} skipped, ${cycle.cancelled} failed/cancelled).`;
+      return { success: true, message: msg, cycle };
     }
 
     return reply.code(400).send({ error: 'Unknown scenario' });
