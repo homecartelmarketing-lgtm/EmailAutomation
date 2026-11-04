@@ -425,7 +425,7 @@ export async function registerAdminRoutes(app, { db }) {
     if (scenario === 'abandoned_cart' || scenario === 'flow_1') {
       const email = data.email || 'sophia.designer@studio.ph';
       const checkoutId = String(Date.now());
-      const rawItems = [
+      const rawItems = data.items || [
         { title: 'Vanja 5 | Glass Luxe Chandelier', price: '₱16,995.00', quantity: 1 },
         { title: 'Baron Square | Ceiling Mounted Light', price: '₱2,850.00', quantity: 1 }
       ];
@@ -437,7 +437,7 @@ export async function registerAdminRoutes(app, { db }) {
         email,
         cartToken: 'tok_' + checkoutId,
         itemsJson: JSON.stringify(items),
-        subtotal: '19845.00',
+        subtotal: data.subtotal || '19845.00',
         recoveryUrl: `https://homecartel.net/checkouts/${checkoutId}`,
         status: 'abandoned'
       });
