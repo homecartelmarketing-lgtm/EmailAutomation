@@ -348,6 +348,14 @@ export async function registerAdminRoutes(app, { db }) {
         });
       }
 
+      const nowMs = Date.now();
+      const lastSeenMs = new Date(lastSeen).getTime();
+      const isActiveNow = (nowMs - lastSeenMs) < (15 * 60 * 1000);
+      const latestEvent = sorted[sorted.length - 1];
+      const isLatestEventLeave = latestEvent && (latestEvent.event_type === 'page_leave');
+      const isSessionEnded = (!isActiveNow) || isLatestEventLeave;
+      const isReturning = sessions.length > 1;
+
       return {
         id: s.id,
         visitorId: s.visitorId,
@@ -356,6 +364,9 @@ export async function registerAdminRoutes(app, { db }) {
         isIdentified: s.isIdentified,
         firstSeen,
         lastSeen,
+        isActiveNow,
+        isSessionEnded,
+        isReturning,
         totalEvents: sorted.length,
         sessionCount: sessions.length,
         sessions: sessions.reverse() // Most recent session first

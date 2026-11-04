@@ -188,8 +188,10 @@
           <span class="text-zinc-500 text-[11px] font-medium mr-1">Shoppers:</span>
           <button onclick="filterShoppers('all')" id="shopper-filter-all" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-800 text-white font-medium border border-zinc-700">All Shoppers (<span id="count-all-shoppers">0</span>)</button>
           <button onclick="filterShoppers('active')" id="shopper-filter-active" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800">🟢 Active Now (<span id="count-active-shoppers">0</span>)</button>
+          <button onclick="filterShoppers('returning')" id="shopper-filter-returning" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800">🔄 Came Back (<span id="count-returned-shoppers">0</span>)</button>
+          <button onclick="filterShoppers('ended')" id="shopper-filter-ended" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800">🚪 Session Ended (<span id="count-ended-shoppers">0</span>)</button>
           <button onclick="filterShoppers('cart')" id="shopper-filter-cart" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800">🛒 Cart Intent (<span id="count-cart-shoppers">0</span>)</button>
-          <button onclick="filterShoppers('identified')" id="shopper-filter-id" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800">👤 Identified (<span id="count-id-shoppers">0</span>)</button>
+          <button onclick="filterShoppers('identified')" id="shopper-filter-identified" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800">👤 Identified (<span id="count-id-shoppers">0</span>)</button>
         </div>
 
         <!-- Search, Sort & Expand Controls -->
@@ -200,6 +202,8 @@
           </div>
           <select id="shopper-sort-select" onchange="handleShopperSort(this.value)" class="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-zinc-300 focus:outline-none">
             <option value="recent" selected>⚡ Most Recent Shopper First</option>
+            <option value="returning">🔄 Came Back (Returned Shoppers First)</option>
+            <option value="ended">🚪 Session Ended First</option>
             <option value="actions">🔥 Most Engaged (Highest Actions)</option>
             <option value="cart">🛒 Cart Intent First</option>
           </select>
@@ -633,6 +637,10 @@
         }).reverse(); // Show newest session first
 
         const isActiveNow = (nowMs - lastSeenMs) < (15 * 60 * 1000);
+        const latestEvent = sorted[sorted.length - 1];
+        const isLatestEventLeave = latestEvent && (latestEvent.eventType === 'page_leave');
+        const isSessionEnded = (!isActiveNow) || isLatestEventLeave;
+        const isReturning = sessions.length > 1;
 
         // Analyze intent, products, and collections browsed
         let hasCart = false;
@@ -686,6 +694,8 @@
           firstSeenMs,
           lastSeenMs,
           isActiveNow,
+          isSessionEnded,
+          isReturning,
           hasCart,
           intent,
           theme,
@@ -718,11 +728,15 @@
 
       // Update counters
       const activeCount = allShoppers.filter(s => s.isActiveNow).length;
+      const returnedCount = allShoppers.filter(s => s.isReturning).length;
+      const endedCount = allShoppers.filter(s => s.isSessionEnded).length;
       const cartCount = allShoppers.filter(s => s.hasCart).length;
       const idCount = allShoppers.filter(s => s.isIdentified).length;
 
       document.getElementById('count-all-shoppers').textContent = allShoppers.length;
       document.getElementById('count-active-shoppers').textContent = activeCount;
+      document.getElementById('count-returned-shoppers').textContent = returnedCount;
+      document.getElementById('count-ended-shoppers').textContent = endedCount;
       document.getElementById('count-cart-shoppers').textContent = cartCount;
       document.getElementById('count-id-shoppers').textContent = idCount;
       document.getElementById('activity-counter-pill').textContent = `${allShoppers.length} Shoppers (${liveEvents.length} Actions)`;
@@ -730,6 +744,8 @@
       // Filter
       let filtered = allShoppers.filter(s => {
         if (currentShopperFilter === 'active') return s.isActiveNow;
+        if (currentShopperFilter === 'returning') return s.isReturning;
+        if (currentShopperFilter === 'ended') return s.isSessionEnded;
         if (currentShopperFilter === 'cart') return s.hasCart;
         if (currentShopperFilter === 'identified') return s.isIdentified;
         return true;
@@ -747,9 +763,13 @@
         });
       }
 
-      // Strictly Sort: Most recent shopper that accessed the site, to least recent
+      // Strictly Sort
       if (shopperSortMode === 'recent') {
         filtered.sort((a, b) => b.lastSeenMs - a.lastSeenMs);
+      } else if (shopperSortMode === 'returning') {
+        filtered.sort((a, b) => ((b.isReturning ? 1 : 0) - (a.isReturning ? 1 : 0)) || (b.lastSeenMs - a.lastSeenMs));
+      } else if (shopperSortMode === 'ended') {
+        filtered.sort((a, b) => ((b.isSessionEnded ? 1 : 0) - (a.isSessionEnded ? 1 : 0)) || (b.lastSeenMs - a.lastSeenMs));
       } else if (shopperSortMode === 'actions') {
         filtered.sort((a, b) => (b.totalEvents - a.totalEvents) || (b.lastSeenMs - a.lastSeenMs));
       } else if (shopperSortMode === 'cart') {
@@ -791,14 +811,19 @@
                         <span>🕵️</span> Anonymous
                       </span>
                     `}
+                    ${shopper.isReturning ? `
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-violet-500/10 text-violet-300 border border-violet-500/20">
+                        <span>🔄</span> Came Back (${shopper.sessions.length} Visits)
+                      </span>
+                    ` : ''}
                     ${shopper.isActiveNow ? `
                       <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
                         Active Now
                       </span>
                     ` : `
-                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-zinc-900 text-zinc-400 border border-zinc-800">
-                        Last seen ${formatRelativeTime(shopper.lastSeen)}
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-zinc-900 text-zinc-400 border border-zinc-800">
+                        <span>🚪</span> Session Ended (${formatRelativeTime(shopper.lastSeen)})
                       </span>
                     `}
                     <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold border ${shopper.intent.badge}">
