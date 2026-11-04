@@ -17,6 +17,12 @@ CREATE TABLE IF NOT EXISTS events (
   FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL
 );
 
+CREATE TABLE IF NOT EXISTS visitor_carts (
+  cart_token TEXT PRIMARY KEY,
+  visitor_id TEXT NOT NULL,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS carts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   checkout_id TEXT UNIQUE NOT NULL,
@@ -50,5 +56,7 @@ CREATE TABLE IF NOT EXISTS email_logs (
 
 CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
 CREATE INDEX IF NOT EXISTS idx_events_visitor ON events(visitor_id);
+CREATE INDEX IF NOT EXISTS idx_events_created ON events(created_at);
+CREATE INDEX IF NOT EXISTS idx_visitor_carts ON visitor_carts(cart_token);
 CREATE INDEX IF NOT EXISTS idx_scheduled_jobs_status_due ON scheduled_jobs(status, execute_at);
 CREATE INDEX IF NOT EXISTS idx_email_logs_recipient_sent ON email_logs(recipient_email, sent_at);

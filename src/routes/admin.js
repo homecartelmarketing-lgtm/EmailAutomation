@@ -1,5 +1,6 @@
 import { renderTemplate } from '../templates/renderer.js';
 import { recentWebhookLogs } from './webhooks.js';
+import { eventBus } from '../events/bus.js';
 
 /**
  * Registers Admin Dashboard & Simulation Endpoints
@@ -21,7 +22,8 @@ export async function registerAdminRoutes(app, { db }) {
       abandonedCarts: raw.prepare("SELECT COUNT(*) as c FROM carts WHERE status = 'abandoned'").get().c,
       recoveredCarts: raw.prepare("SELECT COUNT(*) as c FROM carts WHERE status = 'recovered'").get().c,
       pendingJobs: raw.prepare("SELECT COUNT(*) as c FROM scheduled_jobs WHERE status = 'pending'").get().c,
-      sentEmails: raw.prepare('SELECT COUNT(*) as c FROM email_logs').get().c
+      sentEmails: raw.prepare('SELECT COUNT(*) as c FROM email_logs').get().c,
+      totalEvents: raw.prepare('SELECT COUNT(*) as c FROM events').get().c
     };
 
     return { counts, customers, carts, jobs, logs, recentWebhookLogs };
@@ -38,6 +40,62 @@ export async function registerAdminRoutes(app, { db }) {
       appBaseUrl: app.config.appBaseUrl,
       recentWebhookAttempts: recentWebhookLogs
     };
+  });
+
+  // Real-time shopper events feed
+  app.get('/api/admin/events', async (req) => {
+    const limit = Math.min(Number(req.query?.limit) || 50, 200);
+    const rawEvents = db.getRecentEvents(limit);
+
+    const events = rawEvents.map(ev => {
+      let parsedProps = {};
+      try {
+        parsedProps = typeof ev.properties_json === 'string' ? JSON.parse(ev.properties_json) : (ev.properties_json || {});
+      } catch (e) {}
+
+      return {
+        id: ev.id,
+        visitorId: ev.visitor_id,
+        customerId: ev.customer_id,
+        customerEmail: ev.customer_email || null,
+        customerName: ev.customer_name || null,
+        eventType: ev.event_type,
+        properties: parsedProps,
+        createdAt: ev.created_at,
+        isIdentified: !!ev.customer_id
+      };
+    });
+
+    return { events, count: events.length };
+  });
+
+  // Real-time Server-Sent Events (SSE) Stream
+  app.get('/api/admin/events/stream', (req, reply) => {
+    reply.raw.setHeader('Content-Type', 'text/event-stream');
+    reply.raw.setHeader('Cache-Control', 'no-cache, no-transform');
+    reply.raw.setHeader('Connection', 'keep-alive');
+    reply.raw.setHeader('Access-Control-Allow-Origin', '*');
+    reply.raw.flushHeaders?.();
+
+    // Initial handshake ping
+    reply.raw.write(': connected\n\n');
+
+    const listener = (data) => {
+      try {
+        reply.raw.write(`data: ${JSON.stringify(data)}\n\n`);
+      } catch (err) {}
+    };
+
+    eventBus.on('event', listener);
+
+    const pingInterval = setInterval(() => {
+      try { reply.raw.write(': ping\n\n'); } catch (e) {}
+    }, 20000);
+
+    req.raw.on('close', () => {
+      clearInterval(pingInterval);
+      eventBus.off('event', listener);
+    });
   });
 
   // Simulator helper to test behavioral triggers live
@@ -84,7 +142,7 @@ export async function registerAdminRoutes(app, { db }) {
           recoveryUrl: `https://homecartel.net/checkouts/${checkoutId}`,
           items
         }),
-        executeAt: new Date(Date.now() + 1000).toISOString() // 1 sec delay for live demo
+        executeAt: new Date(Date.now() + 1000).toISOString()
       });
 
       return { success: true, message: `Abandoned cart trigger created for ${email}`, checkoutId, email };
@@ -108,6 +166,131 @@ export async function registerAdminRoutes(app, { db }) {
     }
 
     return reply.code(400).send({ error: 'Unknown scenario' });
+  });
+
+  // Comprehensive shopper journey simulation: Anonymous -> View -> Click -> Leave -> Add to Cart -> Checkout Email -> Reconciled
+  app.post('/api/admin/simulate-shopper-journey', async (req) => {
+    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    const visitorId = `anon_hc_${randomSuffix}`;
+    const email = req.body?.email || `shopper.${randomSuffix}@gmail.com`;
+    const name = req.body?.name || 'Bea Valenzuela';
+
+    const eventsCreated = [];
+
+    // Step 1: Anonymous Accesses Homepage
+    const ev1 = db.recordEvent({
+      visitorId,
+      eventType: 'page_view',
+      propertiesJson: JSON.stringify({
+        url: 'https://homecartel.net/',
+        path: '/',
+        title: 'HomeCartel Lighting • Modern & Minimalist Fixtures',
+        page_type: 'home',
+        timestamp: new Date().toISOString()
+      })
+    });
+    eventsCreated.push(ev1);
+
+    // Step 2: Anonymous Clicks an Item
+    const ev2 = db.recordEvent({
+      visitorId,
+      eventType: 'item_click',
+      propertiesJson: JSON.stringify({
+        title: 'Vanja 5 | Glass Luxe Chandelier',
+        url: 'https://homecartel.net/products/vanja-5-glass-luxe-chandelier',
+        price: '₱16,995.00',
+        timestamp: new Date().toISOString()
+      })
+    });
+    eventsCreated.push(ev2);
+
+    // Step 3: Anonymous Views the Product Page
+    const ev3 = db.recordEvent({
+      visitorId,
+      eventType: 'page_view',
+      propertiesJson: JSON.stringify({
+        url: 'https://homecartel.net/products/vanja-5-glass-luxe-chandelier',
+        path: '/products/vanja-5-glass-luxe-chandelier',
+        title: 'Vanja 5 | Glass Luxe Chandelier – HomeCartel',
+        page_type: 'product',
+        timestamp: new Date().toISOString()
+      })
+    });
+    eventsCreated.push(ev3);
+
+    // Step 4: Anonymous Adds to Cart
+    const ev4 = db.recordEvent({
+      visitorId,
+      eventType: 'add_to_cart',
+      propertiesJson: JSON.stringify({
+        title: 'Vanja 5 | Glass Luxe Chandelier',
+        price: '₱16,995.00',
+        quantity: 1,
+        timestamp: new Date().toISOString()
+      })
+    });
+    eventsCreated.push(ev4);
+
+    // Step 5: Anonymous Leaves Page after 34 seconds
+    const ev5 = db.recordEvent({
+      visitorId,
+      eventType: 'page_leave',
+      propertiesJson: JSON.stringify({
+        url: 'https://homecartel.net/products/vanja-5-glass-luxe-chandelier',
+        path: '/products/vanja-5-glass-luxe-chandelier',
+        duration_seconds: 34,
+        max_scroll_percent: 88,
+        timestamp: new Date().toISOString()
+      })
+    });
+    eventsCreated.push(ev5);
+
+    // Step 6: Customer Enters Email in Checkout! (Identity Reconciliation)
+    const customerId = db.upsertCustomer({ email, name });
+    const reconciledCount = db.linkVisitorEventsToCustomer(visitorId, customerId);
+
+    const ev6 = db.recordEvent({
+      customerId,
+      visitorId,
+      eventType: 'identify',
+      propertiesJson: JSON.stringify({
+        email,
+        name,
+        reconciledEvents: reconciledCount,
+        note: `Identity stitched: ${visitorId} is now ${email}`,
+        timestamp: new Date().toISOString()
+      })
+    });
+    eventsCreated.push(ev6);
+
+    // Emit live event to SSE subscribers
+    eventBus.emit('event', {
+      type: 'identify',
+      visitorId,
+      customerId,
+      email,
+      name,
+      reconciledEvents: reconciledCount,
+      event: {
+        id: ev6.id,
+        visitorId,
+        customerId,
+        customerEmail: email,
+        customerName: name,
+        eventType: 'identify',
+        properties: { email, name, reconciledEvents: reconciledCount },
+        createdAt: ev6.created_at,
+        isIdentified: true
+      }
+    });
+
+    return {
+      success: true,
+      visitorId,
+      email,
+      reconciledCount,
+      message: `Simulated full journey for ${visitorId}! Reconciled ${reconciledCount} anonymous events into ${email}.`
+    };
   });
 
   // Endpoint to preview any template directly

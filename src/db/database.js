@@ -43,6 +43,11 @@ export function initDatabase(dbPath = ':memory:') {
         properties_json TEXT,
         created_at TEXT DEFAULT (datetime('now'))
       );
+      CREATE TABLE IF NOT EXISTS visitor_carts (
+        cart_token TEXT PRIMARY KEY,
+        visitor_id TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now'))
+      );
       CREATE TABLE IF NOT EXISTS carts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         checkout_id TEXT UNIQUE NOT NULL,
@@ -74,6 +79,17 @@ export function initDatabase(dbPath = ':memory:') {
     `);
   }
 
+  // Ensure visitor_carts table exists if running against an existing SQLite file
+  try {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS visitor_carts (
+        cart_token TEXT PRIMARY KEY,
+        visitor_id TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now'))
+      );
+    `);
+  } catch (e) {}
+
   return {
     rawDb: db,
 
@@ -91,6 +107,17 @@ export function initDatabase(dbPath = ':memory:') {
       return db.prepare('SELECT * FROM customers WHERE email = ?').get(email);
     },
 
+    getCustomerByVisitorId(visitorId) {
+      if (!visitorId) return null;
+      return db.prepare(`
+        SELECT c.* FROM customers c
+        JOIN events e ON e.customer_id = c.id
+        WHERE e.visitor_id = ?
+        ORDER BY e.id DESC
+        LIMIT 1
+      `).get(visitorId);
+    },
+
     setCustomerUnsubscribed(email) {
       db.prepare(`
         INSERT INTO customers (email, status) 
@@ -101,14 +128,74 @@ export function initDatabase(dbPath = ':memory:') {
     },
 
     recordEvent({ customerId = null, visitorId = null, eventType, propertiesJson = '{}' }) {
+      // If customerId is not explicitly passed, check if visitorId is already identified
+      let resolvedCustomerId = customerId;
+      if (!resolvedCustomerId && visitorId) {
+        const knownCust = db.prepare(`
+          SELECT customer_id FROM events 
+          WHERE visitor_id = ? AND customer_id IS NOT NULL 
+          ORDER BY id DESC LIMIT 1
+        `).get(visitorId);
+        if (knownCust) {
+          resolvedCustomerId = knownCust.customer_id;
+        }
+      }
+
       const res = db.prepare(
         'INSERT INTO events (customer_id, visitor_id, event_type, properties_json) VALUES (?, ?, ?, ?)'
-      ).run(customerId, visitorId, eventType, propertiesJson);
-      return Number(res.lastInsertRowid);
+      ).run(resolvedCustomerId, visitorId, eventType, propertiesJson);
+      const eventId = Number(res.lastInsertRowid);
+
+      const event = db.prepare(`
+        SELECT 
+          e.id, e.customer_id, e.visitor_id, e.event_type, e.properties_json, e.created_at,
+          c.email AS customer_email, c.name AS customer_name
+        FROM events e
+        LEFT JOIN customers c ON e.customer_id = c.id
+        WHERE e.id = ?
+      `).get(eventId);
+
+      return event || {
+        id: eventId,
+        customer_id: resolvedCustomerId,
+        visitor_id: visitorId,
+        event_type: eventType,
+        properties_json: propertiesJson,
+        created_at: new Date().toISOString()
+      };
     },
 
     linkVisitorEventsToCustomer(visitorId, customerId) {
-      db.prepare('UPDATE events SET customer_id = ? WHERE visitor_id = ? AND customer_id IS NULL').run(customerId, visitorId);
+      if (!visitorId || !customerId) return 0;
+      const res = db.prepare('UPDATE events SET customer_id = ? WHERE visitor_id = ? AND customer_id IS NULL').run(customerId, visitorId);
+      return res.changes;
+    },
+
+    getRecentEvents(limit = 50) {
+      return db.prepare(`
+        SELECT 
+          e.id, e.customer_id, e.visitor_id, e.event_type, e.properties_json, e.created_at,
+          c.email AS customer_email, c.name AS customer_name
+        FROM events e
+        LEFT JOIN customers c ON e.customer_id = c.id
+        ORDER BY e.id DESC
+        LIMIT ?
+      `).all(limit);
+    },
+
+    linkVisitorToCartToken(visitorId, cartToken) {
+      if (!visitorId || !cartToken) return;
+      db.prepare(`
+        INSERT INTO visitor_carts (cart_token, visitor_id)
+        VALUES (?, ?)
+        ON CONFLICT(cart_token) DO UPDATE SET visitor_id = excluded.visitor_id
+      `).run(cartToken, visitorId);
+    },
+
+    getVisitorIdByCartToken(cartToken) {
+      if (!cartToken) return null;
+      const row = db.prepare('SELECT visitor_id FROM visitor_carts WHERE cart_token = ?').get(cartToken);
+      return row ? row.visitor_id : null;
     },
 
     getEventsByCustomerId(customerId) {
@@ -198,7 +285,6 @@ export function initDatabase(dbPath = ':memory:') {
     getLastMarketingEmailTime(email) {
       const row = db.prepare('SELECT sent_at FROM email_logs WHERE recipient_email = ? ORDER BY sent_at DESC LIMIT 1').get(email);
       if (!row || !row.sent_at) return null;
-      // Ensure ISO UTC format
       let str = row.sent_at;
       if (!str.endsWith('Z') && !str.includes('+')) {
         str = str.replace(' ', 'T') + 'Z';

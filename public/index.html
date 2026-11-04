@@ -23,9 +23,23 @@
       background-color: var(--background);
       color: var(--foreground);
     }
+    @keyframes highlightPulse {
+      0% { background-color: rgba(245, 158, 11, 0.25); }
+      100% { background-color: transparent; }
+    }
+    @keyframes identifiedPulse {
+      0% { background-color: rgba(16, 185, 129, 0.3); transform: scale(1.01); }
+      100% { background-color: transparent; transform: scale(1); }
+    }
+    .event-entry-new {
+      animation: highlightPulse 2s ease-out;
+    }
+    .event-entry-reconciled {
+      animation: identifiedPulse 2.5s ease-out;
+    }
   </style>
 </head>
-<body class="antialiased p-4 md:p-6 min-h-screen">
+<body class="antialiased p-4 md:p-6 min-h-screen selection:bg-amber-500 selection:text-black">
   <div class="max-w-6xl mx-auto space-y-6">
 
     <!-- Header Section -->
@@ -42,10 +56,14 @@
               Live (Railway)
             </span>
           </h1>
-          <p class="text-sm text-[var(--muted-foreground)]">Behavioral triggers, delay scheduler & email generator for homecartel.net</p>
+          <p class="text-sm text-[var(--muted-foreground)]">Real-time shopper behavior tracking, anonymous identity stitching & behavioral triggers</p>
         </div>
       </div>
       <div class="flex items-center gap-3">
+        <a href="/domain-guide" target="_blank" class="px-3.5 py-2 text-xs font-semibold rounded-lg bg-[var(--secondary)] text-zinc-300 hover:text-white border border-zinc-700 transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          GoDaddy Manual
+        </a>
         <button onclick="refreshData()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90 transition flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           Refresh Feed
@@ -62,7 +80,7 @@
       <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
         <p class="text-xs text-[var(--muted-foreground)] font-medium">Subscribers</p>
         <p id="stat-customers" class="text-2xl font-bold mt-1 text-[var(--foreground)]">0</p>
-        <p class="text-[12px] text-emerald-500 mt-0.5">Subscribed users</p>
+        <p class="text-[12px] text-emerald-500 mt-0.5">Identified shoppers</p>
       </div>
       <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
         <p class="text-xs text-[var(--muted-foreground)] font-medium">Abandoned Carts</p>
@@ -77,19 +95,63 @@
       <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
         <p class="text-xs text-[var(--muted-foreground)] font-medium">Scheduled Queue</p>
         <p id="stat-pending" class="text-2xl font-bold mt-1 text-sky-500">0</p>
-        <p class="text-[12px] text-[var(--muted-foreground)] mt-0.5">Due for send</p>
+        <p class="text-[12px] text-[var(--muted-foreground)] mt-0.5">Due for dispatch</p>
       </div>
       <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm col-span-2 md:col-span-1">
-        <p class="text-xs text-[var(--muted-foreground)] font-medium">Sent Campaigns</p>
-        <p id="stat-sent" class="text-2xl font-bold mt-1 text-violet-500">0</p>
-        <p class="text-[12px] text-[var(--muted-foreground)] mt-0.5">Delivered emails</p>
+        <p class="text-xs text-[var(--muted-foreground)] font-medium">Total Events Logged</p>
+        <p id="stat-events" class="text-2xl font-bold mt-1 text-violet-400">0</p>
+        <p class="text-[12px] text-violet-400 mt-0.5">Real-time clicks & views</p>
+      </div>
+    </div>
+
+    <!-- REAL-TIME SHOPPER ACTIVITY STREAM SECTION -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border)] pb-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              <span>⚡</span> Real-Time Shopper Activity Stream
+            </h2>
+            <span id="sse-badge" class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span id="sse-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
+              <span id="sse-label">LIVE STREAMING</span>
+            </span>
+          </div>
+          <p class="text-xs text-zinc-400 mt-0.5">
+            Logs clicks, page views, duration before leaving, and auto-updates anonymous history when checkout email is entered.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="simulateShopperJourney()" id="btn-sim-journey" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-black shadow transition flex items-center gap-1.5">
+            <span>▶</span>
+            <span>Simulate Full Shopper Journey</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Pills -->
+      <div class="flex flex-wrap items-center gap-2 text-xs">
+        <span class="text-zinc-500 text-[11px] font-medium mr-1">Filter Activity:</span>
+        <button onclick="filterEvents('all')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-800 text-white font-medium border border-zinc-700" data-filter="all">All Activities</button>
+        <button onclick="filterEvents('item_click')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="item_click">Item Clicks</button>
+        <button onclick="filterEvents('page_view')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="page_view">Page Access</button>
+        <button onclick="filterEvents('page_leave')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="page_leave">Page Leaves</button>
+        <button onclick="filterEvents('identified')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="identified">Identified Shoppers</button>
+      </div>
+
+      <!-- Feed Container -->
+      <div id="events-feed" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
+        <div class="p-8 text-center text-zinc-500 text-xs border border-dashed border-zinc-800 rounded-xl">
+          Waiting for live shopper activity... Click "Simulate Full Shopper Journey" above to test live!
+        </div>
       </div>
     </div>
 
     <!-- Interactive Simulation Hub -->
     <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 shadow-sm">
       <h2 class="text-base font-semibold text-[var(--foreground)] mb-1">Interactive Trigger Simulation</h2>
-      <p class="text-xs text-[var(--muted-foreground)] mb-4">Click any trigger below to simulate incoming Shopify and storefront events in real time:</p>
+      <p class="text-xs text-[var(--muted-foreground)] mb-4">Simulate Shopify behavioral webhooks live:</p>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <button onclick="triggerAction('abandoned_cart')" class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-amber-500/50 hover:bg-amber-500/5 text-left transition group">
           <div class="flex items-center justify-between mb-1.5">
@@ -279,12 +341,12 @@
         <h2>Did you leave something behind, Sophia?</h2>
         <p>We saved your favorite lighting fixtures in your cart so you won't lose them.</p>
         <div class="item-card">
-          <div class="item-title">Aura Modern Brass Chandelier &times; 1</div>
-          <div class="item-price">₱18,500.00</div>
+          <div class="item-title">Vanja 5 | Glass Luxe Chandelier &times; 1</div>
+          <div class="item-price">₱16,995.00</div>
         </div>
         <div class="item-card">
-          <div class="item-title">Solomon Nordic Pendant Light &times; 2</div>
-          <div class="item-price">₱8,400.00</div>
+          <div class="item-title">Aarhus Modern Chandelier &times; 1</div>
+          <div class="item-price">₱25,995.00</div>
         </div>
         <p style="margin-top: 16px;">Ready to complete your space? Finish checking out now and we'll prepare your fixtures for careful delivery.</p>
         <div style="text-align: center;">
@@ -295,12 +357,6 @@
       welcome: getBaseLayout('Welcome to HomeCartel', `
         <h2>Welcome to HomeCartel, Maria!</h2>
         <p>Thank you for subscribing to our community. We believe great lighting elevates any interior from ordinary to extraordinary.</p>
-        <p>Explore our signature collections:</p>
-        <ul style="padding-left: 20px; margin: 12px 0;">
-          <li><strong>Pendant Lights:</strong> Perfect for kitchen islands, dining tables, and accent corners.</li>
-          <li><strong>Statement Chandeliers:</strong> Centerpieces designed for high ceilings and open living areas.</li>
-          <li><strong>Architectural Wall Sconces:</strong> Ambient layers of warm glow for hallways and bedframes.</li>
-        </ul>
         <p>Use code <strong>LIGHT10</strong> for 10% off your first lighting order.</p>
         <div style="text-align: center;">
           <a href="https://homecartel.net/collections/all" class="btn">Explore All Collections</a>
@@ -308,15 +364,8 @@
       `),
 
       post_purchase: getBaseLayout('Order Follow-up', `
-        <h2>How is your recent order #1088, Joshua?</h2>
+        <h2>How is your recent order, Joshua?</h2>
         <p>We hope your new HomeCartel lighting fixtures arrived safely and look stunning in your home.</p>
-        <div style="background: #faf7f2; border-left: 3px solid #c59b27; padding: 12px; margin: 14px 0; font-size: 13px;">
-          <strong>Installation & Care Tips:</strong><br>
-          • Always turn off the circuit breaker before installing any fixture.<br>
-          • For best ambiance, we recommend 2700K or 3000K warm white LED bulbs.<br>
-          • Clean brass surfaces with a dry microfiber cloth; avoid chemical cleaners.
-        </div>
-        <p>Would you take a moment to share a photo or review of your installed fixture?</p>
         <div style="text-align: center;">
           <a href="https://homecartel.net" class="btn">Leave a Review</a>
         </div>
@@ -324,12 +373,7 @@
 
       browse_abandonment: getBaseLayout('Browse Follow-up', `
         <h2>Still thinking about the Nordic Glass Chandelier, Claire?</h2>
-        <p>We noticed you were exploring our fixtures recently. Statement lighting requires thought, and we're here to help you get the sizing and luminescence right.</p>
-        <div class="item-card">
-          <div class="item-title">Nordic Glass Cluster Chandelier</div>
-          <div class="item-price">₱12,500.00</div>
-        </div>
-        <p>Need advice on hanging height or bulb wattage? Reply to this email to speak directly with our lighting specialists in Quezon City.</p>
+        <p>We noticed you were exploring our fixtures recently.</p>
         <div style="text-align: center;">
           <a href="https://homecartel.net" class="btn">Take Another Look</a>
         </div>
@@ -337,7 +381,6 @@
 
       winback: getBaseLayout('New Arrivals', `
         <h2>We miss you, Angela!</h2>
-        <p>It's been a while since your last visit to HomeCartel. We've added new chandeliers, minimalist wall sconces, and outdoor architectural fixtures to our lineup.</p>
         <p>Discover what's new in Philippine home design and find inspiration for your next room renovation.</p>
         <div style="text-align: center;">
           <a href="https://homecartel.net/collections/new-arrivals" class="btn">View New Arrivals</a>
@@ -359,59 +402,308 @@
       frame.srcdoc = html;
     }
 
-    const localState = {
-      customers: 0,
-      abandoned: 0,
-      recovered: 0,
-      pending: 0,
-      sent: 0,
-      jobs: [],
-      logs: []
-    };
+    // --- State & Live Event Handling ---
+    let liveEvents = [];
+    let currentFilter = 'all';
 
-    function renderLocalState() {
-      document.getElementById('stat-customers').textContent = localState.customers;
-      document.getElementById('stat-abandoned').textContent = localState.abandoned;
-      document.getElementById('stat-recovered').textContent = localState.recovered;
-      document.getElementById('stat-pending').textContent = localState.pending;
-      document.getElementById('stat-sent').textContent = localState.sent;
+    function formatDateTime(isoString) {
+      if (!isoString) return '';
+      const d = new Date(isoString);
+      return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' +
+             d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
 
-      const jobsTbody = document.getElementById('jobs-tbody');
-      if (localState.jobs && localState.jobs.length > 0) {
-        jobsTbody.innerHTML = localState.jobs.map(j => {
-          const statusColors = {
-            pending: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-            sent: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-            cancelled: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'
-          };
-          const badge = statusColors[j.status] || 'bg-zinc-500/10 text-zinc-400';
-          return `
-            <tr class="hover:bg-[var(--secondary)]/40 transition">
-              <td class="py-2.5 px-4 font-semibold">${j.flow}</td>
-              <td class="py-2.5 px-4 text-[var(--muted-foreground)]">${j.recipient}</td>
-              <td class="py-2.5 px-4 text-[var(--muted-foreground)]">${j.time}</td>
-              <td class="py-2.5 px-4 text-right">
-                <span class="inline-flex px-2 py-0.5 rounded text-[11px] font-medium border ${badge}">${j.status}</span>
-              </td>
-            </tr>
+    function timeAgo(isoString) {
+      if (!isoString) return '';
+      const secs = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
+      if (secs < 5) return 'just now';
+      if (secs < 60) return `${secs}s ago`;
+      const mins = Math.floor(secs / 60);
+      if (mins < 60) return `${mins}m ago`;
+      const hrs = Math.floor(mins / 60);
+      return `${hrs}h ago`;
+    }
+
+    function renderEventsFeed() {
+      const container = document.getElementById('events-feed');
+      const filtered = liveEvents.filter(ev => {
+        if (currentFilter === 'all') return true;
+        if (currentFilter === 'item_click') return ev.eventType === 'item_click';
+        if (currentFilter === 'page_view') return ev.eventType === 'page_view';
+        if (currentFilter === 'page_leave') return ev.eventType === 'page_leave';
+        if (currentFilter === 'identified') return ev.isIdentified;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-zinc-500 text-xs border border-dashed border-zinc-800 rounded-xl">
+            No events matching the "${currentFilter}" filter.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(ev => {
+        const props = ev.properties || {};
+        const isId = ev.isIdentified;
+        const identityHtml = isId
+          ? `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+               <span>👤</span>
+               <span>${ev.customerEmail}</span>
+               <span class="text-[9px] bg-emerald-500/20 px-1.5 py-0.2 rounded font-normal">Identified</span>
+             </span>`
+          : `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-mono text-zinc-400 bg-zinc-800 border border-zinc-700">
+               <span>🕵️</span>
+               <span>Anonymous (${ev.visitorId || 'visitor'})</span>
+             </span>`;
+
+        let actionIcon = '⚡';
+        let actionBadge = 'EVENT';
+        let badgeColor = 'bg-zinc-800 text-zinc-300 border-zinc-700';
+        let summaryHtml = '';
+
+        if (ev.eventType === 'item_click') {
+          actionIcon = '🟡';
+          actionBadge = 'ITEM CLICK';
+          badgeColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+          summaryHtml = `
+            <div>
+              <span class="text-zinc-200 font-semibold">Clicked Item:</span>
+              <span class="text-amber-300 font-medium">${props.title || 'Product'}</span>
+              ${props.price ? `<span class="ml-1 text-xs text-emerald-400 font-bold">(${props.price})</span>` : ''}
+              ${props.url ? `<div class="text-[11px] text-zinc-500 font-mono truncate mt-0.5">${props.url}</div>` : ''}
+            </div>
           `;
-        }).join('');
-      } else {
-        jobsTbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-[var(--muted-foreground)]">Queue is empty.</td></tr>';
-      }
+        } else if (ev.eventType === 'page_view') {
+          actionIcon = '🟢';
+          actionBadge = 'PAGE ACCESS';
+          badgeColor = 'bg-sky-500/10 text-sky-400 border-sky-500/20';
+          summaryHtml = `
+            <div>
+              <span class="text-zinc-200 font-semibold">Accessed Page:</span>
+              <span class="text-zinc-300 font-mono text-xs">${props.path || props.url || '/'}</span>
+              ${props.title ? `<div class="text-[11px] text-zinc-400 mt-0.5">"${props.title}"</div>` : ''}
+            </div>
+          `;
+        } else if (ev.eventType === 'page_leave') {
+          actionIcon = '🚪';
+          actionBadge = 'PAGE LEAVE';
+          badgeColor = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+          summaryHtml = `
+            <div>
+              <span class="text-zinc-200 font-semibold">Left Page:</span>
+              <span class="text-zinc-300 font-mono text-xs">${props.path || props.url || '/'}</span>
+              <div class="text-[11px] text-zinc-400 mt-0.5">
+                Duration: <strong class="text-zinc-200">${props.duration_seconds || 0}s</strong>
+                ${props.max_scroll_percent ? ` &bull; Scrolled: <strong class="text-zinc-200">${props.max_scroll_percent}%</strong>` : ''}
+              </div>
+            </div>
+          `;
+        } else if (ev.eventType === 'add_to_cart' || ev.eventType === 'add_to_cart_click') {
+          actionIcon = '🛒';
+          actionBadge = 'ADD TO CART';
+          badgeColor = 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+          summaryHtml = `
+            <div>
+              <span class="text-zinc-200 font-semibold">Added Item to Cart:</span>
+              <span class="text-orange-300 font-medium">${props.title || 'Fixture'}</span>
+              ${props.price ? `<span class="ml-1 text-xs text-emerald-400 font-bold">(${props.price})</span>` : ''}
+            </div>
+          `;
+        } else if (ev.eventType === 'identify' || ev.eventType === 'checkout_identify') {
+          actionIcon = '🎉';
+          actionBadge = 'IDENTITY STITCHED';
+          badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+          summaryHtml = `
+            <div class="p-2 rounded bg-emerald-950/40 border border-emerald-800/40">
+              <span class="text-emerald-300 font-bold">Shopper entered checkout email!</span>
+              <div class="text-[11px] text-zinc-300 mt-0.5">
+                Stitched <strong class="text-amber-400">${props.reconciledEvents || 0} past anonymous actions</strong> to <strong class="text-emerald-400">${ev.customerEmail}</strong>.
+              </div>
+            </div>
+          `;
+        } else if (ev.eventType === 'checkout_update') {
+          actionIcon = '💳';
+          actionBadge = 'CHECKOUT';
+          badgeColor = 'bg-violet-500/10 text-violet-400 border-violet-500/20';
+          summaryHtml = `
+            <div>
+              <span class="text-zinc-200 font-semibold">Checkout In Progress:</span>
+              <span class="text-violet-300 font-mono text-xs">Checkout #${props.checkoutId || ''}</span>
+              ${props.subtotal ? `<span class="ml-1 text-xs text-emerald-400 font-bold">(₱${props.subtotal})</span>` : ''}
+            </div>
+          `;
+        } else {
+          actionIcon = '⚡';
+          actionBadge = ev.eventType.toUpperCase();
+          summaryHtml = `<div class="text-zinc-300 font-mono text-xs">${JSON.stringify(props)}</div>`;
+        }
 
-      const logsTbody = document.getElementById('logs-tbody');
-      if (localState.logs && localState.logs.length > 0) {
-        logsTbody.innerHTML = localState.logs.map(l => `
-          <tr class="hover:bg-[var(--secondary)]/40 transition">
-            <td class="py-2 px-4 font-medium">${l.recipient}</td>
-            <td class="py-2 px-4 text-emerald-500 font-semibold">${l.flow}</td>
-            <td class="py-2 px-4 text-right text-[var(--muted-foreground)]">${l.time}</td>
-          </tr>
-        `).join('');
-      } else {
-        logsTbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-[var(--muted-foreground)]">No emails dispatched yet. Click "Run Scheduler Cycle" above!</td></tr>';
+        return `
+          <div class="p-3 rounded-xl bg-zinc-950 border border-zinc-800/80 hover:border-zinc-700 transition space-y-2 event-card" data-visitor="${ev.visitorId}">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeColor} flex items-center gap-1">
+                  <span>${actionIcon}</span>
+                  <span>${actionBadge}</span>
+                </span>
+                <span class="identity-badge-container">${identityHtml}</span>
+              </div>
+              <div class="text-[11px] text-zinc-400 flex items-center gap-1.5 shrink-0">
+                <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>${formatDateTime(ev.createdAt)}</span>
+                <span class="text-zinc-400">(${timeAgo(ev.createdAt)})</span>
+              </div>
+            </div>
+            <div class="text-xs pt-0.5">
+              ${summaryHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterEvents(category) {
+      currentFilter = category;
+      document.querySelectorAll('.event-filter-btn').forEach(btn => {
+        if (btn.getAttribute('data-filter') === category) {
+          btn.className = 'event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-800 text-white font-medium border border-zinc-700';
+        } else {
+          btn.className = 'event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800';
+        }
+      });
+      renderEventsFeed();
+    }
+
+    // --- Connect Server-Sent Events (SSE) Stream ---
+    function connectSse() {
+      const badge = document.getElementById('sse-badge');
+      const dot = document.getElementById('sse-dot');
+      const label = document.getElementById('sse-label');
+
+      try {
+        const es = new EventSource('/api/admin/events/stream');
+
+        es.onopen = function() {
+          badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+          dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse';
+          label.textContent = 'LIVE STREAMING';
+        };
+
+        es.onmessage = function(event) {
+          try {
+            const data = JSON.parse(event.data);
+
+            if (data.type === 'identify') {
+              // Reconcile all existing entries for this visitorId on-screen immediately!
+              const targetVid = data.visitorId;
+              const newEmail = data.email;
+              const newName = data.name;
+
+              liveEvents.forEach(e => {
+                if (e.visitorId === targetVid) {
+                  e.isIdentified = true;
+                  e.customerEmail = newEmail;
+                  e.customerName = newName;
+                }
+              });
+
+              // Add the identify event if present
+              if (data.event) {
+                liveEvents.unshift(data.event);
+              }
+              renderEventsFeed();
+              triggerHighlightReconciled(targetVid);
+              refreshOverviewCounts();
+              return;
+            }
+
+            if (data.event) {
+              liveEvents.unshift(data.event);
+              if (liveEvents.length > 200) liveEvents.pop();
+              renderEventsFeed();
+              triggerHighlightTop();
+              refreshOverviewCounts();
+            }
+          } catch (e) {}
+        };
+
+        es.onerror = function() {
+          badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20';
+          dot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5';
+          label.textContent = 'RECONNECTING';
+        };
+      } catch (e) {
+        console.warn('SSE error:', e);
       }
+    }
+
+    function triggerHighlightTop() {
+      const first = document.querySelector('#events-feed .event-card');
+      if (first) {
+        first.classList.add('event-entry-new');
+        setTimeout(() => first.classList.remove('event-entry-new'), 2000);
+      }
+    }
+
+    function triggerHighlightReconciled(vid) {
+      document.querySelectorAll(`[data-visitor="${vid}"]`).forEach(el => {
+        el.classList.add('event-entry-reconciled');
+        setTimeout(() => el.classList.remove('event-entry-reconciled'), 2500);
+      });
+    }
+
+    async function fetchRecentEvents() {
+      try {
+        const res = await fetch('/api/admin/events?limit=60');
+        if (res.ok) {
+          const data = await res.json();
+          liveEvents = data.events || [];
+          document.getElementById('stat-events').textContent = data.count || liveEvents.length;
+          renderEventsFeed();
+        }
+      } catch (e) {}
+    }
+
+    // --- Interactive Shopper Journey Simulation ---
+    async function simulateShopperJourney() {
+      const btn = document.getElementById('btn-sim-journey');
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳</span><span>Simulating Live Shopper Journey...</span>';
+
+      try {
+        const res = await fetch('/api/admin/simulate-shopper-journey', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        const data = await res.json();
+        if (data.success) {
+          await fetchRecentEvents();
+          await refreshData();
+        }
+      } catch (e) {
+        console.warn('Simulation error:', e);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>▶</span><span>Simulate Full Shopper Journey</span>';
+      }
+    }
+
+    // --- Overview Refresh & Actions ---
+    async function refreshOverviewCounts() {
+      try {
+        const res = await fetch('/api/admin/overview');
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('stat-customers').textContent = data.counts?.customers ?? 0;
+          document.getElementById('stat-abandoned').textContent = data.counts?.abandonedCarts ?? 0;
+          document.getElementById('stat-recovered').textContent = data.counts?.recoveredCarts ?? 0;
+          document.getElementById('stat-pending').textContent = data.counts?.pendingJobs ?? 0;
+          document.getElementById('stat-events').textContent = data.counts?.totalEvents ?? liveEvents.length;
+        }
+      } catch (e) {}
     }
 
     async function triggerAction(action) {
@@ -433,7 +725,6 @@
       } catch (e) {
         console.warn('Simulate call:', e);
       }
-
       await refreshData();
     }
 
@@ -476,46 +767,68 @@
     }
 
     async function refreshData() {
+      await fetchRecentEvents();
       try {
         const res = await fetch('/api/admin/overview');
         if (res.ok) {
           const data = await res.json();
-          localState.customers = data.counts?.customers ?? 0;
-          localState.abandoned = data.counts?.abandonedCarts ?? 0;
-          localState.recovered = data.counts?.recoveredCarts ?? 0;
-          localState.pending = data.counts?.pendingJobs ?? 0;
-          localState.sent = data.counts?.sentEmails ?? 0;
+          document.getElementById('stat-customers').textContent = data.counts?.customers ?? 0;
+          document.getElementById('stat-abandoned').textContent = data.counts?.abandonedCarts ?? 0;
+          document.getElementById('stat-recovered').textContent = data.counts?.recoveredCarts ?? 0;
+          document.getElementById('stat-pending').textContent = data.counts?.pendingJobs ?? 0;
+          document.getElementById('stat-events').textContent = data.counts?.totalEvents ?? liveEvents.length;
 
+          const jobsTbody = document.getElementById('jobs-tbody');
           if (data.jobs && data.jobs.length > 0) {
-            localState.jobs = data.jobs.map(j => ({
-              flow: j.flow_type,
-              recipient: j.recipient_email,
-              time: new Date(j.execute_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              status: j.status
-            }));
+            jobsTbody.innerHTML = data.jobs.map(j => {
+              const statusColors = {
+                pending: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+                sent: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+                cancelled: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'
+              };
+              const badge = statusColors[j.status] || 'bg-zinc-500/10 text-zinc-400';
+              return `
+                <tr class="hover:bg-[var(--secondary)]/40 transition">
+                  <td class="py-2.5 px-4 font-semibold">${j.flow_type}</td>
+                  <td class="py-2.5 px-4 text-[var(--muted-foreground)]">${j.recipient_email}</td>
+                  <td class="py-2.5 px-4 text-[var(--muted-foreground)]">${new Date(j.execute_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                  <td class="py-2.5 px-4 text-right">
+                    <span class="inline-flex px-2 py-0.5 rounded text-[11px] font-medium border ${badge}">${j.status}</span>
+                  </td>
+                </tr>
+              `;
+            }).join('');
           } else {
-            localState.jobs = [];
+            jobsTbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-[var(--muted-foreground)]">Queue is empty.</td></tr>';
           }
 
+          const logsTbody = document.getElementById('logs-tbody');
           if (data.logs && data.logs.length > 0) {
-            localState.logs = data.logs.map(l => ({
-              recipient: l.recipient_email,
-              flow: l.flow_type,
-              time: new Date(l.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }));
+            logsTbody.innerHTML = data.logs.map(l => `
+              <tr class="hover:bg-[var(--secondary)]/40 transition">
+                <td class="py-2 px-4 font-medium">${l.recipient_email}</td>
+                <td class="py-2 px-4 text-emerald-500 font-semibold">${l.flow_name}</td>
+                <td class="py-2 px-4 text-right text-[var(--muted-foreground)]">${new Date(l.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+              </tr>
+            `).join('');
           } else {
-            localState.logs = [];
+            logsTbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-[var(--muted-foreground)]">No emails dispatched yet. Click "Run Scheduler Cycle" above!</td></tr>';
           }
         }
       } catch (e) {
         console.warn('Overview fetch:', e);
       }
-      renderLocalState();
     }
 
     // Initialize preview immediately upon load
     updatePreview('abandoned_cart');
     refreshData();
+    connectSse();
+
+    // Fallback polling every 5s if SSE disconnects
+    setInterval(() => {
+      fetchRecentEvents();
+    }, 5000);
   </script>
 </body>
 </html>

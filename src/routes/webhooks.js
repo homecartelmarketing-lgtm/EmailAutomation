@@ -1,4 +1,5 @@
 import { verifyShopifyHmac } from '../shopify/hmac.js';
+import { eventBus } from '../events/bus.js';
 
 export const recentWebhookLogs = [];
 
@@ -47,11 +48,21 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     console.log(`[Shopify Webhook] Verified incoming ${req.url} (topic: ${topic})`);
   });
 
-  // 1. Checkouts & Carts (Abandoned Cart & Checkout detection)
+  // 1. Checkouts & Carts (Abandoned Cart & Checkout detection + Identity Reconciliation)
   const handleCartOrCheckout = async (req, reply) => {
     const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const checkoutId = String(data.id || data.token || Date.now());
     const email = data.email || (data.customer ? data.customer.email : null);
+
+    // Detect anonymous visitor ID from note attributes or cart token
+    let visitorId = null;
+    if (Array.isArray(data.note_attributes)) {
+      const match = data.note_attributes.find(a => a.name === '_hc_vid' || a.name === 'hc_vid');
+      if (match?.value) visitorId = match.value;
+    }
+    if (!visitorId && data.cart_token) {
+      visitorId = db.getVisitorIdByCartToken(data.cart_token);
+    }
 
     if (!email) {
       console.log(`[Shopify Webhook] Checkout ${checkoutId} received but has no email yet.`);
@@ -59,18 +70,92 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     }
     console.log(`[Shopify Webhook] Scheduling abandoned cart for ${email} (checkout: ${checkoutId})`);
 
+    const cleanEmail = String(email).trim().toLowerCase();
+    const customerName = data.customer ? `${data.customer.first_name || ''} ${data.customer.last_name || ''}`.trim() : '';
+
     // Upsert customer record
-    db.upsertCustomer({ email, name: data.customer ? `${data.customer.first_name || ''} ${data.customer.last_name || ''}`.trim() : '' });
+    const customerId = db.upsertCustomer({ email: cleanEmail, name: customerName });
+
+    // If an anonymous visitor was associated with this checkout, stitch and reconcile all past events!
+    if (visitorId) {
+      const reconciled = db.linkVisitorEventsToCustomer(visitorId, customerId);
+      const idEvent = db.recordEvent({
+        customerId,
+        visitorId,
+        eventType: 'checkout_identify',
+        propertiesJson: JSON.stringify({
+          email: cleanEmail,
+          checkoutId,
+          reconciledEvents: reconciled,
+          timestamp: new Date().toISOString()
+        })
+      });
+
+      // Broadcast live reconciliation event
+      eventBus.emit('event', {
+        type: 'identify',
+        visitorId,
+        customerId,
+        email: cleanEmail,
+        reconciledEvents: reconciled,
+        event: {
+          id: idEvent.id,
+          visitorId,
+          customerId,
+          customerEmail: cleanEmail,
+          customerName,
+          eventType: 'checkout_identify',
+          properties: { email: cleanEmail, checkoutId, reconciledEvents: reconciled },
+          createdAt: idEvent.created_at,
+          isIdentified: true
+        }
+      });
+    }
 
     // Save cart state
     db.upsertCart({
       checkoutId,
-      email,
+      email: cleanEmail,
       cartToken: data.cart_token || data.token || '',
       itemsJson: JSON.stringify(data.line_items || []),
       subtotal: data.total_price || data.subtotal_price || '0.00',
       recoveryUrl: data.abandoned_checkout_url || '',
       status: 'abandoned'
+    });
+
+    // Record checkout activity event in live feed
+    const chkEvent = db.recordEvent({
+      customerId,
+      visitorId,
+      eventType: 'checkout_update',
+      propertiesJson: JSON.stringify({
+        checkoutId,
+        email: cleanEmail,
+        items: (data.line_items || []).map(i => ({ title: i.title, price: i.price, quantity: i.quantity })),
+        subtotal: data.total_price || data.subtotal_price || '0.00',
+        recoveryUrl: data.abandoned_checkout_url || '',
+        timestamp: new Date().toISOString()
+      })
+    });
+
+    eventBus.emit('event', {
+      type: 'event',
+      event: {
+        id: chkEvent.id,
+        visitorId,
+        customerId,
+        customerEmail: cleanEmail,
+        customerName,
+        eventType: 'checkout_update',
+        properties: {
+          checkoutId,
+          email: cleanEmail,
+          items: data.line_items || [],
+          subtotal: data.total_price || '0.00'
+        },
+        createdAt: chkEvent.created_at,
+        isIdentified: true
+      }
     });
 
     // Cancel any prior pending abandoned cart job for this specific checkout to avoid duplicate spam
@@ -80,7 +165,7 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     const executeAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
     db.scheduleJob({
       flowType: 'abandoned_cart',
-      recipientEmail: email,
+      recipientEmail: cleanEmail,
       contextJson: JSON.stringify({
         checkoutId,
         recoveryUrl: data.abandoned_checkout_url,
@@ -106,11 +191,35 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     }
 
     if (email) {
-      // Cancel any pending abandoned cart reminders for this buyer
-      db.cancelPendingJobsByEmail(email, 'abandoned_cart');
-      db.upsertCustomer({
-        email,
+      const cleanEmail = String(email).trim().toLowerCase();
+      db.cancelPendingJobsByEmail(cleanEmail, 'abandoned_cart');
+      const customerId = db.upsertCustomer({
+        email: cleanEmail,
         name: data.customer ? `${data.customer.first_name || ''} ${data.customer.last_name || ''}`.trim() : ''
+      });
+
+      const orderEvent = db.recordEvent({
+        customerId,
+        eventType: 'order_completed',
+        propertiesJson: JSON.stringify({
+          orderId: data.id,
+          orderNumber: data.order_number,
+          total: data.total_price,
+          timestamp: new Date().toISOString()
+        })
+      });
+
+      eventBus.emit('event', {
+        type: 'event',
+        event: {
+          id: orderEvent.id,
+          customerId,
+          customerEmail: cleanEmail,
+          eventType: 'order_completed',
+          properties: { orderId: data.id, total: data.total_price },
+          createdAt: orderEvent.created_at,
+          isIdentified: true
+        }
       });
     }
 
@@ -123,10 +232,11 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     const email = data.email || (data.customer ? data.customer.email : null);
 
     if (email) {
+      const cleanEmail = String(email).trim().toLowerCase();
       const executeAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
       db.scheduleJob({
         flowType: 'post_purchase',
-        recipientEmail: email,
+        recipientEmail: cleanEmail,
         contextJson: JSON.stringify({ orderId: data.order_id, fulfillmentId: data.id }),
         executeAt
       });
@@ -141,13 +251,20 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     const email = data.email;
 
     if (email) {
+      const cleanEmail = String(email).trim().toLowerCase();
       const name = `${data.first_name || ''} ${data.last_name || ''}`.trim();
-      db.upsertCustomer({ email, name });
+      const customerId = db.upsertCustomer({ email: cleanEmail, name });
+
+      db.recordEvent({
+        customerId,
+        eventType: 'customer_created',
+        propertiesJson: JSON.stringify({ email: cleanEmail, name, timestamp: new Date().toISOString() })
+      });
 
       // Immediate welcome email
       db.scheduleJob({
         flowType: 'welcome',
-        recipientEmail: email,
+        recipientEmail: cleanEmail,
         contextJson: JSON.stringify({ name }),
         executeAt: new Date().toISOString()
       });
