@@ -3,32 +3,62 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HomeCartel Email Automation Console</title>
+  <title>HomeCartel Automation Console</title>
+  <!-- Google Fonts: Poppins (Dabang Reference Design) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+          },
+          colors: {
+            dabang: {
+              primary: '#5D5FEF',
+              primaryHover: '#4A4CDA',
+              navy: '#151D48',
+              slate: '#425166',
+              muted: '#737791',
+              border: '#EFF1F5',
+              canvas: '#F8F9FA',
+              pink: '#FFE2E5',
+              pinkIcon: '#FA5A7D',
+              orange: '#FFF4DE',
+              orangeIcon: '#FF947A',
+              green: '#DCFCE7',
+              greenIcon: '#3CD856',
+              purple: '#F3E8FF',
+              purpleIcon: '#BF83FF',
+            }
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    :root {
-      --background: #09090b;
-      --foreground: #f4f4f5;
-      --card: #18181b;
-      --card-foreground: #f4f4f5;
-      --border: #27272a;
-      --muted: #27272a;
-      --muted-foreground: #a1a1aa;
-      --secondary: #27272a;
-      --secondary-foreground: #fafafa;
-      --accent: #27272a;
-      --accent-foreground: #fafafa;
+    * {
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     body {
-      background-color: var(--background);
-      color: var(--foreground);
+      background-color: #F8F9FA;
+      color: #151D48;
+    }
+    .card-shadow {
+      box-shadow: 0 4px 24px rgba(21, 29, 72, 0.04);
+    }
+    .card-shadow-hover:hover {
+      box-shadow: 0 8px 30px rgba(21, 29, 72, 0.08);
     }
     @keyframes highlightPulse {
-      0% { background-color: rgba(245, 158, 11, 0.25); }
+      0% { background-color: rgba(93, 95, 239, 0.15); }
       100% { background-color: transparent; }
     }
     @keyframes identifiedPulse {
-      0% { background-color: rgba(16, 185, 129, 0.3); transform: scale(1.01); }
+      0% { background-color: rgba(60, 216, 86, 0.2); transform: scale(1.01); }
       100% { background-color: transparent; transform: scale(1); }
     }
     .event-entry-new {
@@ -37,317 +67,607 @@
     .event-entry-reconciled {
       animation: identifiedPulse 2.5s ease-out;
     }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1F3F5;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D1D5DB;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9CA3AF;
+    }
   </style>
 </head>
-<body class="antialiased p-4 md:p-6 min-h-screen selection:bg-amber-500 selection:text-black">
-  <div class="max-w-6xl mx-auto space-y-6">
+<body class="antialiased min-h-screen flex selection:bg-[#5D5FEF] selection:text-white">
 
-    <!-- Header Section -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm">
-      <div class="flex items-center space-x-4">
-        <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 font-bold text-xl">
-          HC
+  <!-- ========================================================================= -->
+  <!-- LEFT SIDEBAR NAVIGATION (DABANG / FIGMA REFERENCE) -->
+  <!-- ========================================================================= -->
+  <aside id="sidebar" class="hidden lg:flex flex-col w-72 bg-white border-r border-dabang-border min-h-screen sticky top-0 p-6 z-30 justify-between shrink-0">
+    <div class="space-y-6">
+      <!-- Brand Logo & Header -->
+      <div class="flex items-center gap-3 px-2">
+        <div class="w-11 h-11 rounded-2xl bg-dabang-primary text-white flex items-center justify-center font-bold text-xl shadow-md shadow-dabang-primary/30 shrink-0">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
         </div>
         <div>
-          <h1 class="text-xl font-bold tracking-tight text-[var(--foreground)] flex items-center gap-2">
-            HomeCartel Automation Console
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5"></span>
-              Manual Review Mode Active
-            </span>
-          </h1>
-          <p class="text-sm text-[var(--muted-foreground)]">Storefront behavioral tracking active &bull; Auto-send paused &bull; Philippine Time (PHT, UTC+8)</p>
+          <h1 class="text-xl font-bold tracking-tight text-dabang-navy leading-tight">HomeCartel</h1>
+          <p class="text-[11px] font-medium text-dabang-muted">Automation Console</p>
         </div>
       </div>
+
+      <!-- Navigation Links -->
+      <nav class="space-y-1.5 pt-2">
+        <a href="#overview-section" class="flex items-center gap-3.5 px-4 py-3 rounded-2xl bg-dabang-primary text-white font-semibold text-xs shadow-sm transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="#staged-flows-section" class="flex items-center justify-between px-4 py-3 rounded-2xl text-dabang-muted hover:text-dabang-navy hover:bg-[#F4F5FA] font-medium text-xs transition">
+          <div class="flex items-center gap-3.5">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            <span>Staged Flows</span>
+          </div>
+          <span id="nav-staged-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">0</span>
+        </a>
+
+        <a href="#shopper-monitor-section" class="flex items-center justify-between px-4 py-3 rounded-2xl text-dabang-muted hover:text-dabang-navy hover:bg-[#F4F5FA] font-medium text-xs transition">
+          <div class="flex items-center gap-3.5">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            <span>Live Activity</span>
+          </div>
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        </a>
+
+        <a href="#campaign-studio-section" class="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-dabang-muted hover:text-dabang-navy hover:bg-[#F4F5FA] font-medium text-xs transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <span>Test Email Send</span>
+        </a>
+
+        <a href="#logs-section" class="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-dabang-muted hover:text-dabang-navy hover:bg-[#F4F5FA] font-medium text-xs transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Delivered Logs</span>
+        </a>
+
+        <a href="#preview-section" class="flex items-center gap-3.5 px-4 py-3 rounded-2xl text-dabang-muted hover:text-dabang-navy hover:bg-[#F4F5FA] font-medium text-xs transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Template Studio</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Bottom Promo / Storefront Card (Dabang Reference Card) -->
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-dabang-primary to-[#7B7DF7] p-5 text-white shadow-lg shadow-dabang-primary/20 space-y-3">
+      <!-- Background decorative circles -->
+      <div class="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10 blur-[1px]"></div>
+      <div class="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-white/10 blur-[1px]"></div>
+
+      <div class="relative z-10 space-y-1">
+        <div class="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center font-bold text-sm">
+          💡
+        </div>
+        <h4 class="font-bold text-sm pt-1">HomeCartel Live</h4>
+        <p class="text-[11px] text-white/80 leading-relaxed">Shopify theme connected with real-time visitor tracking.</p>
+      </div>
+
+      <a href="https://homecartel.net" target="_blank" rel="noopener noreferrer" class="relative z-10 block w-full text-center py-2 px-3 rounded-xl bg-white text-dabang-primary text-xs font-bold shadow hover:bg-white/90 transition">
+        Open Storefront ↗
+      </a>
+    </div>
+  </aside>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN CONTENT AREA -->
+  <!-- ========================================================================= -->
+  <main class="flex-1 flex flex-col min-w-0 min-h-screen">
+
+    <!-- Top App Bar / Header (Dabang Reference Header) -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-20 border-b border-dabang-border px-4 md:px-8 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div class="flex items-center gap-3">
-        <button onclick="refreshData()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90 transition flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-          Refresh Feed
+        <!-- Mobile Sidebar Toggle -->
+        <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-xl border border-dabang-border text-dabang-navy hover:bg-slate-100 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
-      </div>
-    </div>
-
-    <!-- Live Stat Metric Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
-        <p class="text-xs text-[var(--muted-foreground)] font-medium">Subscribers</p>
-        <p id="stat-customers" class="text-2xl font-bold mt-1 text-[var(--foreground)]">0</p>
-        <p class="text-[12px] text-emerald-500 mt-0.5">Identified shoppers</p>
-      </div>
-      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
-        <p class="text-xs text-[var(--muted-foreground)] font-medium">Staged for Manual Send</p>
-        <p id="stat-pending" class="text-2xl font-bold mt-1 text-amber-400">0</p>
-        <p class="text-[12px] text-amber-400/80 mt-0.5">Clients awaiting click</p>
-      </div>
-      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
-        <p class="text-xs text-[var(--muted-foreground)] font-medium">Abandoned Carts</p>
-        <p id="stat-abandoned" class="text-2xl font-bold mt-1 text-zinc-300">0</p>
-        <p class="text-[12px] text-[var(--muted-foreground)] mt-0.5">Captured carts</p>
-      </div>
-      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
-        <p class="text-xs text-[var(--muted-foreground)] font-medium">Recovered Orders</p>
-        <p id="stat-recovered" class="text-2xl font-bold mt-1 text-emerald-500">0</p>
-        <p class="text-[12px] text-[var(--muted-foreground)] mt-0.5">Purchased after cart</p>
-      </div>
-      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm col-span-2 md:col-span-1">
-        <p class="text-xs text-[var(--muted-foreground)] font-medium">Delivered Emails</p>
-        <p id="stat-sent" class="text-2xl font-bold mt-1 text-violet-400">0</p>
-        <p class="text-[12px] text-violet-400 mt-0.5">Manually dispatched</p>
-      </div>
-    </div>
-
-    <!-- NOTIFICATION ALERT -->
-    <div id="action-notification" class="hidden p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 font-semibold flex items-center justify-between">
-      <span id="action-notification-text">Message</span>
-      <button onclick="document.getElementById('action-notification').classList.add('hidden')" class="text-emerald-400 hover:text-white">✕</button>
-    </div>
-
-    <!-- ========================================================================= -->
-    <!-- SECTION 1: STAGED CLIENT BEHAVIORAL FLOWS (MANUAL SEND CONTROL) -->
-    <!-- ========================================================================= -->
-    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border)] pb-4">
         <div>
-          <div class="flex items-center gap-2">
-            <h2 class="text-base font-bold text-white flex items-center gap-2">
-              <span>📋</span> Staged Client Flows &amp; Scheduled Delay Queue (Manual Send Control)
-            </h2>
-            <span id="staged-count-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-              0 Clients Staged
-            </span>
+          <h2 class="text-xl md:text-2xl font-bold text-dabang-navy tracking-tight">Dashboard</h2>
+          <p class="text-xs text-dabang-muted">HomeCartel Email Automation Console &bull; Scheduled Delay Queue</p>
+        </div>
+      </div>
+
+      <!-- Right Header Actions (Search, Timezone, Status, Profile) -->
+      <div class="flex items-center gap-3 flex-wrap">
+        <!-- Global Search Bar -->
+        <div class="relative w-full sm:w-64">
+          <input id="global-search-input" oninput="handleShopperSearch(this.value)" type="text" placeholder="Search visitor, email..." class="w-full text-xs bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl pl-9 pr-3 py-2 text-dabang-navy placeholder-dabang-muted focus:outline-none focus:border-dabang-primary focus:bg-white transition">
+          <svg class="w-4 h-4 text-dabang-muted absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+
+        <!-- Philippine Timezone Badge -->
+        <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-[#F8F9FA] border border-dabang-border text-[11px] font-semibold text-dabang-slate">
+          <span>🇵🇭</span>
+          <span>Manila (PHT, UTC+8)</span>
+        </div>
+
+        <!-- SSE Live Streaming Status Pill -->
+        <div id="sse-badge" class="inline-flex items-center px-3 py-1.5 rounded-2xl text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+          <span id="sse-dot" class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
+          <span id="sse-label">LIVE STREAMING</span>
+        </div>
+
+        <!-- User Profile Dropdown Pill -->
+        <div class="flex items-center gap-2.5 pl-1">
+          <div class="w-9 h-9 rounded-2xl bg-dabang-primary/10 border border-dabang-primary/20 text-dabang-primary flex items-center justify-center font-bold text-xs shrink-0">
+            HC
           </div>
-          <p class="text-xs text-zinc-400 mt-0.5">
-            Automated sending is disabled. When shoppers qualify for Flows 1–5 on <strong>homecartel.net</strong>, they are safely staged below. Click <strong>"Send Flow Email"</strong> to dispatch.
-          </p>
-        </div>
-      </div>
-
-      <!-- Staged Clients Table -->
-      <div class="overflow-x-auto border border-zinc-800 rounded-xl bg-zinc-950">
-        <table class="w-full text-left text-xs">
-          <thead class="bg-zinc-900/80 text-zinc-400 font-semibold border-b border-zinc-800">
-            <tr>
-              <th class="py-3 px-4">Client Recipient</th>
-              <th class="py-3 px-4">Triggered Behavioral Flow</th>
-              <th class="py-3 px-4">Activity &amp; Cart Context</th>
-              <th class="py-3 px-4">Triggered Time (Philippine Time)</th>
-              <th class="py-3 px-4 text-right">Manual Action</th>
-            </tr>
-          </thead>
-          <tbody id="staged-flows-tbody" class="divide-y divide-zinc-800/80 text-zinc-200">
-            <tr>
-              <td colspan="5" class="p-8 text-center text-zinc-500">
-                No clients currently staged. As customers browse homecartel.net and abandon carts or subscribe, they will automatically appear here awaiting your manual send.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ========================================================================= -->
-    <!-- SECTION 2: REAL-TIME SHOPPER ACTIVITY MONITOR (GROUPED BY PERSON & SESSION) -->
-    <!-- ========================================================================= -->
-    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm space-y-4">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-[var(--border)] pb-4">
-        <div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <h2 class="text-base font-bold text-white flex items-center gap-2">
-              <span>⚡</span> Real-Time Shopper Activity Monitor
-            </h2>
-            <span id="sse-badge" class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <span id="sse-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
-              <span id="sse-label">LIVE STREAMING</span>
-            </span>
-            <span id="activity-counter-pill" class="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
-              0 Shoppers Active
-            </span>
+          <div class="hidden sm:block text-left">
+            <p class="text-xs font-bold text-dabang-navy leading-none">HomeCartel</p>
+            <p class="text-[10px] text-dabang-muted mt-0.5">Admin</p>
           </div>
-          <p class="text-xs text-zinc-400 mt-1">
-            Real-time activity on <strong>homecartel.net</strong> automatically grouped by unique customer and browsing session. See each person's journey from arrival to cart.
-          </p>
-        </div>
-
-        <!-- View Mode Switcher -->
-        <div class="flex items-center gap-1 bg-zinc-900/90 p-1 rounded-xl border border-zinc-800 shrink-0">
-          <button id="view-mode-shoppers-btn" onclick="setViewMode('shoppers')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-amber-500 text-black shadow">
-            <span>👥</span>
-            <span>By Shopper Journey</span>
-          </button>
-          <button id="view-mode-stream-btn" onclick="setViewMode('stream')" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 text-zinc-400 hover:text-white">
-            <span>⏱️</span>
-            <span>Raw Event Stream</span>
-          </button>
         </div>
       </div>
+    </header>
 
-      <!-- Shoppers Sub-Control Bar (Shown when in Shopper Mode) -->
-      <div id="shoppers-control-bar" class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs">
-        <!-- Filter Pills for Shoppers -->
-        <div class="flex flex-wrap items-center gap-1.5">
-          <span class="text-zinc-500 text-[11px] font-medium mr-1">Shoppers:</span>
-          <button onclick="filterShoppers('all')" id="shopper-filter-all" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-800 text-white font-medium border border-zinc-700">All Shoppers (<span id="count-all-shoppers">0</span>)</button>
-          <button onclick="filterShoppers('active')" id="shopper-filter-active" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800">🟢 Active Now (<span id="count-active-shoppers">0</span>)</button>
-          <button onclick="filterShoppers('returning')" id="shopper-filter-returning" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800">🔄 Came Back (<span id="count-returned-shoppers">0</span>)</button>
-          <button onclick="filterShoppers('ended')" id="shopper-filter-ended" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800">🚪 Session Ended (<span id="count-ended-shoppers">0</span>)</button>
-          <button onclick="filterShoppers('cart')" id="shopper-filter-cart" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800">🛒 Cart Intent (<span id="count-cart-shoppers">0</span>)</button>
-          <button onclick="filterShoppers('identified')" id="shopper-filter-identified" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800">👤 Identified (<span id="count-id-shoppers">0</span>)</button>
-        </div>
+    <!-- Main Workspace Content -->
+    <div class="p-4 md:p-8 space-y-8 max-w-7xl mx-auto w-full">
 
-        <!-- Search, Sort & Expand Controls -->
-        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          <div class="relative flex-1 sm:w-56">
-            <input id="shopper-search-input" oninput="handleShopperSearch(this.value)" type="text" placeholder="Search visitor, email, product..." class="w-full text-xs bg-zinc-900 border border-zinc-800 rounded-lg pl-7 pr-3 py-1.5 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-amber-500">
-            <span class="absolute left-2.5 top-1.5 text-zinc-500 text-xs">🔍</span>
-          </div>
-          <select id="shopper-sort-select" onchange="handleShopperSort(this.value)" class="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-zinc-300 focus:outline-none">
-            <option value="recent" selected>⚡ Most Recent Shopper First</option>
-            <option value="returning">🔄 Came Back (Returned Shoppers First)</option>
-            <option value="ended">🚪 Session Ended First</option>
-            <option value="actions">🔥 Most Engaged (Highest Actions)</option>
-            <option value="cart">🛒 Cart Intent First</option>
-          </select>
-          <button onclick="toggleExpandAllShoppers()" id="btn-expand-all" class="px-2.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs border border-zinc-800 whitespace-nowrap font-medium transition">
-            Expand All Journeys
-          </button>
-        </div>
+      <!-- Action Notification Banner -->
+      <div id="action-notification" class="hidden p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-semibold flex items-center justify-between shadow-sm">
+        <span id="action-notification-text">Message</span>
+        <button onclick="document.getElementById('action-notification').classList.add('hidden')" class="text-emerald-700 hover:text-emerald-950 font-bold ml-2">✕</button>
       </div>
 
-      <!-- Stream Sub-Control Bar (Shown when in Raw Stream Mode) -->
-      <div id="stream-control-bar" class="hidden flex flex-wrap items-center gap-2 text-xs">
-        <span class="text-zinc-500 text-[11px] font-medium mr-1">Filter Stream:</span>
-        <button onclick="filterEvents('all')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-800 text-white font-medium border border-zinc-700" data-filter="all">All Activities</button>
-        <button onclick="filterEvents('item_click')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="item_click">Product Clicks</button>
-        <button onclick="filterEvents('category_click')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="category_click">Category / Collections</button>
-        <button onclick="filterEvents('page_view')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="page_view">Page Access</button>
-        <button onclick="filterEvents('page_leave')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="page_leave">Page Leaves</button>
-        <button onclick="filterEvents('identified')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="identified">Identified Shoppers</button>
-      </div>
+      <!-- ========================================================================= -->
+      <!-- ROW 1: TODAY'S SALES & KPI PASTEL CARDS + VISITOR INSIGHTS (FIGMA MATCH)  -->
+      <!-- ========================================================================= -->
+      <div id="overview-section" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-      <!-- Dynamic Activity Container (renders Shopper Cards in Shopper Mode, or Dual-Column Grid in Stream Mode) -->
-      <div id="events-feed" class="space-y-4 min-h-[400px] max-h-[720px] overflow-y-auto pr-1">
-        <div class="p-12 text-center text-zinc-500 text-xs border border-dashed border-zinc-800 rounded-xl">
-          Waiting for live activity on homecartel.net... Click on any lamp or chandelier on your store to see it appear here in real time!
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================================================================= -->
-    <!-- SECTION 3: DIRECT TEST EMAIL & LIVE TEMPLATE PREVIEWER -->
-    <!-- ========================================================================= -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-      <!-- Left Column: Delivered Logs & Direct Test Send (6 cols) -->
-      <div class="lg:col-span-6 space-y-6">
-
-        <!-- Send Direct Test Email Section -->
-        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm space-y-3">
+        <!-- Today's Sales Container (approx 7 cols) -->
+        <div class="lg:col-span-7 bg-white rounded-3xl p-6 border border-dabang-border card-shadow flex flex-col justify-between">
           <div>
-            <h3 class="text-xs font-bold text-[var(--foreground)] flex items-center gap-1.5">
-              <span>🚀</span> Dispatch Immediate Test Email to Any Inbox
-            </h3>
-            <p class="text-[12px] text-[var(--muted-foreground)]">Verify exact styling and inbox deliverability before sending to real clients.</p>
+            <div class="flex items-center justify-between border-b border-dabang-border pb-4">
+              <div>
+                <h3 class="text-lg font-bold text-dabang-navy tracking-tight">Today's Automations &amp; Activity</h3>
+                <p class="text-xs text-dabang-muted">Storefront behavioral performance &bull; Manual safety active</p>
+              </div>
+              <button onclick="refreshData()" class="px-3.5 py-1.5 rounded-xl border border-dabang-border bg-[#F8F9FA] hover:bg-slate-100 text-dabang-navy font-semibold text-xs flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5 text-dabang-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span>Refresh Feed</span>
+              </button>
+            </div>
+
+            <!-- 4 Pastel KPI Cards (Pink, Peach, Mint, Lavender) -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5">
+
+              <!-- Card 1: Subscribers (Pastel Pink) -->
+              <div class="bg-dabang-pink rounded-2xl p-4 flex flex-col justify-between transition hover:-translate-y-0.5">
+                <div class="w-10 h-10 rounded-xl bg-dabang-pinkIcon text-white flex items-center justify-center font-bold shadow-sm">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+                <div class="mt-4">
+                  <p id="stat-customers" class="text-2xl font-bold text-dabang-navy">0</p>
+                  <p class="text-xs font-semibold text-dabang-slate mt-0.5">Subscribers</p>
+                  <p class="text-[11px] font-medium text-dabang-pinkIcon mt-1">Identified shoppers</p>
+                </div>
+              </div>
+
+              <!-- Card 2: Staged for Send (Pastel Peach/Orange) -->
+              <div class="bg-dabang-orange rounded-2xl p-4 flex flex-col justify-between transition hover:-translate-y-0.5">
+                <div class="w-10 h-10 rounded-xl bg-dabang-orangeIcon text-white flex items-center justify-center font-bold shadow-sm">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div class="mt-4">
+                  <p id="stat-pending" class="text-2xl font-bold text-dabang-navy">0</p>
+                  <p class="text-xs font-semibold text-dabang-slate mt-0.5">Staged for Send</p>
+                  <p class="text-[11px] font-medium text-amber-600 mt-1">Clients awaiting click</p>
+                </div>
+              </div>
+
+              <!-- Card 3: Abandoned Carts (Pastel Mint Green) -->
+              <div class="bg-dabang-green rounded-2xl p-4 flex flex-col justify-between transition hover:-translate-y-0.5">
+                <div class="w-10 h-10 rounded-xl bg-dabang-greenIcon text-white flex items-center justify-center font-bold shadow-sm">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+                <div class="mt-4">
+                  <p id="stat-abandoned" class="text-2xl font-bold text-dabang-navy">0</p>
+                  <p class="text-xs font-semibold text-dabang-slate mt-0.5">Abandoned Carts</p>
+                  <p class="text-[11px] font-medium text-emerald-700 mt-1">Captured carts</p>
+                </div>
+              </div>
+
+              <!-- Card 4: Recovered Orders (Pastel Lavender) -->
+              <div class="bg-dabang-purple rounded-2xl p-4 flex flex-col justify-between transition hover:-translate-y-0.5">
+                <div class="w-10 h-10 rounded-xl bg-dabang-purpleIcon text-white flex items-center justify-center font-bold shadow-sm">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div class="mt-4">
+                  <p id="stat-recovered" class="text-2xl font-bold text-dabang-navy">0</p>
+                  <p class="text-xs font-semibold text-dabang-slate mt-0.5">Recovered Orders</p>
+                  <p class="text-[11px] font-medium text-purple-700 mt-1">Purchased after flow</p>
+                </div>
+              </div>
+
+            </div>
           </div>
-          <div class="flex flex-col sm:flex-row gap-2.5">
-            <input id="test-email-input" type="email" placeholder="Enter recipient email (e.g. yourname@gmail.com)" class="flex-1 text-xs bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] focus:outline-none focus:border-amber-500">
-            <select id="test-email-template" class="text-xs bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] focus:outline-none">
-              <option value="abandoned_cart">Flow 1: Abandoned Cart</option>
-              <option value="welcome">Flow 2: Welcome Series</option>
-              <option value="browse_abandonment">Flow 3: Browse Abandonment</option>
-              <option value="post_purchase">Flow 4: Post-Purchase Care</option>
-              <option value="winback">Flow 5: Winback</option>
-            </select>
-            <button onclick="sendRealTestEmail()" id="btn-send-test" class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition flex items-center justify-center gap-1.5 whitespace-nowrap">
-              <span>Send Test</span>
+        </div>
+
+        <!-- Visitor Insights Container (approx 5 cols - Multi-Wave Chart Match) -->
+        <div class="lg:col-span-5 bg-white rounded-3xl p-6 border border-dabang-border card-shadow flex flex-col justify-between">
+          <div class="flex items-center justify-between border-b border-dabang-border pb-3">
+            <div>
+              <h3 class="text-lg font-bold text-dabang-navy tracking-tight">Visitor Insights</h3>
+              <p class="text-xs text-dabang-muted">Real-time shopper traffic waves</p>
+            </div>
+            <div class="flex items-center gap-3 text-[11px] font-medium">
+              <span class="flex items-center gap-1.5 text-purple-600">
+                <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> Loyal
+              </span>
+              <span class="flex items-center gap-1.5 text-rose-500">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span> New
+              </span>
+              <span class="flex items-center gap-1.5 text-emerald-600">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Unique
+              </span>
+            </div>
+          </div>
+
+          <!-- Stylized SVG Multi-Wave Chart Matching Figma Reference -->
+          <div class="py-2">
+            <svg class="w-full h-36" viewBox="0 0 400 130" fill="none" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="gradLoyal" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#A700FF" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#A700FF" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="gradNew" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#FF5B5B" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#FF5B5B" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="gradUnique" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#00E096" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#00E096" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+
+              <!-- Subtle Grid lines -->
+              <line x1="0" y1="20" x2="400" y2="20" stroke="#F1F3F5" stroke-width="1" stroke-dasharray="3,3"/>
+              <line x1="0" y1="55" x2="400" y2="55" stroke="#F1F3F5" stroke-width="1" stroke-dasharray="3,3"/>
+              <line x1="0" y1="90" x2="400" y2="90" stroke="#F1F3F5" stroke-width="1" stroke-dasharray="3,3"/>
+
+              <!-- Wave 1: Loyal Customers (Purple) -->
+              <path d="M0,80 C60,40 100,100 160,75 C220,50 260,25 320,45 C360,60 380,85 400,90 L400,130 L0,130 Z" fill="url(#gradLoyal)"/>
+              <path d="M0,80 C60,40 100,100 160,75 C220,50 260,25 320,45 C360,60 380,85 400,90" fill="none" stroke="#A700FF" stroke-width="2.5" stroke-linecap="round"/>
+
+              <!-- Wave 2: New Customers (Rose/Red) -->
+              <path d="M0,65 C50,85 110,35 170,55 C230,75 270,15 330,35 C370,50 390,70 400,75 L400,130 L0,130 Z" fill="url(#gradNew)"/>
+              <path d="M0,65 C50,85 110,35 170,55 C230,75 270,15 330,35 C370,50 390,70 400,75" fill="none" stroke="#FF5B5B" stroke-width="2.5" stroke-linecap="round"/>
+
+              <!-- Wave 3: Unique Visitors (Emerald Green) -->
+              <path d="M0,45 C70,15 120,65 180,35 C240,5 280,45 340,25 C370,15 390,40 400,50 L400,130 L0,130 Z" fill="url(#gradUnique)"/>
+              <path d="M0,45 C70,15 120,65 180,35 C240,5 280,45 340,25 C370,15 390,40 400,50" fill="none" stroke="#00E096" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+
+            <!-- Month Labels on X Axis -->
+            <div class="flex items-center justify-between text-[10px] text-dabang-muted px-1 mt-1 font-mono">
+              <span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Nov</span><span>Dec</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- ROW 2: STAGED CLIENT FLOWS & QUEUE (MANUAL SEND CONTROL)                  -->
+      <!-- ========================================================================= -->
+      <section id="staged-flows-section" class="bg-white rounded-3xl p-6 border border-dabang-border card-shadow space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-dabang-border pb-4">
+          <div>
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <h3 class="text-base font-bold text-dabang-navy flex items-center gap-2">
+                <span>📋</span> Staged Client Flows &amp; Scheduled Delay Queue
+              </h3>
+              <span id="staged-count-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                0 Clients Staged
+              </span>
+            </div>
+            <p class="text-xs text-dabang-muted mt-1">
+              Automated sending is disabled. When shoppers qualify for Flows 1–5 on <strong>homecartel.net</strong>, they are safely staged below. Click <strong>"Send Flow Email"</strong> to review and dispatch.
+            </p>
+          </div>
+
+          <!-- Quick Test Stage Action Buttons (Flow 1 to 5) -->
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-[11px] font-semibold text-dabang-muted mr-1">Test Stage:</span>
+            <button onclick="testStageFlow('flow_1')" class="px-2.5 py-1 text-xs font-semibold rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition">+ Flow 1</button>
+            <button onclick="testStageFlow('flow_2')" class="px-2.5 py-1 text-xs font-semibold rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 transition">+ Flow 2</button>
+            <button onclick="testStageFlow('flow_3')" class="px-2.5 py-1 text-xs font-semibold rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 transition">+ Flow 3</button>
+            <button onclick="testStageFlow('flow_4')" class="px-2.5 py-1 text-xs font-semibold rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition">+ Flow 4</button>
+            <button onclick="testStageFlow('flow_5')" class="px-2.5 py-1 text-xs font-semibold rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 transition">+ Flow 5</button>
+          </div>
+        </div>
+
+        <!-- Staged Clients Data Table -->
+        <div class="overflow-x-auto rounded-2xl border border-dabang-border bg-white">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-[#F8F9FA] text-dabang-muted font-semibold border-b border-dabang-border">
+              <tr>
+                <th class="py-3 px-4">Client Recipient</th>
+                <th class="py-3 px-4">Triggered Behavioral Flow</th>
+                <th class="py-3 px-4">Activity &amp; Cart Context</th>
+                <th class="py-3 px-4">Triggered Time (Philippine Time)</th>
+                <th class="py-3 px-4 text-right">Manual Action</th>
+              </tr>
+            </thead>
+            <tbody id="staged-flows-tbody" class="divide-y divide-dabang-border text-dabang-slate">
+              <tr>
+                <td colspan="5" class="p-8 text-center text-dabang-muted">
+                  No clients currently staged. As customers browse homecartel.net and abandon carts or subscribe, they will automatically appear here awaiting your manual send.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- ROW 3: REAL-TIME SHOPPER ACTIVITY MONITOR (BY PERSON & JOURNEY)            -->
+      <!-- ========================================================================= -->
+      <section id="shopper-monitor-section" class="bg-white rounded-3xl p-6 border border-dabang-border card-shadow space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-dabang-border pb-4">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="text-base font-bold text-dabang-navy flex items-center gap-2">
+                <span>⚡</span> Real-Time Shopper Activity Monitor
+              </h3>
+              <span id="activity-counter-pill" class="text-xs px-2.5 py-0.5 rounded-full bg-[#F4F5F7] text-dabang-slate font-semibold border border-[#E5E7EB]">
+                0 Shoppers Active
+              </span>
+            </div>
+            <p class="text-xs text-dabang-muted mt-1">
+              Real-time activity on <strong>homecartel.net</strong> automatically grouped by unique customer and browsing session. See each person's journey from arrival to cart.
+            </p>
+          </div>
+
+          <!-- View Mode Switcher -->
+          <div class="flex items-center gap-1 bg-[#F4F5F7] p-1 rounded-2xl border border-dabang-border shrink-0">
+            <button id="view-mode-shoppers-btn" onclick="setViewMode('shoppers')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-dabang-primary text-white shadow-sm">
+              <span>👥</span>
+              <span>By Shopper Journey</span>
+            </button>
+            <button id="view-mode-stream-btn" onclick="setViewMode('stream')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 text-dabang-muted hover:text-dabang-navy">
+              <span>⏱️</span>
+              <span>Raw Event Stream</span>
             </button>
           </div>
         </div>
 
-        <!-- Recent Delivered Sent Email Logs -->
-        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">
-          <div class="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-[var(--foreground)]">Delivered Campaign Logs</h3>
-            <span class="text-xs text-zinc-400">All successful dispatches (PHT)</span>
+        <!-- Shoppers Sub-Control Bar (Shown when in Shopper Mode) -->
+        <div id="shoppers-control-bar" class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs">
+          <!-- Filter Pills for Shoppers -->
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-dabang-muted text-[11px] font-medium mr-1">Shoppers:</span>
+            <button onclick="filterShoppers('all')" id="shopper-filter-all" class="shopper-filter-btn px-3 py-1.5 rounded-xl bg-dabang-navy text-white font-semibold shadow-sm transition">All Shoppers (<span id="count-all-shoppers">0</span>)</button>
+            <button onclick="filterShoppers('active')" id="shopper-filter-active" class="shopper-filter-btn px-3 py-1.5 rounded-xl bg-white text-dabang-slate hover:text-dabang-navy border border-dabang-border font-medium transition">🟢 Active Now (<span id="count-active-shoppers">0</span>)</button>
+            <button onclick="filterShoppers('returning')" id="shopper-filter-returning" class="shopper-filter-btn px-3 py-1.5 rounded-xl bg-white text-dabang-slate hover:text-dabang-navy border border-dabang-border font-medium transition">🔄 Came Back (<span id="count-returned-shoppers">0</span>)</button>
+            <button onclick="filterShoppers('ended')" id="shopper-filter-ended" class="shopper-filter-btn px-3 py-1.5 rounded-xl bg-white text-dabang-slate hover:text-dabang-navy border border-dabang-border font-medium transition">🚪 Session Ended (<span id="count-ended-shoppers">0</span>)</button>
+            <button onclick="filterShoppers('cart')" id="shopper-filter-cart" class="shopper-filter-btn px-3 py-1.5 rounded-xl bg-white text-dabang-slate hover:text-dabang-navy border border-dabang-border font-medium transition">🛒 Cart Intent (<span id="count-cart-shoppers">0</span>)</button>
+            <button onclick="filterShoppers('identified')" id="shopper-filter-identified" class="shopper-filter-btn px-3 py-1.5 rounded-xl bg-white text-dabang-slate hover:text-dabang-navy border border-dabang-border font-medium transition">👤 Identified (<span id="count-id-shoppers">0</span>)</button>
           </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-[var(--background)] text-[var(--muted-foreground)] uppercase border-b border-[var(--border)]">
-                <tr>
-                  <th class="py-2.5 px-4">Recipient</th>
-                  <th class="py-2.5 px-4">Flow</th>
-                  <th class="py-2.5 px-4 text-right">Sent Time (PHT)</th>
-                </tr>
-              </thead>
-              <tbody id="logs-tbody" class="divide-y divide-[var(--border)] text-[var(--foreground)]">
-                <tr><td colspan="3" class="p-4 text-center text-[var(--muted-foreground)]">No emails sent yet.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
 
-      <!-- Right Column: Interactive Email Preview Drawer (6 cols) -->
-      <div class="lg:col-span-6 bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm flex flex-col">
-        <div class="px-5 py-3 border-b border-[var(--border)] flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-[var(--foreground)] flex items-center gap-2">
-            <span>Template Live Preview</span>
-            <span class="px-2 py-0.5 text-[11px] font-normal rounded bg-emerald-500/10 text-emerald-500">Direct Render</span>
-          </h3>
-          <select id="template-select" onchange="updatePreview(this.value)" class="text-xs bg-[var(--background)] border border-[var(--border)] rounded-lg px-2.5 py-1 text-[var(--foreground)] focus:outline-none cursor-pointer">
-            <option value="abandoned_cart">Flow 1: Abandoned Cart</option>
-            <option value="welcome">Flow 2: Welcome Guide</option>
-            <option value="browse_abandonment">Flow 3: Browse Abandonment</option>
-            <option value="post_purchase">Flow 4: Post-Purchase Care</option>
-            <option value="winback">Flow 5: Customer Winback</option>
-          </select>
+          <!-- Search, Sort & Expand Controls -->
+          <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            <div class="relative flex-1 sm:w-56">
+              <input id="shopper-search-input" oninput="handleShopperSearch(this.value)" type="text" placeholder="Search visitor, email, product..." class="w-full text-xs bg-[#F8F9FA] border border-dabang-border rounded-xl pl-7 pr-3 py-1.5 text-dabang-navy placeholder-dabang-muted focus:outline-none focus:border-dabang-primary focus:bg-white transition">
+              <span class="absolute left-2.5 top-1.5 text-dabang-muted text-xs">🔍</span>
+            </div>
+            <select id="shopper-sort-select" onchange="handleShopperSort(this.value)" class="text-xs bg-white border border-dabang-border rounded-xl px-2.5 py-1.5 text-dabang-slate font-medium focus:outline-none focus:border-dabang-primary cursor-pointer">
+              <option value="recent" selected>⚡ Most Recent Shopper First</option>
+              <option value="returning">🔄 Came Back (Returned Shoppers First)</option>
+              <option value="ended">🚪 Session Ended First</option>
+              <option value="actions">🔥 Most Engaged (Highest Actions)</option>
+              <option value="cart">🛒 Cart Intent First</option>
+            </select>
+            <button onclick="toggleExpandAllShoppers()" id="btn-expand-all" class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-dabang-slate text-xs border border-dabang-border whitespace-nowrap font-medium transition shadow-sm">
+              Expand All Journeys
+            </button>
+          </div>
         </div>
-        <div class="p-3 bg-[var(--background)] flex-1">
-          <iframe id="preview-frame" class="w-full h-[480px] rounded-lg border border-[var(--border)] bg-white shadow-inner"></iframe>
+
+        <!-- Stream Sub-Control Bar (Shown when in Raw Stream Mode) -->
+        <div id="stream-control-bar" class="hidden flex flex-wrap items-center gap-2 text-xs">
+          <span class="text-dabang-muted text-[11px] font-medium mr-1">Filter Stream:</span>
+          <button onclick="filterEvents('all')" class="event-filter-btn px-3 py-1.5 rounded-xl bg-dabang-navy text-white font-medium shadow-sm" data-filter="all">All Activities</button>
+          <button onclick="filterEvents('item_click')" class="event-filter-btn px-3 py-1.5 rounded-xl bg-white text-dabang-slate hover:text-dabang-navy border border-dabang-border font-medium" data-filter="item_click">Product Clicks</button>
+          <button onclick="filterEvents('category_click')" class="event-filter-btn px-3 py-1.5 rounded-xl bg-white text-dabang-slate hover:text-dabang-navy border border-dabang-border font-medium" data-filter="category_click">Category / Collections</button>
+          <button onclick="filterEvents('page_view')" class="event-filter-btn px-3 py-1.5 rounded-xl bg-white text-dabang-slate hover:text-dabang-navy border border-dabang-border font-medium" data-filter="page_view">Page Access</button>
+          <button onclick="filterEvents('page_leave')" class="event-filter-btn px-3 py-1.5 rounded-xl bg-white text-dabang-slate hover:text-dabang-navy border border-dabang-border font-medium" data-filter="page_leave">Page Leaves</button>
+          <button onclick="filterEvents('identified')" class="event-filter-btn px-3 py-1.5 rounded-xl bg-white text-dabang-slate hover:text-dabang-navy border border-dabang-border font-medium" data-filter="identified">Identified Shoppers</button>
         </div>
-        <div class="p-3 text-[12px] text-center text-[var(--muted-foreground)] border-t border-[var(--border)]">
-          Rendered with HomeCartel branding, warm lighting styling &amp; CAN-SPAM store address.
+
+        <!-- Dynamic Activity Container -->
+        <div id="events-feed" class="space-y-4 min-h-[400px] max-h-[720px] overflow-y-auto pr-1">
+          <div class="p-12 text-center text-dabang-muted text-xs border border-dashed border-dabang-border rounded-2xl bg-[#FBFBFC]">
+            Waiting for live activity on homecartel.net... Click on any lamp or chandelier on your store to see it appear here in real time!
+          </div>
         </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- ROW 4: DIRECT TEST EMAIL & LIVE TEMPLATE PREVIEWER                       -->
+      <!-- ========================================================================= -->
+      <div id="campaign-studio-section" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Delivered Logs & Direct Test Send (6 cols) -->
+        <div class="lg:col-span-6 space-y-6">
+
+          <!-- Send Direct Test Email Section -->
+          <div class="bg-white border border-dabang-border rounded-3xl p-6 card-shadow space-y-4">
+            <div>
+              <h3 class="text-base font-bold text-dabang-navy flex items-center gap-2">
+                <span>🚀</span> Dispatch Immediate Test Email to Any Inbox
+              </h3>
+              <p class="text-xs text-dabang-muted mt-0.5">Verify exact styling and inbox deliverability before sending to real clients.</p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2.5">
+              <input id="test-email-input" type="email" placeholder="Enter recipient email (e.g. yourname@gmail.com)" class="flex-1 text-xs bg-[#F8F9FA] border border-dabang-border rounded-xl px-3.5 py-2.5 text-dabang-navy focus:outline-none focus:border-dabang-primary focus:bg-white transition">
+              <select id="test-email-template" class="text-xs bg-white border border-dabang-border rounded-xl px-3 py-2.5 text-dabang-navy font-medium focus:outline-none focus:border-dabang-primary cursor-pointer">
+                <option value="abandoned_cart">Flow 1: Abandoned Cart</option>
+                <option value="welcome">Flow 2: Welcome Series</option>
+                <option value="browse_abandonment">Flow 3: Browse Abandonment</option>
+                <option value="post_purchase">Flow 4: Post-Purchase Care</option>
+                <option value="winback">Flow 5: Winback</option>
+              </select>
+              <button onclick="sendRealTestEmail()" id="btn-send-test" class="px-5 py-2.5 text-xs font-bold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition flex items-center justify-center gap-1.5 whitespace-nowrap shadow-sm">
+                <span>Send Test</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Recent Delivered Sent Email Logs -->
+          <div id="logs-section" class="bg-white border border-dabang-border rounded-3xl overflow-hidden card-shadow">
+            <div class="px-6 py-4 border-b border-dabang-border flex items-center justify-between">
+              <div>
+                <h3 class="text-base font-bold text-dabang-navy">Delivered Campaign Logs</h3>
+                <p class="text-xs text-dabang-muted">All successful dispatches (Philippine Time)</p>
+              </div>
+              <span id="stat-sent" class="px-2.5 py-1 text-xs font-bold rounded-xl bg-purple-100 text-purple-800">0</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-[#F8F9FA] text-dabang-muted uppercase border-b border-dabang-border">
+                  <tr>
+                    <th class="py-3 px-4">Recipient</th>
+                    <th class="py-3 px-4">Flow</th>
+                    <th class="py-3 px-4 text-right">Sent Time (PHT)</th>
+                  </tr>
+                </thead>
+                <tbody id="logs-tbody" class="divide-y divide-dabang-border text-dabang-slate">
+                  <tr><td colspan="3" class="p-6 text-center text-dabang-muted">No emails sent yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Interactive Email Preview Drawer (6 cols) -->
+        <div id="preview-section" class="lg:col-span-6 bg-white border border-dabang-border rounded-3xl overflow-hidden card-shadow flex flex-col justify-between">
+          <div>
+            <div class="px-6 py-4 border-b border-dabang-border flex items-center justify-between gap-3">
+              <div>
+                <h3 class="text-base font-bold text-dabang-navy flex items-center gap-2">
+                  <span>Template Live Preview</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800">Direct Render</span>
+                </h3>
+                <p class="text-xs text-dabang-muted">Inspect branded HomeCartel HTML layout</p>
+              </div>
+              <select id="template-select" onchange="updatePreview(this.value)" class="text-xs bg-[#F8F9FA] border border-dabang-border rounded-xl px-3 py-2 text-dabang-navy font-medium focus:outline-none focus:border-dabang-primary cursor-pointer">
+                <option value="abandoned_cart">Flow 1: Abandoned Cart</option>
+                <option value="welcome">Flow 2: Welcome Guide</option>
+                <option value="browse_abandonment">Flow 3: Browse Abandonment</option>
+                <option value="post_purchase">Flow 4: Post-Purchase Care</option>
+                <option value="winback">Flow 5: Customer Winback</option>
+              </select>
+            </div>
+            <div class="p-4 bg-[#F8F9FA]">
+              <iframe id="preview-frame" class="w-full h-[480px] rounded-2xl border border-dabang-border bg-white shadow-inner"></iframe>
+            </div>
+          </div>
+          <div class="p-3 text-[11px] text-center text-dabang-muted border-t border-dabang-border bg-white">
+            Rendered with HomeCartel branding, warm architectural lighting aesthetics &amp; CAN-SPAM store address.
+          </div>
+        </div>
+
       </div>
 
     </div>
+  </main>
 
-  </div>
-
-  <!-- MODAL: Staged Email HTML Previewer -->
-  <div id="preview-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-      <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
+  <!-- ========================================================================= -->
+  <!-- MODAL: STAGED EMAIL HTML PREVIEWER                                        -->
+  <!-- ========================================================================= -->
+  <div id="preview-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white border border-dabang-border rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      <div class="px-6 py-4 border-b border-dabang-border flex items-center justify-between">
         <div>
-          <h3 id="modal-title" class="text-sm font-bold text-white">Preview Staged Flow Email</h3>
-          <p id="modal-subtitle" class="text-xs text-zinc-400 mt-0.5"></p>
+          <h3 id="modal-title" class="text-base font-bold text-dabang-navy">Preview Staged Flow Email</h3>
+          <p id="modal-subtitle" class="text-xs text-dabang-muted mt-0.5"></p>
         </div>
-        <button onclick="closePreviewModal()" class="text-zinc-400 hover:text-white px-2 py-1 rounded-lg hover:bg-zinc-800 text-sm">✕ Close</button>
+        <button onclick="closePreviewModal()" class="text-dabang-muted hover:text-dabang-navy px-3 py-1.5 rounded-xl hover:bg-slate-100 text-sm font-semibold transition">✕ Close</button>
       </div>
-      <div class="p-4 bg-zinc-950 flex-1 overflow-auto">
-        <iframe id="modal-frame" class="w-full h-[520px] rounded-lg border border-zinc-800 bg-white"></iframe>
+      <div class="p-4 bg-[#F8F9FA] flex-1 overflow-auto">
+        <iframe id="modal-frame" class="w-full h-[520px] rounded-2xl border border-dabang-border bg-white shadow-sm"></iframe>
       </div>
-      <div class="px-6 py-3 border-t border-zinc-800 flex items-center justify-between bg-zinc-900">
-        <span class="text-xs text-zinc-400">Ready to dispatch?</span>
-        <button id="modal-send-btn" class="px-5 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow transition flex items-center gap-1.5">
+      <div class="px-6 py-4 border-t border-dabang-border flex items-center justify-between bg-white">
+        <span class="text-xs text-dabang-muted">Ready to dispatch this email to client?</span>
+        <button id="modal-send-btn" class="px-5 py-2.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition flex items-center gap-1.5">
           <span>Send Flow Email Now</span>
         </button>
       </div>
     </div>
   </div>
 
+  <!-- Mobile Sidebar Drawer (Overlay) -->
+  <div id="mobile-sidebar" class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-xs flex">
+    <div class="w-72 bg-white h-full p-6 space-y-6 flex flex-col justify-between shadow-2xl">
+      <div class="space-y-6">
+        <div class="flex items-center justify-between border-b border-dabang-border pb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-dabang-primary text-white flex items-center justify-center font-bold text-lg">
+              HC
+            </div>
+            <div>
+              <h2 class="font-bold text-dabang-navy text-base">HomeCartel</h2>
+              <p class="text-[10px] text-dabang-muted">Automation</p>
+            </div>
+          </div>
+          <button onclick="toggleMobileSidebar()" class="p-1.5 rounded-xl text-dabang-muted hover:text-dabang-navy">✕</button>
+        </div>
+
+        <nav class="space-y-1.5">
+          <a href="#overview-section" onclick="toggleMobileSidebar()" class="block px-4 py-2.5 rounded-xl bg-dabang-primary text-white font-semibold text-xs">Dashboard</a>
+          <a href="#staged-flows-section" onclick="toggleMobileSidebar()" class="block px-4 py-2.5 rounded-xl text-dabang-slate hover:bg-slate-50 font-medium text-xs">Staged Flows</a>
+          <a href="#shopper-monitor-section" onclick="toggleMobileSidebar()" class="block px-4 py-2.5 rounded-xl text-dabang-slate hover:bg-slate-50 font-medium text-xs">Live Activity</a>
+          <a href="#campaign-studio-section" onclick="toggleMobileSidebar()" class="block px-4 py-2.5 rounded-xl text-dabang-slate hover:bg-slate-50 font-medium text-xs">Test Email Send</a>
+          <a href="#logs-section" onclick="toggleMobileSidebar()" class="block px-4 py-2.5 rounded-xl text-dabang-slate hover:bg-slate-50 font-medium text-xs">Delivered Logs</a>
+        </nav>
+      </div>
+
+      <a href="https://homecartel.net" target="_blank" class="block w-full text-center py-2.5 rounded-xl bg-dabang-primary text-white text-xs font-bold shadow">
+        Open Storefront ↗
+      </a>
+    </div>
+    <div class="flex-1" onclick="toggleMobileSidebar()"></div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT ENGINE (100% PRESERVED FLOWS, REAL-TIME SSE & TIME CALCULATIONS) -->
+  <!-- ========================================================================= -->
   <script>
     const STORE_ADDRESS = '673 Banawe Street, Santa Mesa Heights, Quezon City, Metro Manila, Philippines';
 
     let liveEvents = [];
     let currentFilter = 'all';
 
+    function toggleMobileSidebar() {
+      const ms = document.getElementById('mobile-sidebar');
+      ms.classList.toggle('hidden');
+    }
+
     function showNotice(msg, isError = false) {
       const banner = document.getElementById('action-notification');
       const text = document.getElementById('action-notification-text');
       text.textContent = msg;
       banner.className = isError
-        ? 'p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-400 font-semibold flex items-center justify-between'
-        : 'p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 font-semibold flex items-center justify-between';
+        ? 'p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-800 font-semibold flex items-center justify-between shadow-sm'
+        : 'p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-semibold flex items-center justify-between shadow-sm';
       banner.classList.remove('hidden');
       setTimeout(() => banner.classList.add('hidden'), 7000);
     }
@@ -408,12 +728,14 @@
 
         document.getElementById('stat-pending').textContent = staged.length;
         document.getElementById('staged-count-badge').textContent = `${staged.length} Clients Staged`;
+        const navBadge = document.getElementById('nav-staged-badge');
+        if (navBadge) navBadge.textContent = staged.length;
 
         const tbody = document.getElementById('staged-flows-tbody');
         if (staged.length === 0) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="5" class="p-8 text-center text-zinc-500 text-xs">
+              <td colspan="5" class="p-8 text-center text-dabang-muted text-xs">
                 No clients currently staged. As customers browse homecartel.net and abandon carts or subscribe, they will automatically appear here awaiting your manual send.
               </td>
             </tr>
@@ -421,37 +743,46 @@
           return;
         }
 
-        tbody.innerHTML = staged.map(j => `
-          <tr class="hover:bg-zinc-900/50 transition">
-            <td class="py-3 px-4">
-              <div class="font-bold text-white">${j.recipientEmail}</div>
-              <div class="text-[11px] text-zinc-400">${j.customerName}</div>
-            </td>
-            <td class="py-3 px-4">
-              <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold border ${j.badgeClass}">
-                ${j.flowLabel}
-              </span>
-            </td>
-            <td class="py-3 px-4 max-w-xs">
-              <div class="text-zinc-300 text-xs truncate" title="${j.summary}">${j.summary}</div>
-            </td>
-            <td class="py-3 px-4 whitespace-nowrap text-zinc-400">
-              <div class="font-medium text-zinc-300">${formatPhilippineTime(j.createdAt)}</div>
-              <div class="text-[11px] text-zinc-400">(${formatRelativeTime(j.createdAt)})</div>
-            </td>
-            <td class="py-3 px-4 text-right whitespace-nowrap space-x-1.5">
-              <button onclick="previewStagedJob(${j.id}, '${j.flowLabel}', '${j.recipientEmail}')" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold border border-zinc-700 transition">
-                Preview
-              </button>
-              <button onclick="sendStagedJob(${j.id}, this)" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow">
-                Send ${j.flowLabel.split(':')[0]} Now
-              </button>
-              <button onclick="cancelStagedJob(${j.id})" class="px-2 py-1.5 rounded-lg bg-zinc-900 hover:bg-rose-950/50 text-zinc-400 hover:text-rose-400 text-xs transition border border-zinc-800">
-                ✕
-              </button>
-            </td>
-          </tr>
-        `).join('');
+        tbody.innerHTML = staged.map(j => {
+          let badgeTheme = 'bg-amber-50 text-amber-800 border-amber-200';
+          if (j.flowNumber === 1) badgeTheme = 'bg-amber-100 text-amber-900 border-amber-300';
+          else if (j.flowNumber === 2) badgeTheme = 'bg-sky-100 text-sky-900 border-sky-300';
+          else if (j.flowNumber === 3) badgeTheme = 'bg-purple-100 text-purple-900 border-purple-300';
+          else if (j.flowNumber === 4) badgeTheme = 'bg-emerald-100 text-emerald-900 border-emerald-300';
+          else if (j.flowNumber === 5) badgeTheme = 'bg-rose-100 text-rose-900 border-rose-300';
+
+          return `
+            <tr class="hover:bg-[#FBFBFC] transition">
+              <td class="py-3 px-4">
+                <div class="font-bold text-dabang-navy">${j.recipientEmail}</div>
+                <div class="text-[11px] text-dabang-muted">${j.customerName || 'Customer'}</div>
+              </td>
+              <td class="py-3 px-4">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-xl text-[11px] font-bold border ${badgeTheme}">
+                  ${j.flowLabel}
+                </span>
+              </td>
+              <td class="py-3 px-4 max-w-xs">
+                <div class="text-dabang-slate text-xs truncate" title="${j.summary}">${j.summary}</div>
+              </td>
+              <td class="py-3 px-4 whitespace-nowrap text-dabang-muted">
+                <div class="font-medium text-dabang-navy">${formatPhilippineTime(j.createdAt)}</div>
+                <div class="text-[11px] text-dabang-muted">(${formatRelativeTime(j.createdAt)})</div>
+              </td>
+              <td class="py-3 px-4 text-right whitespace-nowrap space-x-1.5">
+                <button onclick="previewStagedJob(${j.id}, '${j.flowLabel}', '${j.recipientEmail}')" class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-dabang-slate text-xs font-semibold border border-dabang-border transition shadow-sm">
+                  Preview
+                </button>
+                <button onclick="sendStagedJob(${j.id}, this)" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm">
+                  Send ${j.flowLabel.split(':')[0]} Now
+                </button>
+                <button onclick="cancelStagedJob(${j.id})" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-rose-50 text-dabang-muted hover:text-rose-600 text-xs transition border border-dabang-border" title="Dismiss">
+                  ✕
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
       } catch (e) {
         console.warn('Fetch staged flows error:', e);
       }
@@ -502,6 +833,26 @@
       } catch (e) {}
     }
 
+    async function testStageFlow(scenario) {
+      try {
+        const res = await fetch('/api/admin/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scenario })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showNotice(`✅ ${data.message}`);
+          await fetchStagedFlows();
+          await refreshOverviewCounts();
+        } else {
+          showNotice(`Error: ${data.error || 'Failed to stage'}`, true);
+        }
+      } catch (e) {
+        showNotice(`Network error: ${e.message}`, true);
+      }
+    }
+
     function previewStagedJob(jobId, label, email) {
       const modal = document.getElementById('preview-modal');
       const title = document.getElementById('modal-title');
@@ -529,9 +880,9 @@
     // 2. REAL-TIME SHOPPER ACTIVITY (GROUPED BY USER & RAW STREAM)
     // =========================================================================
     let currentViewMode = 'shoppers'; // 'shoppers' or 'stream'
-    let currentShopperFilter = 'all'; // 'all', 'active', 'cart', 'identified'
+    let currentShopperFilter = 'all'; // 'all', 'active', 'returning', 'ended', 'cart', 'identified'
     let shopperSearchQuery = '';
-    let shopperSortMode = 'recent'; // 'recent', 'actions', 'cart'
+    let shopperSortMode = 'recent'; // 'recent', 'returning', 'ended', 'actions', 'cart'
     let expandedShoppers = new Set();
     let expandedSessions = new Set();
     let allJourneysExpanded = false;
@@ -564,17 +915,16 @@
       });
 
       const colors = [
-        { border: 'border-amber-500/40 hover:border-amber-400', badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20', avatar: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
-        { border: 'border-sky-500/40 hover:border-sky-400', badge: 'bg-sky-500/10 text-sky-400 border-sky-500/20', avatar: 'bg-sky-500/20 text-sky-300 border-sky-500/30' },
-        { border: 'border-emerald-500/40 hover:border-emerald-400', badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', avatar: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-        { border: 'border-violet-500/40 hover:border-violet-400', badge: 'bg-violet-500/10 text-violet-400 border-violet-500/20', avatar: 'bg-violet-500/20 text-violet-300 border-violet-500/30' },
-        { border: 'border-rose-500/40 hover:border-rose-400', badge: 'bg-rose-500/10 text-rose-400 border-rose-500/20', avatar: 'bg-rose-500/20 text-rose-300 border-rose-500/30' },
-        { border: 'border-teal-500/40 hover:border-teal-400', badge: 'bg-teal-500/10 text-teal-400 border-teal-500/20', avatar: 'bg-teal-500/20 text-teal-300 border-teal-500/30' },
-        { border: 'border-orange-500/40 hover:border-orange-400', badge: 'bg-orange-500/10 text-orange-400 border-orange-500/20', avatar: 'bg-orange-500/20 text-orange-300 border-orange-500/30' }
+        { border: 'border-amber-200', badge: 'bg-amber-50 text-amber-800 border-amber-200', avatar: 'bg-amber-100 text-amber-900 border-amber-200' },
+        { border: 'border-sky-200', badge: 'bg-sky-50 text-sky-800 border-sky-200', avatar: 'bg-sky-100 text-sky-900 border-sky-200' },
+        { border: 'border-emerald-200', badge: 'bg-emerald-50 text-emerald-800 border-emerald-200', avatar: 'bg-emerald-100 text-emerald-900 border-emerald-200' },
+        { border: 'border-purple-200', badge: 'bg-purple-50 text-purple-800 border-purple-200', avatar: 'bg-purple-100 text-purple-900 border-purple-200' },
+        { border: 'border-rose-200', badge: 'bg-rose-50 text-rose-800 border-rose-200', avatar: 'bg-rose-100 text-rose-900 border-rose-200' },
+        { border: 'border-teal-200', badge: 'bg-teal-50 text-teal-800 border-teal-200', avatar: 'bg-teal-100 text-teal-900 border-teal-200' },
+        { border: 'border-indigo-200', badge: 'bg-indigo-50 text-indigo-800 border-indigo-200', avatar: 'bg-indigo-100 text-indigo-900 border-indigo-200' }
       ];
 
       const shoppers = Array.from(shoppersMap.values()).map(shopper => {
-        // Accurately determine the absolute latest and earliest event timestamps for this shopper
         let maxTimeMs = 0;
         let minTimeMs = Infinity;
         let latestEventCreatedAt = shopper.events[0]?.createdAt;
@@ -597,7 +947,6 @@
         const lastSeen = latestEventCreatedAt || new Date().toISOString();
         const firstSeen = oldestEventCreatedAt || lastSeen;
 
-        // Sort chronologically (oldest to newest) to partition sessions
         const sorted = [...shopper.events].sort((a, b) => parseToDate(a.createdAt).getTime() - parseToDate(b.createdAt).getTime());
 
         // Partition into distinct sessions using 30-minute inactivity threshold
@@ -632,9 +981,9 @@
             startTime: sStart,
             endTime: sEnd,
             isActive: isActiveSession,
-            events: [...evList].reverse() // Show newest event first within session
+            events: [...evList].reverse()
           };
-        }).reverse(); // Show newest session first
+        }).reverse();
 
         const latestEvent = sorted[sorted.length - 1];
         const isLatestEventLeave = latestEvent && (latestEvent.eventType === 'page_leave');
@@ -642,7 +991,6 @@
         const isSessionEnded = (!isActiveNow) || isLatestEventLeave;
         const isReturning = sessions.length > 1;
 
-        // Analyze intent, products, and collections browsed
         let hasCart = false;
         let hasItemClick = false;
         let hasCategoryClick = false;
@@ -668,18 +1016,17 @@
           }
         });
 
-        let intent = { label: 'Browsing Store', badge: 'bg-zinc-800 text-zinc-300 border-zinc-700' };
+        let intent = { label: 'Browsing Store', badge: 'bg-slate-100 text-dabang-slate border-slate-200' };
         if (hasCart) {
-          intent = { label: '🛒 Added to Cart (High Intent)', badge: 'bg-amber-500/20 text-amber-300 border-amber-500/30' };
+          intent = { label: '🛒 Added to Cart (High Intent)', badge: 'bg-amber-100 text-amber-900 border-amber-300 font-bold' };
         } else if (viewedProducts.size >= 3) {
-          intent = { label: `🔍 Product Comparison (${viewedProducts.size} lamps)`, badge: 'bg-sky-500/20 text-sky-300 border-sky-500/30' };
+          intent = { label: `🔍 Product Comparison (${viewedProducts.size} lamps)`, badge: 'bg-sky-100 text-sky-900 border-sky-300' };
         } else if (hasItemClick || viewedProducts.size > 0) {
-          intent = { label: '💡 Product Explorer', badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' };
+          intent = { label: '💡 Product Explorer', badge: 'bg-emerald-100 text-emerald-900 border-emerald-300' };
         } else if (hasCategoryClick || viewedCategories.size > 0) {
-          intent = { label: '📂 Category Browser', badge: 'bg-violet-500/20 text-violet-300 border-violet-500/30' };
+          intent = { label: '📂 Category Browser', badge: 'bg-purple-100 text-purple-900 border-purple-300' };
         }
 
-        // Generate consistent color theme based on ID
         let hash = 0;
         for (let c = 0; c < shopper.id.length; c++) hash = (hash * 31 + shopper.id.charCodeAt(c)) & 0xffffffff;
         const theme = colors[Math.abs(hash) % colors.length];
@@ -778,7 +1125,7 @@
 
       if (filtered.length === 0) {
         container.innerHTML = `
-          <div class="p-12 text-center text-zinc-500 text-xs border border-dashed border-zinc-800 rounded-xl">
+          <div class="p-12 text-center text-dabang-muted text-xs border border-dashed border-dabang-border rounded-2xl bg-[#FBFBFC]">
             No shoppers match the current filter "${currentShopperFilter}"${shopperSearchQuery ? ` and search "${shopperSearchQuery}"` : ''}.
           </div>
         `;
@@ -792,50 +1139,50 @@
           : `Shopper #${idx + 1} (${shopper.shortVid})`;
 
         return `
-          <div class="rounded-2xl border ${shopper.theme.border} bg-zinc-950 p-4 sm:p-5 space-y-3.5 shadow-sm transition hover:border-zinc-500">
+          <div class="rounded-3xl border border-dabang-border bg-white p-5 space-y-4 card-shadow card-shadow-hover transition">
             <!-- Shopper Card Header -->
-            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-zinc-900 pb-3.5">
-              <div class="flex items-start gap-3">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${shopper.theme.avatar} border shrink-0">
+            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-dabang-border pb-4">
+              <div class="flex items-start gap-3.5">
+                <div class="w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-sm ${shopper.theme.avatar} border shrink-0 shadow-sm">
                   #${idx + 1}
                 </div>
                 <div>
                   <div class="flex items-center gap-2 flex-wrap">
-                    <span class="font-bold text-white text-sm">${displayName}</span>
+                    <span class="font-bold text-dabang-navy text-sm">${displayName}</span>
                     ${shopper.isIdentified ? `
-                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                         <span>👤</span> Identified
                       </span>
                     ` : `
-                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-zinc-900 text-zinc-400 border border-zinc-800">
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold bg-[#F4F5F7] text-dabang-muted border border-dabang-border">
                         <span>🕵️</span> Anonymous
                       </span>
                     `}
                     ${shopper.isReturning ? `
-                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-violet-500/10 text-violet-300 border border-violet-500/20">
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-purple-100 text-purple-900 border border-purple-200">
                         <span>🔄</span> Came Back (${shopper.sessions.length} Visits)
                       </span>
                     ` : ''}
                     ${shopper.isActiveNow ? `
-                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
                         Active Now
                       </span>
                     ` : `
-                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-zinc-900 text-zinc-400 border border-zinc-800">
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium bg-[#F4F5F7] text-dabang-muted border border-dabang-border">
                         <span>🚪</span> Session Ended (${formatRelativeTime(shopper.lastSeen)})
                       </span>
                     `}
-                    <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold border ${shopper.intent.badge}">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold border ${shopper.intent.badge}">
                       ${shopper.intent.label}
                     </span>
-                    <span class="px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-zinc-900 text-zinc-300 border border-zinc-800">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-medium bg-[#F4F5F7] text-dabang-slate border border-dabang-border">
                       ${shopper.sessions.length} Session${shopper.sessions.length > 1 ? 's' : ''}
                     </span>
                   </div>
-                  <div class="flex items-center gap-2 text-[11px] text-zinc-400 font-mono mt-1 flex-wrap">
-                    <span>Cookie: <strong class="text-zinc-300">${shopper.visitorId}</strong></span>
-                    ${shopper.customerEmail ? `<span class="text-emerald-400 font-sans">• Linked to ${shopper.customerEmail}</span>` : ''}
+                  <div class="flex items-center gap-2 text-[11px] text-dabang-muted font-mono mt-1 flex-wrap">
+                    <span>Cookie: <strong class="text-dabang-navy">${shopper.visitorId}</strong></span>
+                    ${shopper.customerEmail ? `<span class="text-emerald-700 font-sans font-medium">• Linked to ${shopper.customerEmail}</span>` : ''}
                   </div>
                 </div>
               </div>
@@ -843,33 +1190,33 @@
               <!-- Top Right Summary -->
               <div class="flex items-center gap-4 text-right text-xs shrink-0 sm:pt-0.5">
                 <div>
-                  <div class="text-[11px] text-zinc-400">Total Actions</div>
-                  <div class="font-bold text-white text-sm">${shopper.totalEvents} activities</div>
+                  <div class="text-[11px] text-dabang-muted">Total Actions</div>
+                  <div class="font-bold text-dabang-navy text-sm">${shopper.totalEvents} activities</div>
                 </div>
                 <div>
-                  <div class="text-[11px] text-zinc-400">Latest Event (PHT)</div>
-                  <div class="font-medium text-amber-400 text-xs">${formatPhilippineTime(shopper.lastSeen)}</div>
-                  <div class="text-[10px] text-zinc-400">(${formatRelativeTime(shopper.lastSeen)})</div>
+                  <div class="text-[11px] text-dabang-muted">Latest Event (PHT)</div>
+                  <div class="font-bold text-dabang-primary text-xs">${formatPhilippineTime(shopper.lastSeen)}</div>
+                  <div class="text-[10px] text-dabang-muted">(${formatRelativeTime(shopper.lastSeen)})</div>
                 </div>
               </div>
             </div>
 
             <!-- Products & Collections Viewed Pill Row -->
             ${(shopper.viewedProducts.length > 0 || shopper.viewedCategories.length > 0) ? `
-              <div class="flex flex-wrap items-center gap-1.5 text-xs py-1 px-2.5 rounded-lg bg-zinc-900/40 border border-zinc-900">
-                <span class="text-[11px] text-zinc-400 font-medium mr-1">Fixtures & collections viewed:</span>
+              <div class="flex flex-wrap items-center gap-1.5 text-xs py-1.5 px-3 rounded-2xl bg-[#F8F9FA] border border-dabang-border">
+                <span class="text-[11px] text-dabang-muted font-medium mr-1">Fixtures & collections viewed:</span>
                 ${shopper.viewedProducts.slice(0, 4).map(p => `
-                  <span class="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] font-medium truncate max-w-[220px]" title="${p}">
+                  <span class="px-2.5 py-0.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-medium truncate max-w-[220px]" title="${p}">
                     💡 ${p}
                   </span>
                 `).join('')}
                 ${shopper.viewedProducts.length > 4 ? `
-                  <span class="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 text-[10px]">
+                  <span class="px-2 py-0.5 rounded-xl bg-[#EFF1F5] text-dabang-slate text-[10px] font-semibold">
                     +${shopper.viewedProducts.length - 4} more
                   </span>
                 ` : ''}
                 ${shopper.viewedCategories.slice(0, 2).map(c => `
-                  <span class="px-2 py-0.5 rounded-md bg-violet-500/10 border border-violet-500/20 text-violet-300 text-[11px] font-medium">
+                  <span class="px-2.5 py-0.5 rounded-xl bg-purple-50 border border-purple-200 text-purple-900 text-[11px] font-medium">
                     📂 ${c}
                   </span>
                 `).join('')}
@@ -877,7 +1224,7 @@
             ` : ''}
 
             <!-- Sessions Breakdown -->
-            <div class="space-y-2.5 pt-1">
+            <div class="space-y-3 pt-1">
               ${shopper.sessions.map(sess => {
                 const sessionKey = `${shopper.id}_sess_${sess.sessionNumber}`;
                 const isSessionExpanded = isShopperExpanded || expandedSessions.has(sessionKey);
@@ -885,29 +1232,29 @@
                 const hasMore = sess.events.length > 3;
 
                 return `
-                  <div class="rounded-xl bg-zinc-900/60 border border-zinc-800/80 p-3 space-y-2">
-                    <div class="flex items-center justify-between text-xs pb-1 border-b border-zinc-800">
+                  <div class="rounded-2xl bg-[#F8F9FA] border border-dabang-border p-3.5 space-y-2.5">
+                    <div class="flex items-center justify-between text-xs pb-1.5 border-b border-dabang-border">
                       <div class="flex items-center gap-2">
-                        <span class="font-bold text-zinc-200">Session #${sess.sessionNumber}</span>
-                        <span class="text-[11px] text-zinc-400">(${sess.events.length} actions in this visit)</span>
+                        <span class="font-bold text-dabang-navy">Session #${sess.sessionNumber}</span>
+                        <span class="text-[11px] text-dabang-muted">(${sess.events.length} actions in this visit)</span>
                         ${sess.isActive ? `
-                          <span class="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">Active Visit</span>
+                          <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold">Active Visit</span>
                         ` : ''}
                       </div>
-                      <div class="text-[11px] text-zinc-400">
+                      <div class="text-[11px] text-dabang-muted font-medium">
                         ${formatPhilippineTime(sess.startTime)} &rarr; ${formatPhilippineTime(sess.endTime)}
                       </div>
                     </div>
 
                     <!-- Events List -->
-                    <div class="space-y-1.5">
+                    <div class="space-y-2">
                       ${displayEvents.map(ev => renderEventRow(ev)).join('')}
                     </div>
 
                     <!-- Expansion toggle if session has > 3 events -->
                     ${hasMore ? `
                       <div class="pt-1 text-center">
-                        <button onclick="toggleSessionExpand('${sessionKey}')" class="text-[11px] font-semibold text-amber-400 hover:text-amber-300 transition">
+                        <button onclick="toggleSessionExpand('${sessionKey}')" class="text-[11px] font-semibold text-dabang-primary hover:text-dabang-primaryHover transition">
                           ${isSessionExpanded ? '▲ Collapse session actions' : `▼ View all ${sess.events.length} actions in Session #${sess.sessionNumber}`}
                         </button>
                       </div>
@@ -926,81 +1273,81 @@
       const props = ev.properties || {};
       let actionIcon = '⚡';
       let actionBadge = 'EVENT';
-      let badgeColor = 'bg-zinc-800 text-zinc-300 border-zinc-700';
+      let badgeColor = 'bg-slate-100 text-dabang-slate border-slate-200';
       let detailsHtml = '';
 
       if (ev.eventType === 'item_click') {
-        actionIcon = '🟡';
+        actionIcon = '💡';
         actionBadge = 'PRODUCT CLICK';
-        badgeColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+        badgeColor = 'bg-amber-100 text-amber-900 border-amber-200';
         detailsHtml = `
           <div>
-            <span class="text-amber-300 font-bold">${props.title || 'Product'}</span>
-            ${props.price ? `<span class="ml-1.5 text-emerald-400 font-bold">(${props.price})</span>` : ''}
-            ${props.url ? `<a href="${props.url}" target="_blank" class="ml-1 text-zinc-500 hover:text-white font-mono underline text-[10.5px]">link</a>` : ''}
+            <span class="text-dabang-navy font-bold">${props.title || 'Product'}</span>
+            ${props.price ? `<span class="ml-1.5 text-emerald-700 font-bold">(${props.price})</span>` : ''}
+            ${props.url ? `<a href="${props.url}" target="_blank" class="ml-1.5 text-dabang-primary hover:underline font-mono text-[10.5px]">open</a>` : ''}
           </div>
         `;
       } else if (ev.eventType === 'category_click') {
-        actionIcon = '💡';
+        actionIcon = '📂';
         actionBadge = 'COLLECTION';
-        badgeColor = 'bg-violet-500/10 text-violet-400 border-violet-500/20';
+        badgeColor = 'bg-purple-100 text-purple-900 border-purple-200';
         detailsHtml = `
           <div>
-            <span class="text-violet-300 font-bold">${props.title || 'Collection'}</span>
-            <span class="ml-1 text-zinc-400 font-mono text-[10.5px]">${props.path || props.url || ''}</span>
+            <span class="text-purple-950 font-bold">${props.title || 'Collection'}</span>
+            <span class="ml-1 text-dabang-muted font-mono text-[10.5px]">${props.path || props.url || ''}</span>
           </div>
         `;
       } else if (ev.eventType === 'page_view') {
         actionIcon = '🟢';
         actionBadge = 'PAGE ACCESS';
-        badgeColor = 'bg-sky-500/10 text-sky-400 border-sky-500/20';
+        badgeColor = 'bg-sky-100 text-sky-900 border-sky-200';
         detailsHtml = `
           <div>
-            <span class="text-zinc-200 font-mono">${props.path || props.url || '/'}</span>
-            ${props.title ? `<span class="ml-1 text-zinc-400 truncate">"${props.title}"</span>` : ''}
-            ${props.productPrice ? `<span class="ml-1.5 text-emerald-400 font-bold text-[10.5px]">(${props.productPrice})</span>` : ''}
+            <span class="text-dabang-navy font-mono">${props.path || props.url || '/'}</span>
+            ${props.title ? `<span class="ml-1 text-dabang-muted truncate">"${props.title}"</span>` : ''}
+            ${props.productPrice ? `<span class="ml-1.5 text-emerald-700 font-bold text-[10.5px]">(${props.productPrice})</span>` : ''}
           </div>
         `;
       } else if (ev.eventType === 'page_leave') {
         actionIcon = '🚪';
         actionBadge = 'PAGE LEAVE';
-        badgeColor = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+        badgeColor = 'bg-rose-100 text-rose-900 border-rose-200';
         detailsHtml = `
           <div>
-            <span class="text-zinc-300 font-mono">${props.path || props.url || '/'}</span>
-            <span class="ml-2 text-zinc-400 text-[10.5px]">Stayed: <strong class="text-zinc-200">${props.duration_seconds || 0}s</strong>${props.max_scroll_percent ? ` • Scrolled ${props.max_scroll_percent}%` : ''}</span>
+            <span class="text-dabang-slate font-mono">${props.path || props.url || '/'}</span>
+            <span class="ml-2 text-dabang-muted text-[10.5px]">Stayed: <strong class="text-dabang-navy">${props.duration_seconds || 0}s</strong>${props.max_scroll_percent ? ` • Scrolled ${props.max_scroll_percent}%` : ''}</span>
           </div>
         `;
       } else if (ev.eventType === 'add_to_cart' || ev.eventType === 'add_to_cart_click') {
         actionIcon = '🛒';
         actionBadge = 'ADD TO CART';
-        badgeColor = 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+        badgeColor = 'bg-orange-100 text-orange-900 border-orange-200';
         detailsHtml = `
           <div>
-            <span class="text-orange-300 font-bold">Added item to cart: ${props.title || 'Product'}</span>
-            ${props.price ? `<span class="ml-1.5 text-emerald-400 font-bold text-[10.5px]">(${props.price})</span>` : ''}
+            <span class="text-orange-950 font-bold">Added to cart: ${props.title || 'Product'}</span>
+            ${props.price ? `<span class="ml-1.5 text-emerald-700 font-bold text-[10.5px]">(${props.price})</span>` : ''}
           </div>
         `;
       } else if (ev.eventType === 'identify' || ev.eventType === 'checkout_identify') {
         actionIcon = '🎉';
         actionBadge = 'IDENTIFIED';
-        badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+        badgeColor = 'bg-emerald-100 text-emerald-900 border-emerald-200';
         detailsHtml = `
           <div>
-            <span class="text-emerald-300 font-bold">Entered checkout email: ${ev.customerEmail}</span>
-            <span class="ml-1 text-zinc-400 text-[10.5px]">(stitched anonymous history)</span>
+            <span class="text-emerald-900 font-bold">Entered checkout email: ${ev.customerEmail}</span>
+            <span class="ml-1 text-dabang-muted text-[10.5px]">(stitched anonymous history)</span>
           </div>
         `;
       } else {
         actionIcon = '⚡';
         actionBadge = ev.eventType.toUpperCase();
-        detailsHtml = `<span class="text-zinc-300 font-mono text-[10.5px] truncate">${JSON.stringify(props)}</span>`;
+        detailsHtml = `<span class="text-dabang-slate font-mono text-[10.5px] truncate">${JSON.stringify(props)}</span>`;
       }
 
       return `
-        <div class="flex items-start justify-between gap-2 text-xs p-2 rounded-lg bg-zinc-950/80 border border-zinc-800/60">
+        <div class="flex items-start justify-between gap-2 text-xs p-2.5 rounded-xl bg-white border border-dabang-border shadow-2xs">
           <div class="flex items-start gap-2 flex-1 min-w-0">
-            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold border ${badgeColor} shrink-0 mt-0.5 flex items-center gap-1">
+            <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold border ${badgeColor} shrink-0 mt-0.5 flex items-center gap-1">
               <span>${actionIcon}</span>
               <span>${actionBadge}</span>
             </span>
@@ -1008,9 +1355,9 @@
               ${detailsHtml}
             </div>
           </div>
-          <div class="text-[10.5px] text-zinc-400 whitespace-nowrap text-right shrink-0">
+          <div class="text-[10.5px] text-dabang-muted whitespace-nowrap text-right shrink-0">
             <div>${formatPhilippineTime(ev.createdAt)}</div>
-            <div class="text-zinc-500 text-[10px]">(${formatRelativeTime(ev.createdAt)})</div>
+            <div class="text-[10px] text-dabang-muted">(${formatRelativeTime(ev.createdAt)})</div>
           </div>
         </div>
       `;
@@ -1031,14 +1378,12 @@
         return true;
       });
 
-      // Strictly sort most recent event to least recent
       filtered.sort((a, b) => parseToDate(b.createdAt).getTime() - parseToDate(a.createdAt).getTime());
-
       document.getElementById('activity-counter-pill').textContent = `${filtered.length} Stream Activities`;
 
       if (filtered.length === 0) {
         container.innerHTML = `
-          <div class="col-span-full p-12 text-center text-zinc-500 text-xs border border-dashed border-zinc-800 rounded-xl">
+          <div class="col-span-full p-12 text-center text-dabang-muted text-xs border border-dashed border-dabang-border rounded-2xl bg-[#FBFBFC]">
             No activities matching the "${currentFilter}" stream filter.
           </div>
         `;
@@ -1049,99 +1394,99 @@
         const props = ev.properties || {};
         const isId = ev.isIdentified;
         const identityHtml = isId
-          ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 truncate max-w-[190px]">
+          ? `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 truncate max-w-[190px]">
                <span>👤</span>
                <span class="truncate">${ev.customerEmail}</span>
              </span>`
-          : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono text-zinc-400 bg-zinc-800 border border-zinc-700 truncate max-w-[190px]">
+          : `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono text-dabang-slate bg-[#F4F5F7] border border-dabang-border truncate max-w-[190px]">
                <span>🕵️</span>
                <span class="truncate">${ev.visitorId || 'visitor'}</span>
              </span>`;
 
         let actionIcon = '⚡';
         let actionBadge = 'EVENT';
-        let badgeColor = 'bg-zinc-800 text-zinc-300 border-zinc-700';
+        let badgeColor = 'bg-slate-100 text-dabang-slate border-slate-200';
         let summaryHtml = '';
 
         if (ev.eventType === 'item_click') {
-          actionIcon = '🟡';
+          actionIcon = '💡';
           actionBadge = 'PRODUCT CLICK';
-          badgeColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+          badgeColor = 'bg-amber-100 text-amber-900 border-amber-200';
           summaryHtml = `
             <div>
-              <div class="text-amber-300 font-bold text-xs truncate" title="${props.title || 'Product'}">${props.title || 'Product'}</div>
+              <div class="text-dabang-navy font-bold text-xs truncate" title="${props.title || 'Product'}">${props.title || 'Product'}</div>
               <div class="flex items-center gap-2 mt-1">
-                ${props.price ? `<span class="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 font-bold text-[11px]">${props.price}</span>` : ''}
-                ${props.url ? `<a href="${props.url}" target="_blank" class="text-[11px] text-zinc-400 hover:text-white font-mono truncate underline">${props.url.replace('https://homecartel.net', '')}</a>` : ''}
+                ${props.price ? `<span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[11px]">${props.price}</span>` : ''}
+                ${props.url ? `<a href="${props.url}" target="_blank" class="text-[11px] text-dabang-primary hover:underline font-mono truncate">${props.url.replace('https://homecartel.net', '')}</a>` : ''}
               </div>
             </div>
           `;
         } else if (ev.eventType === 'category_click') {
-          actionIcon = '💡';
+          actionIcon = '📂';
           actionBadge = 'CATEGORY / COLLECTION';
-          badgeColor = 'bg-violet-500/10 text-violet-400 border-violet-500/20';
+          badgeColor = 'bg-purple-100 text-purple-900 border-purple-200';
           summaryHtml = `
             <div>
-              <div class="text-violet-300 font-bold text-xs">${props.title || 'Collection'}</div>
-              <div class="text-[11px] text-zinc-400 font-mono mt-0.5 truncate">${props.path || props.url || '/collections'}</div>
+              <div class="text-purple-950 font-bold text-xs">${props.title || 'Collection'}</div>
+              <div class="text-[11px] text-dabang-muted font-mono mt-0.5 truncate">${props.path || props.url || '/collections'}</div>
             </div>
           `;
         } else if (ev.eventType === 'page_view') {
           actionIcon = '🟢';
           actionBadge = 'PAGE ACCESS';
-          badgeColor = 'bg-sky-500/10 text-sky-400 border-sky-500/20';
+          badgeColor = 'bg-sky-100 text-sky-900 border-sky-200';
           summaryHtml = `
             <div>
-              <div class="text-zinc-200 font-mono text-xs truncate" title="${props.path || props.url || '/'}">${props.path || props.url || '/'}</div>
-              ${props.title ? `<div class="text-[11px] text-zinc-400 mt-0.5 truncate">"${props.title}"</div>` : ''}
-              ${props.productPrice ? `<span class="inline-block mt-1 px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 font-bold text-[10px]">${props.productPrice}</span>` : ''}
+              <div class="text-dabang-navy font-mono text-xs truncate" title="${props.path || props.url || '/'}">${props.path || props.url || '/'}</div>
+              ${props.title ? `<div class="text-[11px] text-dabang-muted mt-0.5 truncate">"${props.title}"</div>` : ''}
+              ${props.productPrice ? `<span class="inline-block mt-1 px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px]">${props.productPrice}</span>` : ''}
             </div>
           `;
         } else if (ev.eventType === 'page_leave') {
           actionIcon = '🚪';
           actionBadge = 'PAGE LEAVE';
-          badgeColor = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+          badgeColor = 'bg-rose-100 text-rose-900 border-rose-200';
           summaryHtml = `
             <div>
-              <div class="text-zinc-300 font-mono text-xs truncate">${props.path || props.url || '/'}</div>
-              <div class="text-[11px] text-zinc-400 mt-1 flex items-center gap-2">
-                <span>Stayed: <strong class="text-zinc-200">${props.duration_seconds || 0}s</strong></span>
-                ${props.max_scroll_percent ? `<span>&bull; Scrolled: <strong class="text-zinc-200">${props.max_scroll_percent}%</strong></span>` : ''}
+              <div class="text-dabang-slate font-mono text-xs truncate">${props.path || props.url || '/'}</div>
+              <div class="text-[11px] text-dabang-muted mt-1 flex items-center gap-2">
+                <span>Stayed: <strong class="text-dabang-navy">${props.duration_seconds || 0}s</strong></span>
+                ${props.max_scroll_percent ? `<span>&bull; Scrolled: <strong class="text-dabang-navy">${props.max_scroll_percent}%</strong></span>` : ''}
               </div>
             </div>
           `;
         } else if (ev.eventType === 'add_to_cart' || ev.eventType === 'add_to_cart_click') {
           actionIcon = '🛒';
           actionBadge = 'ADD TO CART';
-          badgeColor = 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+          badgeColor = 'bg-orange-100 text-orange-900 border-orange-200';
           summaryHtml = `
             <div>
-              <div class="text-orange-300 font-bold text-xs">${props.title || 'Cart Item'}</div>
-              ${props.price ? `<div class="text-[11px] text-emerald-400 font-bold mt-0.5">${props.price}</div>` : ''}
+              <div class="text-orange-950 font-bold text-xs">${props.title || 'Cart Item'}</div>
+              ${props.price ? `<div class="text-[11px] text-emerald-700 font-bold mt-0.5">${props.price}</div>` : ''}
             </div>
           `;
         } else if (ev.eventType === 'identify' || ev.eventType === 'checkout_identify') {
           actionIcon = '🎉';
           actionBadge = 'IDENTITY STITCHED';
-          badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+          badgeColor = 'bg-emerald-100 text-emerald-900 border-emerald-200';
           summaryHtml = `
-            <div class="p-2 rounded bg-emerald-950/40 border border-emerald-800/40">
-              <span class="text-emerald-300 font-bold text-xs">Shopper entered checkout email!</span>
-              <div class="text-[11px] text-zinc-300 mt-0.5">
-                Stitched <strong class="text-amber-400">${props.reconciledEvents || 0} past actions</strong> to <strong class="text-emerald-400">${ev.customerEmail}</strong>.
+            <div class="p-2 rounded-xl bg-emerald-50 border border-emerald-200">
+              <span class="text-emerald-900 font-bold text-xs">Shopper entered checkout email!</span>
+              <div class="text-[11px] text-dabang-slate mt-0.5">
+                Stitched <strong class="text-amber-800">${props.reconciledEvents || 0} past actions</strong> to <strong class="text-emerald-800">${ev.customerEmail}</strong>.
               </div>
             </div>
           `;
         } else {
           actionIcon = '⚡';
           actionBadge = ev.eventType.toUpperCase();
-          summaryHtml = `<div class="text-zinc-300 font-mono text-xs truncate">${JSON.stringify(props)}</div>`;
+          summaryHtml = `<div class="text-dabang-slate font-mono text-xs truncate">${JSON.stringify(props)}</div>`;
         }
 
         return `
-          <div class="p-3.5 rounded-xl bg-zinc-950 border border-zinc-800/80 hover:border-zinc-700 transition space-y-2 event-card flex flex-col justify-between" data-visitor="${ev.visitorId}">
+          <div class="p-4 rounded-2xl bg-white border border-dabang-border card-shadow hover:shadow-md transition space-y-2 event-card flex flex-col justify-between" data-visitor="${ev.visitorId}">
             <div class="flex items-center justify-between gap-1.5 text-xs">
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeColor} flex items-center gap-1 shrink-0">
+              <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold border ${badgeColor} flex items-center gap-1 shrink-0">
                 <span>${actionIcon}</span>
                 <span>${actionBadge}</span>
               </span>
@@ -1150,9 +1495,9 @@
             <div class="text-xs pt-1 flex-1">
               ${summaryHtml}
             </div>
-            <div class="text-[10.5px] text-zinc-400 pt-1.5 border-t border-zinc-900 flex items-center justify-between">
+            <div class="text-[10.5px] text-dabang-muted pt-2 border-t border-dabang-border flex items-center justify-between">
               <span>${formatPhilippineTime(ev.createdAt)}</span>
-              <span class="text-zinc-400">(${formatRelativeTime(ev.createdAt)})</span>
+              <span class="text-dabang-muted">(${formatRelativeTime(ev.createdAt)})</span>
             </div>
           </div>
         `;
@@ -1168,13 +1513,13 @@
       const streamBar = document.getElementById('stream-control-bar');
 
       if (mode === 'shoppers') {
-        shoppersBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-amber-500 text-black shadow';
-        streamBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 text-zinc-400 hover:text-white';
+        shoppersBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-dabang-primary text-white shadow-sm';
+        streamBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 text-dabang-muted hover:text-dabang-navy';
         shoppersBar.classList.remove('hidden');
         streamBar.classList.add('hidden');
       } else {
-        streamBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-amber-500 text-black shadow';
-        shoppersBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 text-zinc-400 hover:text-white';
+        streamBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-dabang-primary text-white shadow-sm';
+        shoppersBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 text-dabang-muted hover:text-dabang-navy';
         streamBar.classList.remove('hidden');
         shoppersBar.classList.add('hidden');
       }
@@ -1184,10 +1529,10 @@
     function filterShoppers(category) {
       currentShopperFilter = category;
       document.querySelectorAll('.shopper-filter-btn').forEach(btn => {
-        btn.className = 'shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800';
+        btn.className = 'shopper-filter-btn px-3 py-1.5 rounded-xl bg-white text-dabang-slate hover:text-dabang-navy border border-dabang-border font-medium transition';
       });
       const activeBtn = document.getElementById(`shopper-filter-${category}`);
-      if (activeBtn) activeBtn.className = 'shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-800 text-white font-medium border border-zinc-700';
+      if (activeBtn) activeBtn.className = 'shopper-filter-btn px-3 py-1.5 rounded-xl bg-dabang-navy text-white font-semibold shadow-sm transition';
       renderShoppersView();
     }
 
@@ -1221,9 +1566,9 @@
       currentFilter = category;
       document.querySelectorAll('.event-filter-btn').forEach(btn => {
         if (btn.getAttribute('data-filter') === category) {
-          btn.className = 'event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-800 text-white font-medium border border-zinc-700';
+          btn.className = 'event-filter-btn px-3 py-1.5 rounded-xl bg-dabang-navy text-white font-medium shadow-sm';
         } else {
-          btn.className = 'event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800';
+          btn.className = 'event-filter-btn px-3 py-1.5 rounded-xl bg-white text-dabang-slate hover:text-dabang-navy border border-dabang-border font-medium';
         }
       });
       renderStreamView();
@@ -1237,8 +1582,8 @@
       try {
         const es = new EventSource('/api/admin/events/stream');
         es.onopen = function() {
-          badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-          dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse';
+          badge.className = 'inline-flex items-center px-3 py-1.5 rounded-2xl text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0';
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse';
           label.textContent = 'LIVE STREAMING';
         };
 
@@ -1272,8 +1617,8 @@
         };
 
         es.onerror = function() {
-          badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20';
-          dot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5';
+          badge.className = 'inline-flex items-center px-3 py-1.5 rounded-2xl text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 shrink-0';
+          dot.className = 'w-2 h-2 rounded-full bg-amber-500 mr-2';
           label.textContent = 'RECONNECTING';
         };
       } catch (e) {}
@@ -1337,14 +1682,14 @@
           const logsTbody = document.getElementById('logs-tbody');
           if (data.logs && data.logs.length > 0) {
             logsTbody.innerHTML = data.logs.map(l => `
-              <tr class="hover:bg-zinc-900/50 transition">
-                <td class="py-2.5 px-4 font-medium text-white">${l.recipient_email}</td>
-                <td class="py-2.5 px-4 text-emerald-400 font-semibold">${l.flow_name}</td>
-                <td class="py-2.5 px-4 text-right text-zinc-400">${formatPhilippineTime(l.sent_at)}</td>
+              <tr class="hover:bg-[#FBFBFC] transition">
+                <td class="py-3 px-4 font-semibold text-dabang-navy">${l.recipient_email}</td>
+                <td class="py-3 px-4 text-emerald-700 font-bold">${l.flow_name}</td>
+                <td class="py-3 px-4 text-right text-dabang-muted">${formatPhilippineTime(l.sent_at)}</td>
               </tr>
             `).join('');
           } else {
-            logsTbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-zinc-500">No emails dispatched yet.</td></tr>';
+            logsTbody.innerHTML = '<tr><td colspan="3" class="p-6 text-center text-dabang-muted">No emails dispatched yet.</td></tr>';
           }
         }
       } catch (e) {}
