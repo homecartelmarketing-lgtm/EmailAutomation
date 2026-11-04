@@ -173,4 +173,37 @@ describe('Tracking API Routes', () => {
       expect(e.customer_name).toBe('Sophia Valenzuela');
     });
   });
+
+  it('provides public store visit and anonymous visitor counters via GET /api/track/counter', async () => {
+    // 1. First anonymous visitor visits 2 pages
+    await app.inject({
+      method: 'POST',
+      url: '/api/track/event',
+      payload: { visitorId: 'anon_1', eventType: 'page_view', properties: { path: '/' } }
+    });
+    await app.inject({
+      method: 'POST',
+      url: '/api/track/event',
+      payload: { visitorId: 'anon_1', eventType: 'page_view', properties: { path: '/collections/all' } }
+    });
+
+    // 2. Second anonymous visitor visits 1 page
+    await app.inject({
+      method: 'POST',
+      url: '/api/track/event',
+      payload: { visitorId: 'anon_2', eventType: 'page_view', properties: { path: '/products/lamp' } }
+    });
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/track/counter'
+    });
+
+    expect(res.statusCode).toBe(200);
+    const data = JSON.parse(res.body);
+    expect(data.storeVisits).toBe(3);
+    expect(data.uniqueVisitors).toBe(2);
+    expect(data.anonymousVisitors).toBe(2);
+    expect(data.activeNow).toBe(2);
+  });
 });

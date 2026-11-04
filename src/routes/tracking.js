@@ -95,4 +95,31 @@ export async function registerTrackingRoutes(app, { db }) {
     db.linkVisitorToCartToken(visitorId, cartToken);
     return reply.code(200).send({ success: true });
   });
+
+  // Public real-time visitor & store visit counter endpoint (for other projects/dashboards)
+  app.get('/api/track/counter', async (req, reply) => {
+    try {
+      // 1. Total store page visits
+      const totalVisitsRow = db.rawDb.prepare("SELECT COUNT(*) AS count FROM events WHERE event_type = 'page_view'").get();
+
+      // 2. Total unique visitors (all-time)
+      const uniqueVisitorsRow = db.rawDb.prepare("SELECT COUNT(DISTINCT visitor_id) AS count FROM events WHERE visitor_id IS NOT NULL").get();
+
+      // 3. Unique anonymous visitors (unidentified shoppers)
+      const anonymousVisitorsRow = db.rawDb.prepare("SELECT COUNT(DISTINCT visitor_id) AS count FROM events WHERE visitor_id IS NOT NULL AND customer_id IS NULL").get();
+
+      // 4. Active visitors right now (browsed within the last 15 minutes)
+      const activeNowRow = db.rawDb.prepare("SELECT COUNT(DISTINCT visitor_id) AS count FROM events WHERE created_at >= datetime('now', '-15 minutes')").get();
+
+      return {
+        storeVisits: totalVisitsRow?.count || 0,
+        uniqueVisitors: uniqueVisitorsRow?.count || 0,
+        anonymousVisitors: anonymousVisitorsRow?.count || 0,
+        activeNow: activeNowRow?.count || 0,
+        asOf: new Date().toISOString()
+      };
+    } catch (err) {
+      return reply.code(500).send({ error: err.message });
+    }
+  });
 }
