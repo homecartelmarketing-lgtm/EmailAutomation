@@ -26,6 +26,8 @@ export function loadConfig(env = process.env) {
     emailProvider: env.EMAIL_PROVIDER || env['EMAIL PROVIDER'] || 'mock',
     resendApiKey: env.RESEND_API_KEY || env['RESEND API KEY'] || '',
     fromEmail: env.FROM_EMAIL || env['FROM EMAIL'] || 'HomeCartel <support@homecartel.net>',
-    dbPath: env.DB_PATH || './data/homecartel.db'
+    dbPath: env.DB_PATH || './data/homecartel.db',
+    // Safety lock: Auto dispatch is disabled by default to prevent sending emails to clients without manual approval
+    autoDispatch: env.ENABLE_AUTO_DISPATCH === 'true'
   };
 }

@@ -51,12 +51,12 @@
         <div>
           <h1 class="text-xl font-bold tracking-tight text-[var(--foreground)] flex items-center gap-2">
             HomeCartel Automation Console
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
-              Live (Railway)
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5"></span>
+              Manual Review Mode Active
             </span>
           </h1>
-          <p class="text-sm text-[var(--muted-foreground)]">Real-time shopper behavior tracking, anonymous identity stitching & behavioral triggers</p>
+          <p class="text-sm text-[var(--muted-foreground)]">Behavioral tracking active &bull; Auto-send paused &bull; One-click manual flow dispatch (Flows 1–5)</p>
         </div>
       </div>
       <div class="flex items-center gap-3">
@@ -67,10 +67,6 @@
         <button onclick="refreshData()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90 transition flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           Refresh Feed
-        </button>
-        <button onclick="triggerAction('run_scheduler')" class="px-4 py-2 text-xs font-bold rounded-lg bg-amber-600 text-white hover:bg-amber-700 shadow-sm transition flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-          Run Scheduler Cycle
         </button>
       </div>
     </div>
@@ -83,28 +79,89 @@
         <p class="text-[12px] text-emerald-500 mt-0.5">Identified shoppers</p>
       </div>
       <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+        <p class="text-xs text-[var(--muted-foreground)] font-medium">Staged for Manual Send</p>
+        <p id="stat-pending" class="text-2xl font-bold mt-1 text-amber-400">0</p>
+        <p class="text-[12px] text-amber-400/80 mt-0.5">Clients awaiting click</p>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
         <p class="text-xs text-[var(--muted-foreground)] font-medium">Abandoned Carts</p>
-        <p id="stat-abandoned" class="text-2xl font-bold mt-1 text-amber-500">0</p>
-        <p class="text-[12px] text-[var(--muted-foreground)] mt-0.5">Pending recovery</p>
+        <p id="stat-abandoned" class="text-2xl font-bold mt-1 text-zinc-300">0</p>
+        <p class="text-[12px] text-[var(--muted-foreground)] mt-0.5">Captured carts</p>
       </div>
       <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
         <p class="text-xs text-[var(--muted-foreground)] font-medium">Recovered Orders</p>
         <p id="stat-recovered" class="text-2xl font-bold mt-1 text-emerald-500">0</p>
         <p class="text-[12px] text-[var(--muted-foreground)] mt-0.5">Purchased after cart</p>
       </div>
-      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
-        <p class="text-xs text-[var(--muted-foreground)] font-medium">Scheduled Queue</p>
-        <p id="stat-pending" class="text-2xl font-bold mt-1 text-sky-500">0</p>
-        <p class="text-[12px] text-[var(--muted-foreground)] mt-0.5">Due for dispatch</p>
-      </div>
       <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm col-span-2 md:col-span-1">
-        <p class="text-xs text-[var(--muted-foreground)] font-medium">Total Events Logged</p>
-        <p id="stat-events" class="text-2xl font-bold mt-1 text-violet-400">0</p>
-        <p class="text-[12px] text-violet-400 mt-0.5">Real-time clicks & views</p>
+        <p class="text-xs text-[var(--muted-foreground)] font-medium">Delivered Emails</p>
+        <p id="stat-sent" class="text-2xl font-bold mt-1 text-violet-400">0</p>
+        <p class="text-[12px] text-violet-400 mt-0.5">Manually sent so far</p>
       </div>
     </div>
 
-    <!-- REAL-TIME SHOPPER ACTIVITY STREAM SECTION -->
+    <!-- NOTIFICATION ALERT -->
+    <div id="action-notification" class="hidden p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 font-semibold flex items-center justify-between">
+      <span id="action-notification-text">Message</span>
+      <button onclick="document.getElementById('action-notification').classList.add('hidden')" class="text-emerald-400 hover:text-white">✕</button>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- SECTION 1: STAGED CLIENT BEHAVIORAL FLOWS (MANUAL SEND ONLY) -->
+    <!-- ========================================================================= -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border)] pb-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              <span>📋</span> Staged Client Flows &amp; Scheduled Delay Queue (Manual Send Control)
+            </h2>
+            <span id="staged-count-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              0 Clients Staged
+            </span>
+          </div>
+          <p class="text-xs text-zinc-400 mt-0.5">
+            Automated emails are paused. When clients trigger any behavior (Flows 1–5), they are safely listed below. Click <strong>"Send Flow Email"</strong> to review and dispatch.
+          </p>
+        </div>
+
+        <!-- Quick Stage Simulators for Testing -->
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="text-[11px] text-zinc-400 font-medium">Test Stage:</span>
+          <button onclick="stageSimulatedFlow('flow_1')" class="px-2 py-1 text-[11px] font-semibold rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition">+ Flow 1</button>
+          <button onclick="stageSimulatedFlow('flow_2')" class="px-2 py-1 text-[11px] font-semibold rounded bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 transition">+ Flow 2</button>
+          <button onclick="stageSimulatedFlow('flow_3')" class="px-2 py-1 text-[11px] font-semibold rounded bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/30 transition">+ Flow 3</button>
+          <button onclick="stageSimulatedFlow('flow_4')" class="px-2 py-1 text-[11px] font-semibold rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition">+ Flow 4</button>
+          <button onclick="stageSimulatedFlow('flow_5')" class="px-2 py-1 text-[11px] font-semibold rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition">+ Flow 5</button>
+        </div>
+      </div>
+
+      <!-- Staged Clients Table -->
+      <div class="overflow-x-auto border border-zinc-800 rounded-xl bg-zinc-950">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-zinc-900/80 text-zinc-400 font-semibold border-b border-zinc-800">
+            <tr>
+              <th class="py-3 px-4">Client Recipient</th>
+              <th class="py-3 px-4">Triggered Behavioral Flow</th>
+              <th class="py-3 px-4">Activity &amp; Cart Context</th>
+              <th class="py-3 px-4">Triggered Time</th>
+              <th class="py-3 px-4 text-right">Manual Action</th>
+            </tr>
+          </thead>
+          <tbody id="staged-flows-tbody" class="divide-y divide-zinc-800/80 text-zinc-200">
+            <tr>
+              <td colspan="5" class="p-8 text-center text-zinc-500">
+                No clients currently staged. Real shopper triggers will appear here automatically, or click any "+ Flow" button above to test!
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- SECTION 2: REAL-TIME SHOPPER ACTIVITY STREAM -->
+    <!-- ========================================================================= -->
     <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border)] pb-4">
         <div>
@@ -118,7 +175,7 @@
             </span>
           </div>
           <p class="text-xs text-zinc-400 mt-0.5">
-            Logs clicks, page views, duration before leaving, and auto-updates anonymous history when checkout email is entered.
+            Watches live clicks, page views, and duration before leaving. When shopper enters checkout email, all prior actions are stitched.
           </p>
         </div>
 
@@ -141,110 +198,49 @@
       </div>
 
       <!-- Feed Container -->
-      <div id="events-feed" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
+      <div id="events-feed" class="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
         <div class="p-8 text-center text-zinc-500 text-xs border border-dashed border-zinc-800 rounded-xl">
-          Waiting for live shopper activity... Click "Simulate Full Shopper Journey" above to test live!
+          Waiting for live shopper activity...
         </div>
       </div>
     </div>
 
-    <!-- Interactive Simulation Hub -->
-    <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 shadow-sm">
-      <h2 class="text-base font-semibold text-[var(--foreground)] mb-1">Interactive Trigger Simulation</h2>
-      <p class="text-xs text-[var(--muted-foreground)] mb-4">Simulate Shopify behavioral webhooks live:</p>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <button onclick="triggerAction('abandoned_cart')" class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-amber-500/50 hover:bg-amber-500/5 text-left transition group">
-          <div class="flex items-center justify-between mb-1.5">
-            <span class="text-xs font-bold text-amber-500 flex items-center gap-1.5">
-              <span>🛒</span> Abandoned Cart Webhook
-            </span>
-            <span class="text-[12px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500">Flow 1</span>
-          </div>
-          <p class="text-[12px] text-[var(--muted-foreground)]">Simulates Sophia leaving a ₱26,900 Chandelier in checkout.</p>
-        </button>
-
-        <button onclick="triggerAction('order_complete')" class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-emerald-500/50 hover:bg-emerald-500/5 text-left transition group">
-          <div class="flex items-center justify-between mb-1.5">
-            <span class="text-xs font-bold text-emerald-500 flex items-center gap-1.5">
-              <span>✅</span> Order Completed
-            </span>
-            <span class="text-[12px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500">Recovery</span>
-          </div>
-          <p class="text-[12px] text-[var(--muted-foreground)]">Simulates purchase, cancelling pending cart reminder instantly.</p>
-        </button>
-
-        <button onclick="triggerAction('welcome')" class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-sky-500/50 hover:bg-sky-500/5 text-left transition group">
-          <div class="flex items-center justify-between mb-1.5">
-            <span class="text-xs font-bold text-sky-500 flex items-center gap-1.5">
-              <span>✉️</span> New Newsletter Signup
-            </span>
-            <span class="text-[12px] px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-500">Flow 2</span>
-          </div>
-          <p class="text-[12px] text-[var(--muted-foreground)]">Simulates new customer subscription and queues welcome guide.</p>
-        </button>
-      </div>
-
-      <!-- Send Real Test Email Section -->
-      <div class="mt-5 pt-4 border-t border-[var(--border)]">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2.5">
-          <div>
-            <h3 class="text-xs font-bold text-[var(--foreground)] flex items-center gap-1.5">
-              <span>🚀</span> Send Real Test Email to Any Inbox
-            </h3>
-            <p class="text-[12px] text-[var(--muted-foreground)]">Dispatch a live branded email directly to your personal email address.</p>
-          </div>
-        </div>
-        <div class="flex flex-col sm:flex-row gap-2.5">
-          <input id="test-email-input" type="email" placeholder="Enter your email (e.g. yourname@gmail.com)" class="flex-1 text-xs bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] focus:outline-none focus:border-amber-500">
-          <select id="test-email-template" class="text-xs bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] focus:outline-none">
-            <option value="abandoned_cart">Flow 1: Abandoned Cart</option>
-            <option value="welcome">Flow 2: Welcome Series</option>
-            <option value="post_purchase">Flow 4: Post-Purchase Care</option>
-            <option value="browse_abandonment">Flow 3: Browse Abandonment</option>
-            <option value="winback">Flow 5: Winback</option>
-          </select>
-          <button onclick="sendRealTestEmail()" id="btn-send-test" class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition flex items-center justify-center gap-1.5 whitespace-nowrap">
-            <span>Send Email Now</span>
-          </button>
-        </div>
-      </div>
-
-      <div id="action-notification" class="hidden mt-3 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-500 font-medium"></div>
-    </div>
-
-    <!-- Main View: Queue & Live Template Previewer -->
+    <!-- ========================================================================= -->
+    <!-- SECTION 3: DIRECT TEST EMAIL & LIVE TEMPLATE PREVIEWER -->
+    <!-- ========================================================================= -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-      <!-- Left Column: Scheduled Queue & Logs (6 cols) -->
+      <!-- Left Column: Delivered Logs & Direct Test Send (6 cols) -->
       <div class="lg:col-span-6 space-y-6">
 
-        <!-- Scheduled Jobs Queue -->
-        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">
-          <div class="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-[var(--foreground)]">Scheduled Delay Queue</h3>
-            <span class="text-xs text-[var(--muted-foreground)]">Evaluated every 60s</span>
+        <!-- Send Direct Test Email Section -->
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm space-y-3">
+          <div>
+            <h3 class="text-xs font-bold text-[var(--foreground)] flex items-center gap-1.5">
+              <span>🚀</span> Dispatch Immediate Test Email to Any Inbox
+            </h3>
+            <p class="text-[12px] text-[var(--muted-foreground)]">Verify exact styling and inbox deliverability before sending to real clients.</p>
           </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-[var(--background)] text-[var(--muted-foreground)] uppercase border-b border-[var(--border)]">
-                <tr>
-                  <th class="py-2.5 px-4">Flow</th>
-                  <th class="py-2.5 px-4">Recipient</th>
-                  <th class="py-2.5 px-4">Execute At</th>
-                  <th class="py-2.5 px-4 text-right">Status</th>
-                </tr>
-              </thead>
-              <tbody id="jobs-tbody" class="divide-y divide-[var(--border)] text-[var(--foreground)]">
-                <tr><td colspan="4" class="p-4 text-center text-[var(--muted-foreground)]">Queue is empty.</td></tr>
-              </tbody>
-            </table>
+          <div class="flex flex-col sm:flex-row gap-2.5">
+            <input id="test-email-input" type="email" placeholder="Enter recipient email (e.g. yourname@gmail.com)" class="flex-1 text-xs bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] focus:outline-none focus:border-amber-500">
+            <select id="test-email-template" class="text-xs bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] focus:outline-none">
+              <option value="abandoned_cart">Flow 1: Abandoned Cart</option>
+              <option value="welcome">Flow 2: Welcome Series</option>
+              <option value="browse_abandonment">Flow 3: Browse Abandonment</option>
+              <option value="post_purchase">Flow 4: Post-Purchase Care</option>
+              <option value="winback">Flow 5: Winback</option>
+            </select>
+            <button onclick="sendRealTestEmail()" id="btn-send-test" class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition flex items-center justify-center gap-1.5 whitespace-nowrap">
+              <span>Send Test</span>
+            </button>
           </div>
         </div>
 
-        <!-- Recent Sent Email Logs -->
+        <!-- Recent Delivered Sent Email Logs -->
         <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">
-          <div class="px-5 py-4 border-b border-[var(--border)]">
+          <div class="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
             <h3 class="text-sm font-semibold text-[var(--foreground)]">Delivered Campaign Logs</h3>
+            <span class="text-xs text-zinc-400">All successful dispatches</span>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
@@ -256,7 +252,7 @@
                 </tr>
               </thead>
               <tbody id="logs-tbody" class="divide-y divide-[var(--border)] text-[var(--foreground)]">
-                <tr><td colspan="3" class="p-4 text-center text-[var(--muted-foreground)]">No emails sent yet. Click "Run Scheduler Cycle" above!</td></tr>
+                <tr><td colspan="3" class="p-4 text-center text-[var(--muted-foreground)]">No emails sent yet.</td></tr>
               </tbody>
             </table>
           </div>
@@ -271,140 +267,63 @@
             <span class="px-2 py-0.5 text-[11px] font-normal rounded bg-emerald-500/10 text-emerald-500">Direct Render</span>
           </h3>
           <select id="template-select" onchange="updatePreview(this.value)" class="text-xs bg-[var(--background)] border border-[var(--border)] rounded-lg px-2.5 py-1 text-[var(--foreground)] focus:outline-none cursor-pointer">
-            <option value="abandoned_cart">Abandoned Cart (Flow 1)</option>
-            <option value="welcome">Welcome Guide (Flow 2)</option>
-            <option value="post_purchase">Post-Purchase Care (Flow 4)</option>
-            <option value="browse_abandonment">Browse Abandonment (Flow 3)</option>
-            <option value="winback">Customer Winback (Flow 5)</option>
+            <option value="abandoned_cart">Flow 1: Abandoned Cart</option>
+            <option value="welcome">Flow 2: Welcome Guide</option>
+            <option value="browse_abandonment">Flow 3: Browse Abandonment</option>
+            <option value="post_purchase">Flow 4: Post-Purchase Care</option>
+            <option value="winback">Flow 5: Customer Winback</option>
           </select>
         </div>
         <div class="p-3 bg-[var(--background)] flex-1">
-          <iframe id="preview-frame" class="w-full h-[520px] rounded-lg border border-[var(--border)] bg-white shadow-inner"></iframe>
+          <iframe id="preview-frame" class="w-full h-[480px] rounded-lg border border-[var(--border)] bg-white shadow-inner"></iframe>
         </div>
         <div class="p-3 text-[12px] text-center text-[var(--muted-foreground)] border-t border-[var(--border)]">
-          Rendered with HomeCartel branding, warm lighting styling & CAN-SPAM store address.
+          Rendered with HomeCartel branding, warm lighting styling &amp; CAN-SPAM store address.
         </div>
       </div>
 
     </div>
 
+  </div>
+
+  <!-- MODAL: Staged Email HTML Previewer -->
+  <div id="preview-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
+        <div>
+          <h3 id="modal-title" class="text-sm font-bold text-white">Preview Staged Flow Email</h3>
+          <p id="modal-subtitle" class="text-xs text-zinc-400 mt-0.5"></p>
+        </div>
+        <button onclick="closePreviewModal()" class="text-zinc-400 hover:text-white px-2 py-1 rounded-lg hover:bg-zinc-800 text-sm">✕ Close</button>
+      </div>
+      <div class="p-4 bg-zinc-950 flex-1 overflow-auto">
+        <iframe id="modal-frame" class="w-full h-[520px] rounded-lg border border-zinc-800 bg-white"></iframe>
+      </div>
+      <div class="px-6 py-3 border-t border-zinc-800 flex items-center justify-between bg-zinc-900">
+        <span class="text-xs text-zinc-400">Ready to dispatch?</span>
+        <button id="modal-send-btn" class="px-5 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow transition flex items-center gap-1.5">
+          <span>Send Flow Email Now</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <script>
     const STORE_ADDRESS = '673 Banawe Street, Santa Mesa Heights, Quezon City, Metro Manila, Philippines';
 
-    function getBaseLayout(title, contentHtml) {
-      return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    body { margin: 0; padding: 0; background-color: #f8f6f2; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #2b2b2b; }
-    .wrapper { width: 100%; padding: 24px 0; background-color: #f8f6f2; }
-    .main { background-color: #ffffff; margin: 0 auto; width: 92%; max-width: 540px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
-    .header { background-color: #1a1a1a; padding: 24px 16px; text-align: center; }
-    .header h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 2px; color: #ffffff; text-transform: uppercase; }
-    .content { padding: 28px 24px; line-height: 1.6; font-size: 14px; }
-    .content h2 { margin-top: 0; font-size: 18px; color: #1a1a1a; }
-    .btn { display: inline-block; padding: 12px 24px; background-color: #c59b27; color: #ffffff !important; text-decoration: none; border-radius: 4px; font-weight: 600; text-align: center; margin-top: 18px; }
-    .item-card { border: 1px solid #ebebeb; border-radius: 6px; padding: 12px 16px; margin: 10px 0; background: #fafafa; display: flex; justify-content: space-between; align-items: center; }
-    .item-title { font-weight: 600; font-size: 14px; color: #1a1a1a; }
-    .item-price { color: #c59b27; font-weight: bold; font-size: 14px; }
-    .footer { background-color: #f1ede6; padding: 20px; text-align: center; font-size: 11px; color: #7a7a7a; border-top: 1px solid #e5dfd5; }
-    .footer p { margin: 4px 0; }
-    .footer a { color: #555555; text-decoration: underline; }
-  </style>
-</head>
-<body>
-  <div class="wrapper">
-    <div class="main">
-      <div class="header">
-        <h1>HOMECARTEL</h1>
-      </div>
-      <div class="content">
-        ${contentHtml}
-      </div>
-      <div class="footer">
-        <p><strong>HomeCartel Lighting & Home Decor</strong></p>
-        <p>${STORE_ADDRESS}</p>
-        <p>You received this email because of your activity on homecartel.net.</p>
-        <p><a href="#">Unsubscribe from marketing emails</a></p>
-      </div>
-    </div>
-  </div>
-</body>
-</html>`;
-    }
-
-    const templates = {
-      abandoned_cart: getBaseLayout('Complete Your Order', `
-        <h2>Did you leave something behind, Sophia?</h2>
-        <p>We saved your favorite lighting fixtures in your cart so you won't lose them.</p>
-        <div class="item-card">
-          <div class="item-title">Vanja 5 | Glass Luxe Chandelier &times; 1</div>
-          <div class="item-price">₱16,995.00</div>
-        </div>
-        <div class="item-card">
-          <div class="item-title">Aarhus Modern Chandelier &times; 1</div>
-          <div class="item-price">₱25,995.00</div>
-        </div>
-        <p style="margin-top: 16px;">Ready to complete your space? Finish checking out now and we'll prepare your fixtures for careful delivery.</p>
-        <div style="text-align: center;">
-          <a href="https://homecartel.net/cart" class="btn">Restore My Cart & Checkout</a>
-        </div>
-      `),
-
-      welcome: getBaseLayout('Welcome to HomeCartel', `
-        <h2>Welcome to HomeCartel, Maria!</h2>
-        <p>Thank you for subscribing to our community. We believe great lighting elevates any interior from ordinary to extraordinary.</p>
-        <p>Use code <strong>LIGHT10</strong> for 10% off your first lighting order.</p>
-        <div style="text-align: center;">
-          <a href="https://homecartel.net/collections/all" class="btn">Explore All Collections</a>
-        </div>
-      `),
-
-      post_purchase: getBaseLayout('Order Follow-up', `
-        <h2>How is your recent order, Joshua?</h2>
-        <p>We hope your new HomeCartel lighting fixtures arrived safely and look stunning in your home.</p>
-        <div style="text-align: center;">
-          <a href="https://homecartel.net" class="btn">Leave a Review</a>
-        </div>
-      `),
-
-      browse_abandonment: getBaseLayout('Browse Follow-up', `
-        <h2>Still thinking about the Nordic Glass Chandelier, Claire?</h2>
-        <p>We noticed you were exploring our fixtures recently.</p>
-        <div style="text-align: center;">
-          <a href="https://homecartel.net" class="btn">Take Another Look</a>
-        </div>
-      `),
-
-      winback: getBaseLayout('New Arrivals', `
-        <h2>We miss you, Angela!</h2>
-        <p>Discover what's new in Philippine home design and find inspiration for your next room renovation.</p>
-        <div style="text-align: center;">
-          <a href="https://homecartel.net/collections/new-arrivals" class="btn">View New Arrivals</a>
-        </div>
-      `)
-    };
-
-    async function updatePreview(templateKey) {
-      const frame = document.getElementById('preview-frame');
-      try {
-        const res = await fetch('/api/admin/preview/' + templateKey);
-        if (res.ok) {
-          const html = await res.text();
-          frame.srcdoc = html;
-          return;
-        }
-      } catch (e) {}
-      const html = templates[templateKey] || templates.abandoned_cart;
-      frame.srcdoc = html;
-    }
-
-    // --- State & Live Event Handling ---
     let liveEvents = [];
     let currentFilter = 'all';
+
+    function showNotice(msg, isError = false) {
+      const banner = document.getElementById('action-notification');
+      const text = document.getElementById('action-notification-text');
+      text.textContent = msg;
+      banner.className = isError
+        ? 'p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-400 font-semibold flex items-center justify-between'
+        : 'p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 font-semibold flex items-center justify-between';
+      banner.classList.remove('hidden');
+      setTimeout(() => banner.classList.add('hidden'), 7000);
+    }
 
     function formatDateTime(isoString) {
       if (!isoString) return '';
@@ -424,6 +343,156 @@
       return `${hrs}h ago`;
     }
 
+    // =========================================================================
+    // 1. STAGED CLIENT FLOWS LOGIC
+    // =========================================================================
+    async function fetchStagedFlows() {
+      try {
+        const res = await fetch('/api/admin/staged-jobs');
+        if (!res.ok) return;
+        const data = await res.json();
+        const staged = data.stagedJobs || [];
+
+        document.getElementById('stat-pending').textContent = staged.length;
+        document.getElementById('staged-count-badge').textContent = `${staged.length} Clients Staged`;
+
+        const tbody = document.getElementById('staged-flows-tbody');
+        if (staged.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5" class="p-8 text-center text-zinc-500 text-xs">
+                No clients currently staged. Automated sending is disabled — real client triggers will appear here awaiting your manual click.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = staged.map(j => `
+          <tr class="hover:bg-zinc-900/50 transition">
+            <td class="py-3 px-4">
+              <div class="font-bold text-white">${j.recipientEmail}</div>
+              <div class="text-[11px] text-zinc-400">${j.customerName}</div>
+            </td>
+            <td class="py-3 px-4">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold border ${j.badgeClass}">
+                ${j.flowLabel}
+              </span>
+            </td>
+            <td class="py-3 px-4 max-w-xs">
+              <div class="text-zinc-300 text-xs truncate" title="${j.summary}">${j.summary}</div>
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap text-zinc-400">
+              <div>${formatDateTime(j.createdAt)}</div>
+              <div class="text-[10px] text-zinc-400">(${timeAgo(j.createdAt)})</div>
+            </td>
+            <td class="py-3 px-4 text-right whitespace-nowrap space-x-1.5">
+              <button onclick="previewStagedJob(${j.id}, '${j.flowLabel}', '${j.recipientEmail}')" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold border border-zinc-700 transition">
+                Preview
+              </button>
+              <button onclick="sendStagedJob(${j.id}, this)" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow">
+                Send ${j.flowLabel.split(':')[0]} Now
+              </button>
+              <button onclick="cancelStagedJob(${j.id})" class="px-2 py-1.5 rounded-lg bg-zinc-900 hover:bg-rose-950/50 text-zinc-400 hover:text-rose-400 text-xs transition border border-zinc-800">
+                ✕
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.warn('Fetch staged flows error:', e);
+      }
+    }
+
+    async function sendStagedJob(jobId, btn) {
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span>Sending...</span>';
+      }
+
+      try {
+        const res = await fetch(`/api/admin/jobs/${jobId}/send`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showNotice(`✅ ${data.message}`);
+          await fetchStagedFlows();
+          await refreshOverviewCounts();
+          await fetchDeliveredLogs();
+        } else {
+          showNotice(`Error: ${data.error || 'Failed to dispatch'}`, true);
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = 'Send Now';
+          }
+        }
+      } catch (err) {
+        showNotice(`Network error: ${err.message}`, true);
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = 'Send Now';
+        }
+      }
+    }
+
+    async function cancelStagedJob(jobId) {
+      if (!confirm('Dismiss this staged email without sending?')) return;
+      try {
+        const res = await fetch(`/api/admin/jobs/${jobId}/cancel`, { method: 'POST' });
+        if (res.ok) {
+          showNotice(`Staged job #${jobId} cancelled.`);
+          await fetchStagedFlows();
+          await refreshOverviewCounts();
+        }
+      } catch (e) {}
+    }
+
+    function previewStagedJob(jobId, label, email) {
+      const modal = document.getElementById('preview-modal');
+      const title = document.getElementById('modal-title');
+      const subtitle = document.getElementById('modal-subtitle');
+      const frame = document.getElementById('modal-frame');
+      const sendBtn = document.getElementById('modal-send-btn');
+
+      title.textContent = `Preview ${label}`;
+      subtitle.textContent = `Recipient: ${email}`;
+      frame.src = `/api/admin/jobs/${jobId}/preview`;
+
+      sendBtn.onclick = async () => {
+        closePreviewModal();
+        await sendStagedJob(jobId, null);
+      };
+
+      modal.classList.remove('hidden');
+    }
+
+    function closePreviewModal() {
+      document.getElementById('preview-modal').classList.add('hidden');
+    }
+
+    async function stageSimulatedFlow(flowKey) {
+      try {
+        const res = await fetch('/api/admin/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scenario: flowKey })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showNotice(`📥 ${data.message}`);
+          await fetchStagedFlows();
+          await refreshOverviewCounts();
+        }
+      } catch (e) {
+        showNotice('Failed staging flow', true);
+      }
+    }
+
+    // =========================================================================
+    // 2. REAL-TIME ACTIVITY STREAM
+    // =========================================================================
     function renderEventsFeed() {
       const container = document.getElementById('events-feed');
       const filtered = liveEvents.filter(ev => {
@@ -523,17 +592,6 @@
               </div>
             </div>
           `;
-        } else if (ev.eventType === 'checkout_update') {
-          actionIcon = '💳';
-          actionBadge = 'CHECKOUT';
-          badgeColor = 'bg-violet-500/10 text-violet-400 border-violet-500/20';
-          summaryHtml = `
-            <div>
-              <span class="text-zinc-200 font-semibold">Checkout In Progress:</span>
-              <span class="text-violet-300 font-mono text-xs">Checkout #${props.checkoutId || ''}</span>
-              ${props.subtotal ? `<span class="ml-1 text-xs text-emerald-400 font-bold">(₱${props.subtotal})</span>` : ''}
-            </div>
-          `;
         } else {
           actionIcon = '⚡';
           actionBadge = ev.eventType.toUpperCase();
@@ -576,7 +634,6 @@
       renderEventsFeed();
     }
 
-    // --- Connect Server-Sent Events (SSE) Stream ---
     function connectSse() {
       const badge = document.getElementById('sse-badge');
       const dot = document.getElementById('sse-dot');
@@ -584,7 +641,6 @@
 
       try {
         const es = new EventSource('/api/admin/events/stream');
-
         es.onopen = function() {
           badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
           dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse';
@@ -594,27 +650,18 @@
         es.onmessage = function(event) {
           try {
             const data = JSON.parse(event.data);
-
             if (data.type === 'identify') {
-              // Reconcile all existing entries for this visitorId on-screen immediately!
               const targetVid = data.visitorId;
               const newEmail = data.email;
-              const newName = data.name;
-
               liveEvents.forEach(e => {
                 if (e.visitorId === targetVid) {
                   e.isIdentified = true;
                   e.customerEmail = newEmail;
-                  e.customerName = newName;
                 }
               });
-
-              // Add the identify event if present
-              if (data.event) {
-                liveEvents.unshift(data.event);
-              }
+              if (data.event) liveEvents.unshift(data.event);
               renderEventsFeed();
-              triggerHighlightReconciled(targetVid);
+              fetchStagedFlows();
               refreshOverviewCounts();
               return;
             }
@@ -623,7 +670,7 @@
               liveEvents.unshift(data.event);
               if (liveEvents.length > 200) liveEvents.pop();
               renderEventsFeed();
-              triggerHighlightTop();
+              fetchStagedFlows();
               refreshOverviewCounts();
             }
           } catch (e) {}
@@ -634,43 +681,24 @@
           dot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5';
           label.textContent = 'RECONNECTING';
         };
-      } catch (e) {
-        console.warn('SSE error:', e);
-      }
-    }
-
-    function triggerHighlightTop() {
-      const first = document.querySelector('#events-feed .event-card');
-      if (first) {
-        first.classList.add('event-entry-new');
-        setTimeout(() => first.classList.remove('event-entry-new'), 2000);
-      }
-    }
-
-    function triggerHighlightReconciled(vid) {
-      document.querySelectorAll(`[data-visitor="${vid}"]`).forEach(el => {
-        el.classList.add('event-entry-reconciled');
-        setTimeout(() => el.classList.remove('event-entry-reconciled'), 2500);
-      });
+      } catch (e) {}
     }
 
     async function fetchRecentEvents() {
       try {
-        const res = await fetch('/api/admin/events?limit=60');
+        const res = await fetch('/api/admin/events?limit=50');
         if (res.ok) {
           const data = await res.json();
           liveEvents = data.events || [];
-          document.getElementById('stat-events').textContent = data.count || liveEvents.length;
           renderEventsFeed();
         }
       } catch (e) {}
     }
 
-    // --- Interactive Shopper Journey Simulation ---
     async function simulateShopperJourney() {
       const btn = document.getElementById('btn-sim-journey');
       btn.disabled = true;
-      btn.innerHTML = '<span>⏳</span><span>Simulating Live Shopper Journey...</span>';
+      btn.innerHTML = '<span>Simulating...</span>';
 
       try {
         const res = await fetch('/api/admin/simulate-shopper-journey', {
@@ -680,58 +708,23 @@
         });
         const data = await res.json();
         if (data.success) {
+          showNotice(`🎉 ${data.message}`);
           await fetchRecentEvents();
-          await refreshData();
+          await fetchStagedFlows();
+          await refreshOverviewCounts();
         }
-      } catch (e) {
-        console.warn('Simulation error:', e);
-      } finally {
+      } catch (e) {} finally {
         btn.disabled = false;
         btn.innerHTML = '<span>▶</span><span>Simulate Full Shopper Journey</span>';
       }
     }
 
-    // --- Overview Refresh & Actions ---
-    async function refreshOverviewCounts() {
-      try {
-        const res = await fetch('/api/admin/overview');
-        if (res.ok) {
-          const data = await res.json();
-          document.getElementById('stat-customers').textContent = data.counts?.customers ?? 0;
-          document.getElementById('stat-abandoned').textContent = data.counts?.abandonedCarts ?? 0;
-          document.getElementById('stat-recovered').textContent = data.counts?.recoveredCarts ?? 0;
-          document.getElementById('stat-pending').textContent = data.counts?.pendingJobs ?? 0;
-          document.getElementById('stat-events').textContent = data.counts?.totalEvents ?? liveEvents.length;
-        }
-      } catch (e) {}
-    }
-
-    async function triggerAction(action) {
-      const notice = document.getElementById('action-notification');
-      try {
-        const res = await fetch('/api/admin/simulate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ scenario: action })
-        });
-        if (res.ok) {
-          const respData = await res.json();
-          if (respData.message) {
-            notice.textContent = respData.message;
-            notice.classList.remove('hidden');
-            setTimeout(() => notice.classList.add('hidden'), 5000);
-          }
-        }
-      } catch (e) {
-        console.warn('Simulate call:', e);
-      }
-      await refreshData();
-    }
-
+    // =========================================================================
+    // 3. DIRECT TEST EMAIL & DELIVERED LOGS
+    // =========================================================================
     async function sendRealTestEmail() {
       const emailInput = document.getElementById('test-email-input');
       const templateSelect = document.getElementById('test-email-template');
-      const notice = document.getElementById('action-notification');
       const btn = document.getElementById('btn-send-test');
 
       const to = emailInput.value.trim();
@@ -751,23 +744,53 @@
         });
         const data = await res.json();
         if (res.ok) {
-          notice.textContent = data.message;
-          notice.classList.remove('hidden');
-          setTimeout(() => notice.classList.add('hidden'), 7000);
-          await refreshData();
+          showNotice(`🚀 ${data.message}`);
+          await fetchDeliveredLogs();
         } else {
-          alert('Error: ' + (data.error || 'Failed to dispatch email'));
+          showNotice(`Error: ${data.error || 'Failed to dispatch'}`, true);
         }
       } catch (err) {
-        alert('Network error: ' + err.message);
+        showNotice(`Network error: ${err.message}`, true);
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Send Email Now';
+        btn.textContent = 'Send Test';
       }
     }
 
-    async function refreshData() {
-      await fetchRecentEvents();
+    async function fetchDeliveredLogs() {
+      try {
+        const res = await fetch('/api/admin/overview');
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('stat-sent').textContent = data.counts?.sentEmails ?? 0;
+          const logsTbody = document.getElementById('logs-tbody');
+          if (data.logs && data.logs.length > 0) {
+            logsTbody.innerHTML = data.logs.map(l => `
+              <tr class="hover:bg-zinc-900/50 transition">
+                <td class="py-2.5 px-4 font-medium text-white">${l.recipient_email}</td>
+                <td class="py-2.5 px-4 text-emerald-400 font-semibold">${l.flow_name}</td>
+                <td class="py-2.5 px-4 text-right text-zinc-400">${formatDateTime(l.sent_at)}</td>
+              </tr>
+            `).join('');
+          } else {
+            logsTbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-zinc-500">No emails dispatched yet.</td></tr>';
+          }
+        }
+      } catch (e) {}
+    }
+
+    async function updatePreview(templateKey) {
+      const frame = document.getElementById('preview-frame');
+      try {
+        const res = await fetch('/api/admin/preview/' + templateKey);
+        if (res.ok) {
+          const html = await res.text();
+          frame.srcdoc = html;
+        }
+      } catch (e) {}
+    }
+
+    async function refreshOverviewCounts() {
       try {
         const res = await fetch('/api/admin/overview');
         if (res.ok) {
@@ -775,60 +798,23 @@
           document.getElementById('stat-customers').textContent = data.counts?.customers ?? 0;
           document.getElementById('stat-abandoned').textContent = data.counts?.abandonedCarts ?? 0;
           document.getElementById('stat-recovered').textContent = data.counts?.recoveredCarts ?? 0;
-          document.getElementById('stat-pending').textContent = data.counts?.pendingJobs ?? 0;
-          document.getElementById('stat-events').textContent = data.counts?.totalEvents ?? liveEvents.length;
-
-          const jobsTbody = document.getElementById('jobs-tbody');
-          if (data.jobs && data.jobs.length > 0) {
-            jobsTbody.innerHTML = data.jobs.map(j => {
-              const statusColors = {
-                pending: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-                sent: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-                cancelled: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'
-              };
-              const badge = statusColors[j.status] || 'bg-zinc-500/10 text-zinc-400';
-              return `
-                <tr class="hover:bg-[var(--secondary)]/40 transition">
-                  <td class="py-2.5 px-4 font-semibold">${j.flow_type}</td>
-                  <td class="py-2.5 px-4 text-[var(--muted-foreground)]">${j.recipient_email}</td>
-                  <td class="py-2.5 px-4 text-[var(--muted-foreground)]">${new Date(j.execute_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                  <td class="py-2.5 px-4 text-right">
-                    <span class="inline-flex px-2 py-0.5 rounded text-[11px] font-medium border ${badge}">${j.status}</span>
-                  </td>
-                </tr>
-              `;
-            }).join('');
-          } else {
-            jobsTbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-[var(--muted-foreground)]">Queue is empty.</td></tr>';
-          }
-
-          const logsTbody = document.getElementById('logs-tbody');
-          if (data.logs && data.logs.length > 0) {
-            logsTbody.innerHTML = data.logs.map(l => `
-              <tr class="hover:bg-[var(--secondary)]/40 transition">
-                <td class="py-2 px-4 font-medium">${l.recipient_email}</td>
-                <td class="py-2 px-4 text-emerald-500 font-semibold">${l.flow_name}</td>
-                <td class="py-2 px-4 text-right text-[var(--muted-foreground)]">${new Date(l.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-              </tr>
-            `).join('');
-          } else {
-            logsTbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-[var(--muted-foreground)]">No emails dispatched yet. Click "Run Scheduler Cycle" above!</td></tr>';
-          }
+          document.getElementById('stat-sent').textContent = data.counts?.sentEmails ?? 0;
         }
-      } catch (e) {
-        console.warn('Overview fetch:', e);
-      }
+      } catch (e) {}
     }
 
-    // Initialize preview immediately upon load
+    async function refreshData() {
+      await fetchStagedFlows();
+      await fetchRecentEvents();
+      await fetchDeliveredLogs();
+      await refreshOverviewCounts();
+    }
+
+    // Initial boot
     updatePreview('abandoned_cart');
     refreshData();
     connectSse();
-
-    // Fallback polling every 5s if SSE disconnects
-    setInterval(() => {
-      fetchRecentEvents();
-    }, 5000);
+    setInterval(fetchStagedFlows, 5000);
   </script>
 </body>
 </html>

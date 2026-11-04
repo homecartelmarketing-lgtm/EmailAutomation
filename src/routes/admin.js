@@ -1,9 +1,10 @@
 import { renderTemplate } from '../templates/renderer.js';
 import { recentWebhookLogs } from './webhooks.js';
 import { eventBus } from '../events/bus.js';
+import { generateUnsubscribeToken } from './unsubscribe.js';
 
 /**
- * Registers Admin Dashboard & Simulation Endpoints
+ * Registers Admin Dashboard, Staged Client Flows & Simulation Endpoints
  * @param {import('fastify').FastifyInstance} app
  * @param {{ db: ReturnType<import('../db/database.js').initDatabase> }} options
  */
@@ -38,8 +39,182 @@ export async function registerAdminRoutes(app, { db }) {
       secretConfigured: sec ? `${sec.substring(0, 6)}... (${sec.length} chars)` : 'none',
       emailProvider: app.config.emailProvider,
       appBaseUrl: app.config.appBaseUrl,
+      autoDispatchEnabled: !!app.config.autoDispatch,
       recentWebhookAttempts: recentWebhookLogs
     };
+  });
+
+  // Returns all staged clients qualified for behavioral flows (Flows 1-5) awaiting manual send
+  app.get('/api/admin/staged-jobs', async () => {
+    const rows = db.rawDb.prepare(`
+      SELECT 
+        j.id,
+        j.flow_type,
+        j.recipient_email,
+        j.context_json,
+        j.execute_at,
+        j.status,
+        j.created_at,
+        c.name AS customer_name
+      FROM scheduled_jobs j
+      LEFT JOIN customers c ON c.email = j.recipient_email
+      WHERE j.status = 'pending'
+      ORDER BY j.id DESC
+    `).all();
+
+    const flowMeta = {
+      abandoned_cart: { flowNumber: 1, label: 'Flow 1: Abandoned Cart', badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+      welcome: { flowNumber: 2, label: 'Flow 2: Welcome Onboarding', badge: 'bg-sky-500/10 text-sky-400 border-sky-500/20' },
+      browse_abandonment: { flowNumber: 3, label: 'Flow 3: Browse Abandonment', badge: 'bg-violet-500/10 text-violet-400 border-violet-500/20' },
+      post_purchase: { flowNumber: 4, label: 'Flow 4: Post-Purchase Care', badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+      winback: { flowNumber: 5, label: 'Flow 5: Winback & Re-engagement', badge: 'bg-rose-500/10 text-rose-400 border-rose-500/20' }
+    };
+
+    const stagedJobs = rows.map(r => {
+      let parsedContext = {};
+      try { parsedContext = JSON.parse(r.context_json || '{}'); } catch (e) {}
+      const meta = flowMeta[r.flow_type] || { flowNumber: 0, label: r.flow_type, badge: 'bg-zinc-800 text-zinc-300 border-zinc-700' };
+
+      let summary = '';
+      if (r.flow_type === 'abandoned_cart') {
+        const items = parsedContext.items || [];
+        const count = items.length;
+        const firstTitle = items[0]?.title || 'Lighting fixture';
+        summary = `${count} item(s) in cart: "${firstTitle}"${count > 1 ? ` +${count - 1} more` : ''}`;
+      } else if (r.flow_type === 'welcome') {
+        summary = 'New subscriber welcome & 10% voucher (LIGHT10)';
+      } else if (r.flow_type === 'browse_abandonment') {
+        summary = `Viewed fixture: "${parsedContext.fixtureTitle || 'Modern Chandelier'}"`;
+      } else if (r.flow_type === 'post_purchase') {
+        summary = `Order ${parsedContext.orderId ? `#${parsedContext.orderId}` : 'care'} fulfillment follow-up & review`;
+      } else if (r.flow_type === 'winback') {
+        summary = 'Inactive customer (60+ days) new collection invitation';
+      }
+
+      return {
+        id: r.id,
+        flowType: r.flow_type,
+        flowNumber: meta.flowNumber,
+        flowLabel: meta.label,
+        badgeClass: meta.badge,
+        recipientEmail: r.recipient_email,
+        customerName: r.customer_name || parsedContext.name || 'Valued Shopper',
+        summary,
+        context: parsedContext,
+        executeAt: r.execute_at,
+        status: r.status,
+        createdAt: r.created_at
+      };
+    });
+
+    return { stagedJobs, count: stagedJobs.length };
+  });
+
+  // Manually sends the specific behavioral flow email for a given staged job
+  app.post('/api/admin/jobs/:id/send', async (req, reply) => {
+    const { id } = req.params;
+    const job = db.rawDb.prepare('SELECT * FROM scheduled_jobs WHERE id = ?').get(id);
+    if (!job) {
+      return reply.code(404).send({ error: 'Job not found' });
+    }
+
+    if (job.status === 'sent') {
+      return reply.code(400).send({ error: 'This email has already been sent' });
+    }
+
+    // Check if customer has unsubscribed
+    const customer = db.getCustomerByEmail(job.recipient_email);
+    if (customer && customer.status === 'unsubscribed') {
+      db.rawDb.prepare("UPDATE scheduled_jobs SET status = 'cancelled' WHERE id = ?").run(id);
+      return reply.code(400).send({ error: 'Customer has unsubscribed from marketing emails' });
+    }
+
+    try {
+      const parsedContext = JSON.parse(job.context_json || '{}');
+      const token = generateUnsubscribeToken(job.recipient_email, app.config.shopifyWebhookSecret);
+      const unsubscribeUrl = `${app.config.appBaseUrl}/api/unsubscribe?email=${encodeURIComponent(job.recipient_email)}&token=${token}`;
+
+      const context = {
+        ...parsedContext,
+        email: job.recipient_email,
+        unsubscribeUrl
+      };
+
+      const { subject, html } = renderTemplate(job.flow_type, context);
+      const result = await app.emailSender.send({
+        to: job.recipient_email,
+        subject,
+        html,
+        text: `HomeCartel ${job.flow_type} email`
+      });
+
+      db.recordEmailLog({
+        recipientEmail: job.recipient_email,
+        flowName: job.flow_type,
+        templateName: job.flow_type,
+        messageId: result.messageId || '',
+        sentAt: new Date().toISOString()
+      });
+
+      db.markJobSent(job.id);
+
+      // Broadcast manual dispatch in live stream
+      eventBus.emit('event', {
+        type: 'event',
+        event: {
+          id: Date.now(),
+          customerEmail: job.recipient_email,
+          eventType: 'manual_email_sent',
+          properties: {
+            flow: job.flow_type,
+            messageId: result.messageId,
+            to: job.recipient_email
+          },
+          createdAt: new Date().toISOString(),
+          isIdentified: true
+        }
+      });
+
+      return {
+        success: true,
+        message: `Successfully sent ${job.flow_type} email to ${job.recipient_email}!`,
+        messageId: result.messageId,
+        flow: job.flow_type,
+        to: job.recipient_email
+      };
+    } catch (err) {
+      console.error(`[Manual Send] Error sending job ${id}:`, err);
+      return reply.code(500).send({ error: err.message });
+    }
+  });
+
+  // Cancel / dismiss a staged job without sending
+  app.post('/api/admin/jobs/:id/cancel', async (req, reply) => {
+    const { id } = req.params;
+    db.rawDb.prepare("UPDATE scheduled_jobs SET status = 'cancelled' WHERE id = ?").run(id);
+    return { success: true, message: `Staged job #${id} cancelled.` };
+  });
+
+  // Preview the exact email that will be sent for a specific staged job
+  app.get('/api/admin/jobs/:id/preview', async (req, reply) => {
+    const { id } = req.params;
+    const job = db.rawDb.prepare('SELECT * FROM scheduled_jobs WHERE id = ?').get(id);
+    if (!job) {
+      return reply.code(404).send('Job not found');
+    }
+
+    const parsedContext = JSON.parse(job.context_json || '{}');
+    const token = generateUnsubscribeToken(job.recipient_email, app.config.shopifyWebhookSecret);
+    const unsubscribeUrl = `${app.config.appBaseUrl}/api/unsubscribe?email=${encodeURIComponent(job.recipient_email)}&token=${token}`;
+
+    const context = {
+      ...parsedContext,
+      email: job.recipient_email,
+      unsubscribeUrl
+    };
+
+    const { html } = renderTemplate(job.flow_type, context);
+    reply.type('text/html').send(html);
   });
 
   // Real-time shopper events feed
@@ -98,43 +273,31 @@ export async function registerAdminRoutes(app, { db }) {
     });
   });
 
-  // Simulator helper to test behavioral triggers live
+  // Simulator helper to stage any of the 5 behavioral flows without sending automatically
   app.post('/api/admin/simulate', async (req, reply) => {
     const { scenario, data = {} } = req.body || {};
 
-    if (scenario === 'welcome') {
-      const email = data.email || `new.shopper.${Math.floor(Math.random() * 1000)}@gmail.com`;
-      const name = data.name || 'Maria Santos';
-      db.upsertCustomer({ email, name });
-      db.scheduleJob({
-        flowType: 'welcome',
-        recipientEmail: email,
-        contextJson: JSON.stringify({ name }),
-        executeAt: new Date().toISOString()
-      });
-      return { success: true, message: `Welcome email scheduled for ${email}`, email };
-    }
-
-    if (scenario === 'abandoned_cart') {
+    // Flow 1: Abandoned Cart
+    if (scenario === 'abandoned_cart' || scenario === 'flow_1') {
       const email = data.email || 'sophia.designer@studio.ph';
       const checkoutId = String(Date.now());
       const items = [
-        { title: 'Aura Modern Brass Chandelier', price: '₱18,500.00', quantity: 1 },
-        { title: 'Solomon Nordic Pendant Light', price: '₱4,200.00', quantity: 2 }
+        { title: 'Vanja 5 | Glass Luxe Chandelier', price: '₱16,995.00', quantity: 1 },
+        { title: 'Aarhus | Modern Chandelier', price: '₱25,995.00', quantity: 1 }
       ];
 
-      db.upsertCustomer({ email, name: 'Sophia Reyes' });
+      db.upsertCustomer({ email, name: data.name || 'Sophia Reyes' });
       db.upsertCart({
         checkoutId,
         email,
         cartToken: 'tok_' + checkoutId,
         itemsJson: JSON.stringify(items),
-        subtotal: '26900.00',
+        subtotal: '42990.00',
         recoveryUrl: `https://homecartel.net/checkouts/${checkoutId}`,
         status: 'abandoned'
       });
 
-      db.scheduleJob({
+      const jobId = db.scheduleJob({
         flowType: 'abandoned_cart',
         recipientEmail: email,
         contextJson: JSON.stringify({
@@ -142,21 +305,114 @@ export async function registerAdminRoutes(app, { db }) {
           recoveryUrl: `https://homecartel.net/checkouts/${checkoutId}`,
           items
         }),
-        executeAt: new Date(Date.now() + 1000).toISOString()
+        executeAt: new Date().toISOString()
       });
 
-      return { success: true, message: `Abandoned cart trigger created for ${email}`, checkoutId, email };
+      return {
+        success: true,
+        message: `Staged Flow 1 (Abandoned Cart) for ${email}. Ready for manual send!`,
+        jobId,
+        email,
+        flow: 'Flow 1'
+      };
+    }
+
+    // Flow 2: Welcome & Onboarding Series
+    if (scenario === 'welcome' || scenario === 'flow_2') {
+      const email = data.email || `new.subscriber.${Math.floor(Math.random() * 1000)}@gmail.com`;
+      const name = data.name || 'Maria Santos';
+      db.upsertCustomer({ email, name });
+      const jobId = db.scheduleJob({
+        flowType: 'welcome',
+        recipientEmail: email,
+        contextJson: JSON.stringify({ name }),
+        executeAt: new Date().toISOString()
+      });
+      return {
+        success: true,
+        message: `Staged Flow 2 (Welcome Series) for ${email}. Ready for manual send!`,
+        jobId,
+        email,
+        flow: 'Flow 2'
+      };
+    }
+
+    // Flow 3: Browse Abandonment
+    if (scenario === 'browse_abandonment' || scenario === 'flow_3') {
+      const email = data.email || 'claire.architect@design.ph';
+      const name = data.name || 'Claire Dizon';
+      db.upsertCustomer({ email, name });
+      const jobId = db.scheduleJob({
+        flowType: 'browse_abandonment',
+        recipientEmail: email,
+        contextJson: JSON.stringify({
+          name,
+          fixtureTitle: 'Nordic Glass Cluster Chandelier',
+          fixtureUrl: 'https://homecartel.net/products/nordic-glass-cluster'
+        }),
+        executeAt: new Date().toISOString()
+      });
+      return {
+        success: true,
+        message: `Staged Flow 3 (Browse Abandonment) for ${email}. Ready for manual send!`,
+        jobId,
+        email,
+        flow: 'Flow 3'
+      };
+    }
+
+    // Flow 4: Post-Purchase Care & Review Request
+    if (scenario === 'post_purchase' || scenario === 'flow_4') {
+      const email = data.email || 'joshua.homeowner@gmail.com';
+      const name = data.name || 'Joshua Hernandez';
+      db.upsertCustomer({ email, name });
+      const jobId = db.scheduleJob({
+        flowType: 'post_purchase',
+        recipientEmail: email,
+        contextJson: JSON.stringify({
+          name,
+          orderNumber: '1088',
+          orderId: '54210'
+        }),
+        executeAt: new Date().toISOString()
+      });
+      return {
+        success: true,
+        message: `Staged Flow 4 (Post-Purchase Care) for ${email}. Ready for manual send!`,
+        jobId,
+        email,
+        flow: 'Flow 4'
+      };
+    }
+
+    // Flow 5: Winback / Customer Re-engagement
+    if (scenario === 'winback' || scenario === 'flow_5') {
+      const email = data.email || 'angela.client@gmail.com';
+      const name = data.name || 'Angela Lopez';
+      db.upsertCustomer({ email, name });
+      const jobId = db.scheduleJob({
+        flowType: 'winback',
+        recipientEmail: email,
+        contextJson: JSON.stringify({ name }),
+        executeAt: new Date().toISOString()
+      });
+      return {
+        success: true,
+        message: `Staged Flow 5 (Customer Winback) for ${email}. Ready for manual send!`,
+        jobId,
+        email,
+        flow: 'Flow 5'
+      };
     }
 
     if (scenario === 'order_complete') {
       const email = data.email || 'sophia.designer@studio.ph';
       db.cancelPendingJobsByEmail(email, 'abandoned_cart');
       db.rawDb.prepare("UPDATE carts SET status = 'recovered' WHERE email = ?").run(email);
-      return { success: true, message: `Order completed for ${email}. Abandoned cart email cancelled!` };
+      return { success: true, message: `Order completed for ${email}. Pending cart reminder cancelled!` };
     }
 
     if (scenario === 'run_scheduler') {
-      // Advance virtual time by 30 days so any queued jobs (even +2h or +7d) are processed immediately
       const farFuture = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
       const cycle = await app.runScheduler(farFuture);
       const msg = cycle.sent > 0
@@ -168,17 +424,15 @@ export async function registerAdminRoutes(app, { db }) {
     return reply.code(400).send({ error: 'Unknown scenario' });
   });
 
-  // Comprehensive shopper journey simulation: Anonymous -> View -> Click -> Leave -> Add to Cart -> Checkout Email -> Reconciled
+  // Comprehensive shopper journey simulation: Anonymous -> View -> Click -> Leave -> Add to Cart -> Checkout Email -> Staged Flow 1
   app.post('/api/admin/simulate-shopper-journey', async (req) => {
     const randomSuffix = Math.random().toString(36).substring(2, 8);
     const visitorId = `anon_hc_${randomSuffix}`;
     const email = req.body?.email || `shopper.${randomSuffix}@gmail.com`;
     const name = req.body?.name || 'Bea Valenzuela';
 
-    const eventsCreated = [];
-
     // Step 1: Anonymous Accesses Homepage
-    const ev1 = db.recordEvent({
+    db.recordEvent({
       visitorId,
       eventType: 'page_view',
       propertiesJson: JSON.stringify({
@@ -189,10 +443,9 @@ export async function registerAdminRoutes(app, { db }) {
         timestamp: new Date().toISOString()
       })
     });
-    eventsCreated.push(ev1);
 
     // Step 2: Anonymous Clicks an Item
-    const ev2 = db.recordEvent({
+    db.recordEvent({
       visitorId,
       eventType: 'item_click',
       propertiesJson: JSON.stringify({
@@ -202,10 +455,9 @@ export async function registerAdminRoutes(app, { db }) {
         timestamp: new Date().toISOString()
       })
     });
-    eventsCreated.push(ev2);
 
     // Step 3: Anonymous Views the Product Page
-    const ev3 = db.recordEvent({
+    db.recordEvent({
       visitorId,
       eventType: 'page_view',
       propertiesJson: JSON.stringify({
@@ -216,10 +468,9 @@ export async function registerAdminRoutes(app, { db }) {
         timestamp: new Date().toISOString()
       })
     });
-    eventsCreated.push(ev3);
 
     // Step 4: Anonymous Adds to Cart
-    const ev4 = db.recordEvent({
+    db.recordEvent({
       visitorId,
       eventType: 'add_to_cart',
       propertiesJson: JSON.stringify({
@@ -229,10 +480,9 @@ export async function registerAdminRoutes(app, { db }) {
         timestamp: new Date().toISOString()
       })
     });
-    eventsCreated.push(ev4);
 
     // Step 5: Anonymous Leaves Page after 34 seconds
-    const ev5 = db.recordEvent({
+    db.recordEvent({
       visitorId,
       eventType: 'page_leave',
       propertiesJson: JSON.stringify({
@@ -243,7 +493,6 @@ export async function registerAdminRoutes(app, { db }) {
         timestamp: new Date().toISOString()
       })
     });
-    eventsCreated.push(ev5);
 
     // Step 6: Customer Enters Email in Checkout! (Identity Reconciliation)
     const customerId = db.upsertCustomer({ email, name });
@@ -261,7 +510,32 @@ export async function registerAdminRoutes(app, { db }) {
         timestamp: new Date().toISOString()
       })
     });
-    eventsCreated.push(ev6);
+
+    // Step 7: Stage Abandoned Cart Flow 1 awaiting manual approval (DO NOT send automatically!)
+    const items = [
+      { title: 'Vanja 5 | Glass Luxe Chandelier', price: '₱16,995.00', quantity: 1 }
+    ];
+    const checkoutId = String(Date.now());
+    db.upsertCart({
+      checkoutId,
+      email,
+      cartToken: 'tok_' + checkoutId,
+      itemsJson: JSON.stringify(items),
+      subtotal: '16995.00',
+      recoveryUrl: `https://homecartel.net/checkouts/${checkoutId}`,
+      status: 'abandoned'
+    });
+
+    const stagedJobId = db.scheduleJob({
+      flowType: 'abandoned_cart',
+      recipientEmail: email,
+      contextJson: JSON.stringify({
+        checkoutId,
+        recoveryUrl: `https://homecartel.net/checkouts/${checkoutId}`,
+        items
+      }),
+      executeAt: new Date().toISOString()
+    });
 
     // Emit live event to SSE subscribers
     eventBus.emit('event', {
@@ -289,7 +563,8 @@ export async function registerAdminRoutes(app, { db }) {
       visitorId,
       email,
       reconciledCount,
-      message: `Simulated full journey for ${visitorId}! Reconciled ${reconciledCount} anonymous events into ${email}.`
+      stagedJobId,
+      message: `Shopper journey completed for ${visitorId}! Reconciled ${reconciledCount} anonymous events into ${email}. Flow 1 is staged in your review queue awaiting manual send.`
     };
   });
 
