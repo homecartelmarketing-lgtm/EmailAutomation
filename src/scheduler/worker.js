@@ -1,3 +1,5 @@
+import { enrichCartItemsWithImages } from '../shopify/catalog.js';
+
 /**
  * Runs a single cycle of the delay scheduler.
  * Fetches all pending jobs due up to `now` and processes them according to frequency capping and subscription rules.
@@ -48,6 +50,9 @@ export async function runSchedulerCycle({ db, sender, renderer, now = new Date()
     // 4. Render and send
     try {
       const parsedContext = JSON.parse(job.context_json || '{}');
+      if (Array.isArray(parsedContext.items) && parsedContext.items.length > 0) {
+        parsedContext.items = await enrichCartItemsWithImages(parsedContext.items);
+      }
       const context = {
         ...parsedContext,
         email: job.recipient_email

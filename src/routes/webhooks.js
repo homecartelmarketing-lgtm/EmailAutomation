@@ -1,5 +1,6 @@
 import { verifyShopifyHmac } from '../shopify/hmac.js';
 import { eventBus } from '../events/bus.js';
+import { enrichCartItemsWithImages } from '../shopify/catalog.js';
 
 function toIsoUtc(val) {
   if (!val) return new Date().toISOString();
@@ -124,12 +125,16 @@ export async function registerWebhookRoutes(app, { db, secret }) {
       });
     }
 
+    // Enrich line items with real Shopify catalog images (e.g. for Baron Square, Aerik, etc.)
+    const rawLineItems = Array.isArray(data.line_items) ? data.line_items : [];
+    const enrichedLineItems = await enrichCartItemsWithImages(rawLineItems);
+
     // Save cart state
     db.upsertCart({
       checkoutId,
       email: cleanEmail,
       cartToken: data.cart_token || data.token || '',
-      itemsJson: JSON.stringify(data.line_items || []),
+      itemsJson: JSON.stringify(enrichedLineItems),
       subtotal: data.total_price || data.subtotal_price || '0.00',
       recoveryUrl: data.abandoned_checkout_url || '',
       status: 'abandoned'
@@ -143,7 +148,7 @@ export async function registerWebhookRoutes(app, { db, secret }) {
       propertiesJson: JSON.stringify({
         checkoutId,
         email: cleanEmail,
-        items: (data.line_items || []).map(i => ({ title: i.title, price: i.price, quantity: i.quantity })),
+        items: enrichedLineItems.map(i => ({ title: i.title, price: i.price, quantity: i.quantity, imageUrl: i.imageUrl })),
         subtotal: data.total_price || data.subtotal_price || '0.00',
         recoveryUrl: data.abandoned_checkout_url || '',
         timestamp: new Date().toISOString()
@@ -162,7 +167,7 @@ export async function registerWebhookRoutes(app, { db, secret }) {
         properties: {
           checkoutId,
           email: cleanEmail,
-          items: data.line_items || [],
+          items: enrichedLineItems,
           subtotal: data.total_price || '0.00'
         },
         createdAt: toIsoUtc(chkEvent.created_at),
@@ -181,7 +186,7 @@ export async function registerWebhookRoutes(app, { db, secret }) {
       contextJson: JSON.stringify({
         checkoutId,
         recoveryUrl: data.abandoned_checkout_url,
-        items: data.line_items || []
+        items: enrichedLineItems
       }),
       executeAt
     });

@@ -2,6 +2,7 @@ import { renderTemplate } from '../templates/renderer.js';
 import { recentWebhookLogs } from './webhooks.js';
 import { eventBus } from '../events/bus.js';
 import { generateUnsubscribeToken } from './unsubscribe.js';
+import { enrichCartItemsWithImages } from '../shopify/catalog.js';
 
 function toIsoUtc(val) {
   if (!val) return val;
@@ -153,6 +154,11 @@ export async function registerAdminRoutes(app, { db }) {
       const token = generateUnsubscribeToken(job.recipient_email, app.config.shopifyWebhookSecret);
       const unsubscribeUrl = `${app.config.appBaseUrl}/api/unsubscribe?email=${encodeURIComponent(job.recipient_email)}&token=${token}`;
 
+      // Resolve live Shopify lighting images for any cart items
+      if (Array.isArray(parsedContext.items) && parsedContext.items.length > 0) {
+        parsedContext.items = await enrichCartItemsWithImages(parsedContext.items);
+      }
+
       const context = {
         ...parsedContext,
         email: job.recipient_email,
@@ -225,6 +231,10 @@ export async function registerAdminRoutes(app, { db }) {
     const parsedContext = JSON.parse(job.context_json || '{}');
     const token = generateUnsubscribeToken(job.recipient_email, app.config.shopifyWebhookSecret);
     const unsubscribeUrl = `${app.config.appBaseUrl}/api/unsubscribe?email=${encodeURIComponent(job.recipient_email)}&token=${token}`;
+
+    if (Array.isArray(parsedContext.items) && parsedContext.items.length > 0) {
+      parsedContext.items = await enrichCartItemsWithImages(parsedContext.items);
+    }
 
     const context = {
       ...parsedContext,
@@ -415,10 +425,11 @@ export async function registerAdminRoutes(app, { db }) {
     if (scenario === 'abandoned_cart' || scenario === 'flow_1') {
       const email = data.email || 'sophia.designer@studio.ph';
       const checkoutId = String(Date.now());
-      const items = [
+      const rawItems = [
         { title: 'Vanja 5 | Glass Luxe Chandelier', price: '₱16,995.00', quantity: 1 },
-        { title: 'Aarhus | Modern Chandelier', price: '₱25,995.00', quantity: 1 }
+        { title: 'Baron Square | Ceiling Mounted Light', price: '₱2,850.00', quantity: 1 }
       ];
+      const items = await enrichCartItemsWithImages(rawItems);
 
       db.upsertCustomer({ email, name: data.name || 'Sophia Reyes' });
       db.upsertCart({
@@ -426,7 +437,7 @@ export async function registerAdminRoutes(app, { db }) {
         email,
         cartToken: 'tok_' + checkoutId,
         itemsJson: JSON.stringify(items),
-        subtotal: '42990.00',
+        subtotal: '19845.00',
         recoveryUrl: `https://homecartel.net/checkouts/${checkoutId}`,
         status: 'abandoned'
       });
