@@ -350,9 +350,9 @@ export async function registerAdminRoutes(app, { db }) {
 
       const nowMs = Date.now();
       const lastSeenMs = new Date(lastSeen).getTime();
-      const isActiveNow = (nowMs - lastSeenMs) < (15 * 60 * 1000);
       const latestEvent = sorted[sorted.length - 1];
       const isLatestEventLeave = latestEvent && (latestEvent.event_type === 'page_leave');
+      const isActiveNow = !isLatestEventLeave && ((nowMs - lastSeenMs) < (15 * 60 * 1000));
       const isSessionEnded = (!isActiveNow) || isLatestEventLeave;
       const isReturning = sessions.length > 1;
 

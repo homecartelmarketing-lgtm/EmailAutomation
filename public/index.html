@@ -636,9 +636,9 @@
           };
         }).reverse(); // Show newest session first
 
-        const isActiveNow = (nowMs - lastSeenMs) < (15 * 60 * 1000);
         const latestEvent = sorted[sorted.length - 1];
         const isLatestEventLeave = latestEvent && (latestEvent.eventType === 'page_leave');
+        const isActiveNow = !isLatestEventLeave && ((nowMs - lastSeenMs) < (15 * 60 * 1000));
         const isSessionEnded = (!isActiveNow) || isLatestEventLeave;
         const isReturning = sessions.length > 1;
 
@@ -1386,6 +1386,12 @@
     refreshData();
     connectSse();
     setInterval(fetchStagedFlows, 5000);
+    // Periodically update active status, relative timers (e.g. "Xm ago"), and presence
+    setInterval(() => {
+      if (liveEvents && liveEvents.length > 0) {
+        renderEventsFeed();
+      }
+    }, 10000);
   </script>
 </body>
 </html>
