@@ -63,6 +63,16 @@ export async function buildServer(envOverrides = {}) {
     }
   });
 
+  // Support text/plain payloads from navigator.sendBeacon
+  app.addContentTypeParser('text/plain', { parseAs: 'string' }, (req, body, done) => {
+    try {
+      const json = JSON.parse(body);
+      done(null, json);
+    } catch (err) {
+      done(null, body);
+    }
+  });
+
   // CORS support for storefront tracking
   app.addHook('onRequest', async (req, reply) => {
     reply.header('Access-Control-Allow-Origin', '*');

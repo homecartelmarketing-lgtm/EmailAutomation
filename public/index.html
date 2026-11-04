@@ -150,7 +150,7 @@
     </div>
 
     <!-- ========================================================================= -->
-    <!-- SECTION 2: REAL-TIME SHOPPER ACTIVITY STREAM -->
+    <!-- SECTION 2: REAL-TIME SHOPPER ACTIVITY STREAM (EXPANDED DUAL-COLUMN VIEW) -->
     <!-- ========================================================================= -->
     <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border)] pb-4">
@@ -163,9 +163,12 @@
               <span id="sse-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
               <span id="sse-label">LIVE STREAMING</span>
             </span>
+            <span id="activity-counter-pill" class="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
+              0 Activities Loaded
+            </span>
           </div>
           <p class="text-xs text-zinc-400 mt-0.5">
-            Real-time feed of live shopper clicks, page views, and duration on <strong>homecartel.net</strong>. When a shopper enters checkout, past actions reconcile to their email.
+            Expanded real-time monitor for <strong>homecartel.net</strong>. Shows product clicks, collection views, page duration, and cart updates side by side.
           </p>
         </div>
       </div>
@@ -174,16 +177,17 @@
       <div class="flex flex-wrap items-center gap-2 text-xs">
         <span class="text-zinc-500 text-[11px] font-medium mr-1">Filter Activity:</span>
         <button onclick="filterEvents('all')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-800 text-white font-medium border border-zinc-700" data-filter="all">All Activities</button>
-        <button onclick="filterEvents('item_click')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="item_click">Item Clicks</button>
+        <button onclick="filterEvents('item_click')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="item_click">Product Clicks</button>
+        <button onclick="filterEvents('category_click')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="category_click">Category / Collections</button>
         <button onclick="filterEvents('page_view')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="page_view">Page Access</button>
         <button onclick="filterEvents('page_leave')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="page_leave">Page Leaves</button>
         <button onclick="filterEvents('identified')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="identified">Identified Shoppers</button>
       </div>
 
-      <!-- Feed Container -->
-      <div id="events-feed" class="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
-        <div class="p-8 text-center text-zinc-500 text-xs border border-dashed border-zinc-800 rounded-xl">
-          Waiting for live shopper activity on homecartel.net...
+      <!-- Expanded Dual-Column Activity Feed Container (650px high, shows 12-16 items on screen) -->
+      <div id="events-feed" class="grid grid-cols-1 lg:grid-cols-2 gap-3 min-h-[400px] max-h-[650px] overflow-y-auto pr-1">
+        <div class="col-span-full p-12 text-center text-zinc-500 text-xs border border-dashed border-zinc-800 rounded-xl">
+          Waiting for live activity on homecartel.net... Click on any lamp or chandelier on your store to see it appear here in real time!
         </div>
       </div>
     </div>
@@ -313,7 +317,6 @@
       if (!val) return new Date();
       if (val instanceof Date) return val;
       let s = String(val).trim();
-      // If SQLite returned UTC without T or Z, format as ISO UTC
       if (s.includes(' ') && !s.includes('T')) {
         s = s.replace(' ', 'T');
       }
@@ -490,16 +493,19 @@
       const filtered = liveEvents.filter(ev => {
         if (currentFilter === 'all') return true;
         if (currentFilter === 'item_click') return ev.eventType === 'item_click';
+        if (currentFilter === 'category_click') return ev.eventType === 'category_click';
         if (currentFilter === 'page_view') return ev.eventType === 'page_view';
         if (currentFilter === 'page_leave') return ev.eventType === 'page_leave';
         if (currentFilter === 'identified') return ev.isIdentified;
         return true;
       });
 
+      document.getElementById('activity-counter-pill').textContent = `${filtered.length} Activities Loaded`;
+
       if (filtered.length === 0) {
         container.innerHTML = `
-          <div class="p-8 text-center text-zinc-500 text-xs border border-dashed border-zinc-800 rounded-xl">
-            Waiting for live activity on homecartel.net...
+          <div class="col-span-full p-12 text-center text-zinc-500 text-xs border border-dashed border-zinc-800 rounded-xl">
+            No activities matching the "${currentFilter}" filter. Browse homecartel.net to see real-time updates here!
           </div>
         `;
         return;
@@ -509,14 +515,13 @@
         const props = ev.properties || {};
         const isId = ev.isIdentified;
         const identityHtml = isId
-          ? `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 truncate max-w-[190px]">
                <span>👤</span>
-               <span>${ev.customerEmail}</span>
-               <span class="text-[9px] bg-emerald-500/20 px-1.5 py-0.2 rounded font-normal">Identified</span>
+               <span class="truncate">${ev.customerEmail}</span>
              </span>`
-          : `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-mono text-zinc-400 bg-zinc-800 border border-zinc-700">
+          : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono text-zinc-400 bg-zinc-800 border border-zinc-700 truncate max-w-[190px]">
                <span>🕵️</span>
-               <span>Anonymous (${ev.visitorId || 'visitor'})</span>
+               <span class="truncate">${ev.visitorId || 'visitor'}</span>
              </span>`;
 
         let actionIcon = '⚡';
@@ -526,14 +531,31 @@
 
         if (ev.eventType === 'item_click') {
           actionIcon = '🟡';
-          actionBadge = 'ITEM CLICK';
+          actionBadge = 'PRODUCT CLICK';
           badgeColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
           summaryHtml = `
             <div>
-              <span class="text-zinc-200 font-semibold">Clicked Item:</span>
-              <span class="text-amber-300 font-medium">${props.title || 'Product'}</span>
-              ${props.price ? `<span class="ml-1 text-xs text-emerald-400 font-bold">(${props.price})</span>` : ''}
-              ${props.url ? `<div class="text-[11px] text-zinc-500 font-mono truncate mt-0.5">${props.url}</div>` : ''}
+              <div class="text-amber-300 font-bold text-xs truncate" title="${props.title || 'Product'}">
+                ${props.title || 'Product'}
+              </div>
+              <div class="flex items-center gap-2 mt-1">
+                ${props.price ? `<span class="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 font-bold text-[11px]">${props.price}</span>` : ''}
+                ${props.url ? `<a href="${props.url}" target="_blank" class="text-[11px] text-zinc-400 hover:text-white font-mono truncate underline">${props.url.replace('https://homecartel.net', '')}</a>` : ''}
+              </div>
+            </div>
+          `;
+        } else if (ev.eventType === 'category_click') {
+          actionIcon = '💡';
+          actionBadge = 'CATEGORY / COLLECTION';
+          badgeColor = 'bg-violet-500/10 text-violet-400 border-violet-500/20';
+          summaryHtml = `
+            <div>
+              <div class="text-violet-300 font-bold text-xs">
+                ${props.title || 'Collection'}
+              </div>
+              <div class="text-[11px] text-zinc-400 font-mono mt-0.5 truncate">
+                ${props.path || props.url || '/collections'}
+              </div>
             </div>
           `;
         } else if (ev.eventType === 'page_view') {
@@ -542,9 +564,11 @@
           badgeColor = 'bg-sky-500/10 text-sky-400 border-sky-500/20';
           summaryHtml = `
             <div>
-              <span class="text-zinc-200 font-semibold">Accessed Page:</span>
-              <span class="text-zinc-300 font-mono text-xs">${props.path || props.url || '/'}</span>
-              ${props.title ? `<div class="text-[11px] text-zinc-400 mt-0.5">"${props.title}"</div>` : ''}
+              <div class="text-zinc-200 font-mono text-xs truncate" title="${props.path || props.url || '/'}">
+                ${props.path || props.url || '/'}
+              </div>
+              ${props.title ? `<div class="text-[11px] text-zinc-400 mt-0.5 truncate">"${props.title}"</div>` : ''}
+              ${props.productPrice ? `<span class="inline-block mt-1 px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 font-bold text-[10px]">${props.productPrice}</span>` : ''}
             </div>
           `;
         } else if (ev.eventType === 'page_leave') {
@@ -553,11 +577,10 @@
           badgeColor = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
           summaryHtml = `
             <div>
-              <span class="text-zinc-200 font-semibold">Left Page:</span>
-              <span class="text-zinc-300 font-mono text-xs">${props.path || props.url || '/'}</span>
-              <div class="text-[11px] text-zinc-400 mt-0.5">
-                Duration: <strong class="text-zinc-200">${props.duration_seconds || 0}s</strong>
-                ${props.max_scroll_percent ? ` &bull; Scrolled: <strong class="text-zinc-200">${props.max_scroll_percent}%</strong>` : ''}
+              <div class="text-zinc-300 font-mono text-xs truncate">${props.path || props.url || '/'}</div>
+              <div class="text-[11px] text-zinc-400 mt-1 flex items-center gap-2">
+                <span>Stayed: <strong class="text-zinc-200">${props.duration_seconds || 0}s</strong></span>
+                ${props.max_scroll_percent ? `<span>&bull; Scrolled: <strong class="text-zinc-200">${props.max_scroll_percent}%</strong></span>` : ''}
               </div>
             </div>
           `;
@@ -567,9 +590,8 @@
           badgeColor = 'bg-orange-500/10 text-orange-400 border-orange-500/20';
           summaryHtml = `
             <div>
-              <span class="text-zinc-200 font-semibold">Added Item to Cart:</span>
-              <span class="text-orange-300 font-medium">${props.title || 'Fixture'}</span>
-              ${props.price ? `<span class="ml-1 text-xs text-emerald-400 font-bold">(${props.price})</span>` : ''}
+              <div class="text-orange-300 font-bold text-xs">${props.title || 'Cart Item'}</div>
+              ${props.price ? `<div class="text-[11px] text-emerald-400 font-bold mt-0.5">${props.price}</div>` : ''}
             </div>
           `;
         } else if (ev.eventType === 'identify' || ev.eventType === 'checkout_identify') {
@@ -578,36 +600,33 @@
           badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
           summaryHtml = `
             <div class="p-2 rounded bg-emerald-950/40 border border-emerald-800/40">
-              <span class="text-emerald-300 font-bold">Shopper entered checkout email!</span>
+              <span class="text-emerald-300 font-bold text-xs">Shopper entered checkout email!</span>
               <div class="text-[11px] text-zinc-300 mt-0.5">
-                Stitched <strong class="text-amber-400">${props.reconciledEvents || 0} past anonymous actions</strong> to <strong class="text-emerald-400">${ev.customerEmail}</strong>.
+                Stitched <strong class="text-amber-400">${props.reconciledEvents || 0} past actions</strong> to <strong class="text-emerald-400">${ev.customerEmail}</strong>.
               </div>
             </div>
           `;
         } else {
           actionIcon = '⚡';
           actionBadge = ev.eventType.toUpperCase();
-          summaryHtml = `<div class="text-zinc-300 font-mono text-xs">${JSON.stringify(props)}</div>`;
+          summaryHtml = `<div class="text-zinc-300 font-mono text-xs truncate">${JSON.stringify(props)}</div>`;
         }
 
         return `
-          <div class="p-3 rounded-xl bg-zinc-950 border border-zinc-800/80 hover:border-zinc-700 transition space-y-2 event-card" data-visitor="${ev.visitorId}">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeColor} flex items-center gap-1">
-                  <span>${actionIcon}</span>
-                  <span>${actionBadge}</span>
-                </span>
-                <span class="identity-badge-container">${identityHtml}</span>
-              </div>
-              <div class="text-[11px] text-zinc-400 flex items-center gap-1.5 shrink-0">
-                <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span>${formatPhilippineTime(ev.createdAt)}</span>
-                <span class="text-zinc-400">(${formatRelativeTime(ev.createdAt)})</span>
-              </div>
+          <div class="p-3.5 rounded-xl bg-zinc-950 border border-zinc-800/80 hover:border-zinc-700 transition space-y-2 event-card flex flex-col justify-between" data-visitor="${ev.visitorId}">
+            <div class="flex items-center justify-between gap-1.5 text-xs">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeColor} flex items-center gap-1 shrink-0">
+                <span>${actionIcon}</span>
+                <span>${actionBadge}</span>
+              </span>
+              <span class="identity-badge-container">${identityHtml}</span>
             </div>
-            <div class="text-xs pt-0.5">
+            <div class="text-xs pt-1 flex-1">
               ${summaryHtml}
+            </div>
+            <div class="text-[10.5px] text-zinc-400 pt-1.5 border-t border-zinc-900 flex items-center justify-between">
+              <span>${formatPhilippineTime(ev.createdAt)}</span>
+              <span class="text-zinc-400">(${formatRelativeTime(ev.createdAt)})</span>
             </div>
           </div>
         `;
@@ -678,7 +697,7 @@
 
     async function fetchRecentEvents() {
       try {
-        const res = await fetch('/api/admin/events?limit=50');
+        const res = await fetch('/api/admin/events?limit=80');
         if (res.ok) {
           const data = await res.json();
           liveEvents = data.events || [];

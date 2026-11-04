@@ -3,19 +3,32 @@
  * Embed in Shopify theme.liquid before </head>
  *
  * Capabilities:
- * - Anonymous visitor persistence (cookie + localStorage)
- * - Page Access (date, time, path, title, product details)
- * - Item Clicks (product titles, prices, URLs)
+ * - Persistent anonymous visitor tracking (cookie + localStorage)
+ * - Auto-detects production Railway host from script tag
+ * - Real-time Page Access (home, collections, product, cart, checkout)
+ * - Item & Collection Clicks (product titles, prices, photos, category names)
  * - Page Leaves (duration in seconds, max scroll depth %)
- * - Cart Actions & Token Synchronization
- * - Automatic Email Capture & Anonymous-to-Customer Identity Stitching
+ * - Cart Token & Note Attribute Sync
+ * - Identity Stitching on checkout / email entry
  */
 (function() {
   'use strict';
 
   const COOKIE_NAME = 'hc_vid';
   const STORAGE_KEY = 'homecartel_vid';
-  const API_ENDPOINT = window.HOMECARTEL_API_URL || '';
+  const DEFAULT_BACKEND = 'https://emailautomation-production-d651.up.railway.app';
+
+  // Determine backend URL automatically from script origin or fallback to live Railway production
+  let scriptOrigin = '';
+  try {
+    const cs = document.currentScript;
+    if (cs && cs.src) {
+      scriptOrigin = new URL(cs.src).origin;
+    }
+  } catch (e) {}
+
+  const API_ENDPOINT = (window.HOMECARTEL_API_URL || scriptOrigin || DEFAULT_BACKEND).replace(/\/$/, '');
+
   const pageStartTime = Date.now();
   let maxScrollPercent = 0;
   let pageLeaveFired = false;
@@ -59,32 +72,38 @@
 
   const visitorId = getOrCreateVisitorId();
 
-  // --- 2. Dispatch Helpers ---
+  // --- 2. Reliable Multi-Transport Dispatcher (CORS Fetch + Beacon) ---
   function sendPayload(endpoint, payload) {
     const fullUrl = `${API_ENDPOINT}${endpoint}`;
     const bodyStr = JSON.stringify(payload);
 
-    if (navigator.sendBeacon) {
-      const blob = new Blob([bodyStr], { type: 'application/json' });
-      if (navigator.sendBeacon(fullUrl, blob)) {
-        return;
-      }
-    }
-
     try {
       fetch(fullUrl, {
         method: 'POST',
+        mode: 'cors',
         headers: { 'Content-Type': 'application/json' },
         body: bodyStr,
         keepalive: true
-      }).catch(() => {});
-    } catch (e) {}
+      }).catch(function() {
+        if (navigator.sendBeacon) {
+          const blob = new Blob([bodyStr], { type: 'text/plain' });
+          navigator.sendBeacon(fullUrl, blob);
+        }
+      });
+    } catch (e) {
+      if (navigator.sendBeacon) {
+        try {
+          const blob = new Blob([bodyStr], { type: 'text/plain' });
+          navigator.sendBeacon(fullUrl, blob);
+        } catch (err) {}
+      }
+    }
   }
 
   // Global Tracking Function
   window.homeCartelTrack = function(eventType, properties = {}) {
     properties.timestamp = new Date().toISOString();
-    properties.local_time = new Date().toLocaleString();
+    properties.local_time = new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' });
     sendPayload('/api/track/event', { visitorId, eventType, properties });
   };
 
@@ -130,21 +149,26 @@
       page_type: pageType,
       screen_width: window.innerWidth,
       timestamp: now.toISOString(),
-      local_time: now.toLocaleString()
+      local_time: now.toLocaleString('en-US', { timeZone: 'Asia/Manila' })
     };
 
-    // If on a Shopify Product Page, capture rich item attributes
+    // If on a Shopify Product Page, extract product name and price
     if (pageType === 'product') {
       try {
         if (window.meta && window.meta.product) {
           properties.productId = window.meta.product.id;
           properties.productTitle = window.meta.product.name || window.meta.product.title;
-          properties.productPrice = window.meta.product.price ? `₱${(window.meta.product.price / 100).toFixed(2)}` : null;
+          properties.productPrice = window.meta.product.price ? `₱${(window.meta.product.price / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : null;
         } else {
           const h1 = document.querySelector('h1');
           if (h1) properties.productTitle = h1.innerText.trim();
         }
       } catch (e) {}
+    } else if (pageType === 'collection') {
+      const heading = document.querySelector('h1, .collection-hero__title');
+      if (heading) {
+        properties.collectionTitle = heading.innerText.trim();
+      }
     }
 
     window.homeCartelTrack('page_view', properties);
@@ -163,7 +187,7 @@
       duration_seconds: durationSeconds,
       max_scroll_percent: maxScrollPercent,
       timestamp: new Date().toISOString(),
-      local_time: new Date().toLocaleString()
+      local_time: new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' })
     });
   }
 
@@ -188,23 +212,23 @@
   window.addEventListener('pagehide', trackPageLeave);
   window.addEventListener('beforeunload', trackPageLeave);
 
-  // --- 5. Item / Product Click Detection ---
+  // --- 5. Item Clicks & Collection Navigation Detection ---
   document.addEventListener('click', function(e) {
     const target = e.target;
     if (!target) return;
 
-    // Detect link to a product
-    const link = target.closest('a[href*="/products/"]');
+    // Detect click on Product Link or Product Card
+    const productLink = target.closest('a[href*="/products/"]');
     const productCard = target.closest('.product-card, .grid-product, [data-product-id], product-item, .card--product');
 
-    if (link || productCard) {
+    if (productLink || productCard) {
       let productTitle = '';
-      let productUrl = link ? link.href : window.location.href;
+      let productUrl = productLink ? productLink.href : window.location.href;
       let productPrice = '';
       let productImage = '';
 
-      if (link) {
-        productTitle = link.innerText.trim() || link.getAttribute('title') || '';
+      if (productLink) {
+        productTitle = productLink.innerText.trim() || productLink.getAttribute('title') || '';
       }
 
       if (!productTitle && productCard) {
@@ -225,8 +249,24 @@
         image: productImage || null,
         element: target.tagName,
         timestamp: new Date().toISOString(),
-        local_time: new Date().toLocaleString()
+        local_time: new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' })
       });
+      return;
+    }
+
+    // Detect click on Category / Collection Link (e.g. Table Lamps, Chandeliers)
+    const collectionLink = target.closest('a[href*="/collections/"]');
+    if (collectionLink) {
+      const collectionTitle = collectionLink.innerText.trim() || collectionLink.getAttribute('title') || 'Collection';
+      window.homeCartelTrack('category_click', {
+        title: collectionTitle,
+        url: collectionLink.href,
+        path: new URL(collectionLink.href).pathname,
+        element: target.tagName,
+        timestamp: new Date().toISOString(),
+        local_time: new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' })
+      });
+      return;
     }
 
     // Detect Add to Cart Clicks
@@ -236,7 +276,7 @@
         url: window.location.href,
         buttonText: target.innerText ? target.innerText.trim() : 'Add to cart',
         timestamp: new Date().toISOString(),
-        local_time: new Date().toLocaleString()
+        local_time: new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' })
       });
       syncShopifyCart();
     }
@@ -281,7 +321,7 @@
     }, true);
   }
 
-  // Initialize tracking once DOM is ready
+  // Initialize tracking
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
       trackPageAccess();
