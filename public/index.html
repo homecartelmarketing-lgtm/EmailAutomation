@@ -150,32 +150,72 @@
     </div>
 
     <!-- ========================================================================= -->
-    <!-- SECTION 2: REAL-TIME SHOPPER ACTIVITY STREAM (EXPANDED DUAL-COLUMN VIEW) -->
+    <!-- SECTION 2: REAL-TIME SHOPPER ACTIVITY MONITOR (GROUPED BY PERSON & SESSION) -->
     <!-- ========================================================================= -->
     <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border)] pb-4">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-[var(--border)] pb-4">
         <div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <h2 class="text-base font-bold text-white flex items-center gap-2">
-              <span>⚡</span> Real-Time Shopper Activity Stream
+              <span>⚡</span> Real-Time Shopper Activity Monitor
             </h2>
             <span id="sse-badge" class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
               <span id="sse-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
               <span id="sse-label">LIVE STREAMING</span>
             </span>
             <span id="activity-counter-pill" class="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
-              0 Activities Loaded
+              0 Shoppers Active
             </span>
           </div>
-          <p class="text-xs text-zinc-400 mt-0.5">
-            Expanded real-time monitor for <strong>homecartel.net</strong>. Shows product clicks, collection views, page duration, and cart updates side by side.
+          <p class="text-xs text-zinc-400 mt-1">
+            Real-time activity on <strong>homecartel.net</strong> automatically grouped by unique customer and browsing session. See each person's journey from arrival to cart.
           </p>
+        </div>
+
+        <!-- View Mode Switcher -->
+        <div class="flex items-center gap-1 bg-zinc-900/90 p-1 rounded-xl border border-zinc-800 shrink-0">
+          <button id="view-mode-shoppers-btn" onclick="setViewMode('shoppers')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-amber-500 text-black shadow">
+            <span>👥</span>
+            <span>By Shopper Journey</span>
+          </button>
+          <button id="view-mode-stream-btn" onclick="setViewMode('stream')" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 text-zinc-400 hover:text-white">
+            <span>⏱️</span>
+            <span>Raw Event Stream</span>
+          </button>
         </div>
       </div>
 
-      <!-- Filter Pills -->
-      <div class="flex flex-wrap items-center gap-2 text-xs">
-        <span class="text-zinc-500 text-[11px] font-medium mr-1">Filter Activity:</span>
+      <!-- Shoppers Sub-Control Bar (Shown when in Shopper Mode) -->
+      <div id="shoppers-control-bar" class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs">
+        <!-- Filter Pills for Shoppers -->
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span class="text-zinc-500 text-[11px] font-medium mr-1">Shoppers:</span>
+          <button onclick="filterShoppers('all')" id="shopper-filter-all" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-800 text-white font-medium border border-zinc-700">All Shoppers (<span id="count-all-shoppers">0</span>)</button>
+          <button onclick="filterShoppers('active')" id="shopper-filter-active" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800">🟢 Active Now (<span id="count-active-shoppers">0</span>)</button>
+          <button onclick="filterShoppers('cart')" id="shopper-filter-cart" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800">🛒 Cart Intent (<span id="count-cart-shoppers">0</span>)</button>
+          <button onclick="filterShoppers('identified')" id="shopper-filter-id" class="shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800">👤 Identified (<span id="count-id-shoppers">0</span>)</button>
+        </div>
+
+        <!-- Search, Sort & Expand Controls -->
+        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <div class="relative flex-1 sm:w-56">
+            <input id="shopper-search-input" oninput="handleShopperSearch(this.value)" type="text" placeholder="Search visitor, email, product..." class="w-full text-xs bg-zinc-900 border border-zinc-800 rounded-lg pl-7 pr-3 py-1.5 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-amber-500">
+            <span class="absolute left-2.5 top-1.5 text-zinc-500 text-xs">🔍</span>
+          </div>
+          <select id="shopper-sort-select" onchange="handleShopperSort(this.value)" class="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-zinc-300 focus:outline-none">
+            <option value="recent">⚡ Most Recent Activity</option>
+            <option value="actions">🔥 Most Engaged (Highest Actions)</option>
+            <option value="cart">🛒 Cart Intent First</option>
+          </select>
+          <button onclick="toggleExpandAllShoppers()" id="btn-expand-all" class="px-2.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs border border-zinc-800 whitespace-nowrap font-medium transition">
+            Expand All Journeys
+          </button>
+        </div>
+      </div>
+
+      <!-- Stream Sub-Control Bar (Shown when in Raw Stream Mode) -->
+      <div id="stream-control-bar" class="hidden flex flex-wrap items-center gap-2 text-xs">
+        <span class="text-zinc-500 text-[11px] font-medium mr-1">Filter Stream:</span>
         <button onclick="filterEvents('all')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-800 text-white font-medium border border-zinc-700" data-filter="all">All Activities</button>
         <button onclick="filterEvents('item_click')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="item_click">Product Clicks</button>
         <button onclick="filterEvents('category_click')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="category_click">Category / Collections</button>
@@ -184,9 +224,9 @@
         <button onclick="filterEvents('identified')" class="event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800" data-filter="identified">Identified Shoppers</button>
       </div>
 
-      <!-- Expanded Dual-Column Activity Feed Container (650px high, shows 12-16 items on screen) -->
-      <div id="events-feed" class="grid grid-cols-1 lg:grid-cols-2 gap-3 min-h-[400px] max-h-[650px] overflow-y-auto pr-1">
-        <div class="col-span-full p-12 text-center text-zinc-500 text-xs border border-dashed border-zinc-800 rounded-xl">
+      <!-- Dynamic Activity Container (renders Shopper Cards in Shopper Mode, or Dual-Column Grid in Stream Mode) -->
+      <div id="events-feed" class="space-y-4 min-h-[400px] max-h-[720px] overflow-y-auto pr-1">
+        <div class="p-12 text-center text-zinc-500 text-xs border border-dashed border-zinc-800 rounded-xl">
           Waiting for live activity on homecartel.net... Click on any lamp or chandelier on your store to see it appear here in real time!
         </div>
       </div>
@@ -486,10 +526,455 @@
     }
 
     // =========================================================================
-    // 2. REAL-TIME ACTIVITY STREAM
+    // 2. REAL-TIME SHOPPER ACTIVITY (GROUPED BY USER & RAW STREAM)
     // =========================================================================
+    let currentViewMode = 'shoppers'; // 'shoppers' or 'stream'
+    let currentShopperFilter = 'all'; // 'all', 'active', 'cart', 'identified'
+    let shopperSearchQuery = '';
+    let shopperSortMode = 'recent'; // 'recent', 'actions', 'cart'
+    let expandedShoppers = new Set();
+    let expandedSessions = new Set();
+    let allJourneysExpanded = false;
+
+    // Groups flat events into distinct Shopper profiles and partitioned sessions
+    function groupEventsIntoShoppers(eventsList) {
+      const shoppersMap = new Map();
+
+      eventsList.forEach(ev => {
+        const key = ev.customerEmail || ev.visitorId || 'unknown';
+        if (!shoppersMap.has(key)) {
+          shoppersMap.set(key, {
+            id: key,
+            visitorId: ev.visitorId,
+            customerEmail: ev.customerEmail || null,
+            customerName: ev.customerName || null,
+            isIdentified: !!ev.isIdentified,
+            events: []
+          });
+        }
+        const s = shoppersMap.get(key);
+        if (ev.customerEmail && !s.customerEmail) {
+          s.customerEmail = ev.customerEmail;
+          s.isIdentified = true;
+        }
+        if (ev.customerName && !s.customerName) {
+          s.customerName = ev.customerName;
+        }
+        s.events.push(ev);
+      });
+
+      const colors = [
+        { border: 'border-amber-500/40 hover:border-amber-400', badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20', avatar: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
+        { border: 'border-sky-500/40 hover:border-sky-400', badge: 'bg-sky-500/10 text-sky-400 border-sky-500/20', avatar: 'bg-sky-500/20 text-sky-300 border-sky-500/30' },
+        { border: 'border-emerald-500/40 hover:border-emerald-400', badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', avatar: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
+        { border: 'border-violet-500/40 hover:border-violet-400', badge: 'bg-violet-500/10 text-violet-400 border-violet-500/20', avatar: 'bg-violet-500/20 text-violet-300 border-violet-500/30' },
+        { border: 'border-rose-500/40 hover:border-rose-400', badge: 'bg-rose-500/10 text-rose-400 border-rose-500/20', avatar: 'bg-rose-500/20 text-rose-300 border-rose-500/30' },
+        { border: 'border-teal-500/40 hover:border-teal-400', badge: 'bg-teal-500/10 text-teal-400 border-teal-500/20', avatar: 'bg-teal-500/20 text-teal-300 border-teal-500/30' },
+        { border: 'border-orange-500/40 hover:border-orange-400', badge: 'bg-orange-500/10 text-orange-400 border-orange-500/20', avatar: 'bg-orange-500/20 text-orange-300 border-orange-500/30' }
+      ];
+
+      const shoppers = Array.from(shoppersMap.values()).map(shopper => {
+        // Sort chronologically (oldest to newest) to partition sessions
+        const sorted = [...shopper.events].sort((a, b) => parseToDate(a.createdAt) - parseToDate(b.createdAt));
+        const firstSeen = sorted[0]?.createdAt || shopper.events[0]?.createdAt;
+        const lastSeen = sorted[sorted.length - 1]?.createdAt || shopper.events[0]?.createdAt;
+
+        // Partition into distinct sessions using 30-minute inactivity threshold
+        const SESSION_GAP_MS = 30 * 60 * 1000;
+        const rawSessions = [];
+        let currentSess = [];
+
+        sorted.forEach((e, idx) => {
+          if (idx === 0) {
+            currentSess.push(e);
+          } else {
+            const prevMs = parseToDate(sorted[idx - 1].createdAt).getTime();
+            const currMs = parseToDate(e.createdAt).getTime();
+            if (currMs - prevMs > SESSION_GAP_MS) {
+              rawSessions.push(currentSess);
+              currentSess = [e];
+            } else {
+              currentSess.push(e);
+            }
+          }
+        });
+        if (currentSess.length > 0) rawSessions.push(currentSess);
+
+        const nowMs = Date.now();
+        const sessions = rawSessions.map((evList, sIdx) => {
+          const sStart = evList[0].createdAt;
+          const sEnd = evList[evList.length - 1].createdAt;
+          const sEndMs = parseToDate(sEnd).getTime();
+          const isActiveSession = (nowMs - sEndMs) < (15 * 60 * 1000);
+          return {
+            sessionNumber: sIdx + 1,
+            startTime: sStart,
+            endTime: sEnd,
+            isActive: isActiveSession,
+            events: [...evList].reverse() // Show newest event first within session
+          };
+        }).reverse(); // Show newest session first
+
+        const lastSeenMs = parseToDate(lastSeen).getTime();
+        const isActiveNow = (nowMs - lastSeenMs) < (15 * 60 * 1000);
+
+        // Analyze intent, products, and collections browsed
+        let hasCart = false;
+        let hasItemClick = false;
+        let hasCategoryClick = false;
+        const viewedProducts = new Set();
+        const viewedCategories = new Set();
+
+        sorted.forEach(e => {
+          const p = e.properties || {};
+          if (e.eventType === 'add_to_cart' || e.eventType === 'add_to_cart_click') hasCart = true;
+          if (e.eventType === 'item_click') {
+            hasItemClick = true;
+            if (p.title) viewedProducts.add(p.title);
+          }
+          if (e.eventType === 'category_click') {
+            hasCategoryClick = true;
+            if (p.title) viewedCategories.add(p.title);
+          }
+          if (e.eventType === 'page_view' && p.page_type === 'product' && p.productTitle) {
+            viewedProducts.add(p.productTitle);
+          }
+          if (e.eventType === 'page_view' && p.page_type === 'collection' && p.collectionTitle) {
+            viewedCategories.add(p.collectionTitle);
+          }
+        });
+
+        let intent = { label: 'Browsing Store', badge: 'bg-zinc-800 text-zinc-300 border-zinc-700' };
+        if (hasCart) {
+          intent = { label: '🛒 Added to Cart (High Intent)', badge: 'bg-amber-500/20 text-amber-300 border-amber-500/30' };
+        } else if (viewedProducts.size >= 3) {
+          intent = { label: `🔍 Product Comparison (${viewedProducts.size} lamps)`, badge: 'bg-sky-500/20 text-sky-300 border-sky-500/30' };
+        } else if (hasItemClick || viewedProducts.size > 0) {
+          intent = { label: '💡 Product Explorer', badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' };
+        } else if (hasCategoryClick || viewedCategories.size > 0) {
+          intent = { label: '📂 Category Browser', badge: 'bg-violet-500/20 text-violet-300 border-violet-500/30' };
+        }
+
+        // Generate consistent color theme based on ID
+        let hash = 0;
+        for (let c = 0; c < shopper.id.length; c++) hash = (hash * 31 + shopper.id.charCodeAt(c)) & 0xffffffff;
+        const theme = colors[Math.abs(hash) % colors.length];
+
+        const shortVid = shopper.visitorId ? shopper.visitorId.replace('anon_hc_', '') : 'visitor';
+
+        return {
+          ...shopper,
+          shortVid,
+          firstSeen,
+          lastSeen,
+          isActiveNow,
+          hasCart,
+          intent,
+          theme,
+          viewedProducts: Array.from(viewedProducts),
+          viewedCategories: Array.from(viewedCategories),
+          totalEvents: sorted.length,
+          sessions
+        };
+      });
+
+      return shoppers;
+    }
+
     function renderEventsFeed() {
+      if (currentViewMode === 'shoppers') {
+        renderShoppersView();
+      } else {
+        renderStreamView();
+      }
+    }
+
+    function renderShoppersView() {
       const container = document.getElementById('events-feed');
+      container.className = 'space-y-4 min-h-[400px] max-h-[720px] overflow-y-auto pr-1';
+
+      const allShoppers = groupEventsIntoShoppers(liveEvents);
+
+      // Update counters
+      const activeCount = allShoppers.filter(s => s.isActiveNow).length;
+      const cartCount = allShoppers.filter(s => s.hasCart).length;
+      const idCount = allShoppers.filter(s => s.isIdentified).length;
+
+      document.getElementById('count-all-shoppers').textContent = allShoppers.length;
+      document.getElementById('count-active-shoppers').textContent = activeCount;
+      document.getElementById('count-cart-shoppers').textContent = cartCount;
+      document.getElementById('count-id-shoppers').textContent = idCount;
+      document.getElementById('activity-counter-pill').textContent = `${allShoppers.length} Shoppers (${liveEvents.length} Actions)`;
+
+      // Filter
+      let filtered = allShoppers.filter(s => {
+        if (currentShopperFilter === 'active') return s.isActiveNow;
+        if (currentShopperFilter === 'cart') return s.hasCart;
+        if (currentShopperFilter === 'identified') return s.isIdentified;
+        return true;
+      });
+
+      // Search Query Filter
+      if (shopperSearchQuery.trim()) {
+        const q = shopperSearchQuery.toLowerCase().trim();
+        filtered = filtered.filter(s => {
+          const emailMatch = s.customerEmail && s.customerEmail.toLowerCase().includes(q);
+          const vidMatch = s.visitorId && s.visitorId.toLowerCase().includes(q);
+          const prodMatch = s.viewedProducts.some(p => p.toLowerCase().includes(q));
+          const catMatch = s.viewedCategories.some(c => c.toLowerCase().includes(q));
+          return emailMatch || vidMatch || prodMatch || catMatch;
+        });
+      }
+
+      // Sort
+      if (shopperSortMode === 'recent') {
+        filtered.sort((a, b) => parseToDate(b.lastSeen) - parseToDate(a.lastSeen));
+      } else if (shopperSortMode === 'actions') {
+        filtered.sort((a, b) => b.totalEvents - a.totalEvents);
+      } else if (shopperSortMode === 'cart') {
+        filtered.sort((a, b) => (b.hasCart ? 1 : 0) - (a.hasCart ? 1 : 0) || parseToDate(b.lastSeen) - parseToDate(a.lastSeen));
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="p-12 text-center text-zinc-500 text-xs border border-dashed border-zinc-800 rounded-xl">
+            No shoppers match the current filter "${currentShopperFilter}"${shopperSearchQuery ? ` and search "${shopperSearchQuery}"` : ''}.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map((shopper, idx) => {
+        const isShopperExpanded = allJourneysExpanded || expandedShoppers.has(shopper.id);
+        const displayName = shopper.isIdentified
+          ? (shopper.customerEmail + (shopper.customerName ? ` (${shopper.customerName})` : ''))
+          : `Shopper #${idx + 1} (${shopper.shortVid})`;
+
+        return `
+          <div class="rounded-2xl border ${shopper.theme.border} bg-zinc-950 p-4 sm:p-5 space-y-3.5 shadow-sm transition hover:border-zinc-500">
+            <!-- Shopper Card Header -->
+            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-zinc-900 pb-3.5">
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${shopper.theme.avatar} border shrink-0">
+                  #${idx + 1}
+                </div>
+                <div>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-bold text-white text-sm">${displayName}</span>
+                    ${shopper.isIdentified ? `
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span>👤</span> Identified
+                      </span>
+                    ` : `
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-zinc-900 text-zinc-400 border border-zinc-800">
+                        <span>🕵️</span> Anonymous
+                      </span>
+                    `}
+                    ${shopper.isActiveNow ? `
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
+                        Active Now
+                      </span>
+                    ` : `
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-zinc-900 text-zinc-400 border border-zinc-800">
+                        Last seen ${formatRelativeTime(shopper.lastSeen)}
+                      </span>
+                    `}
+                    <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold border ${shopper.intent.badge}">
+                      ${shopper.intent.label}
+                    </span>
+                    <span class="px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-zinc-900 text-zinc-300 border border-zinc-800">
+                      ${shopper.sessions.length} Session${shopper.sessions.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-2 text-[11px] text-zinc-400 font-mono mt-1 flex-wrap">
+                    <span>Cookie: <strong class="text-zinc-300">${shopper.visitorId}</strong></span>
+                    ${shopper.customerEmail ? `<span class="text-emerald-400 font-sans">• Linked to ${shopper.customerEmail}</span>` : ''}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Top Right Summary -->
+              <div class="flex items-center gap-4 text-right text-xs shrink-0 sm:pt-0.5">
+                <div>
+                  <div class="text-[11px] text-zinc-400">Total Actions</div>
+                  <div class="font-bold text-white text-sm">${shopper.totalEvents} activities</div>
+                </div>
+                <div>
+                  <div class="text-[11px] text-zinc-400">Latest Event (PHT)</div>
+                  <div class="font-medium text-amber-400 text-xs">${formatPhilippineTime(shopper.lastSeen)}</div>
+                  <div class="text-[10px] text-zinc-400">(${formatRelativeTime(shopper.lastSeen)})</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Products & Collections Viewed Pill Row -->
+            ${(shopper.viewedProducts.length > 0 || shopper.viewedCategories.length > 0) ? `
+              <div class="flex flex-wrap items-center gap-1.5 text-xs py-1 px-2.5 rounded-lg bg-zinc-900/40 border border-zinc-900">
+                <span class="text-[11px] text-zinc-400 font-medium mr-1">Fixtures & collections viewed:</span>
+                ${shopper.viewedProducts.slice(0, 4).map(p => `
+                  <span class="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] font-medium truncate max-w-[220px]" title="${p}">
+                    💡 ${p}
+                  </span>
+                `).join('')}
+                ${shopper.viewedProducts.length > 4 ? `
+                  <span class="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 text-[10px]">
+                    +${shopper.viewedProducts.length - 4} more
+                  </span>
+                ` : ''}
+                ${shopper.viewedCategories.slice(0, 2).map(c => `
+                  <span class="px-2 py-0.5 rounded-md bg-violet-500/10 border border-violet-500/20 text-violet-300 text-[11px] font-medium">
+                    📂 ${c}
+                  </span>
+                `).join('')}
+              </div>
+            ` : ''}
+
+            <!-- Sessions Breakdown -->
+            <div class="space-y-2.5 pt-1">
+              ${shopper.sessions.map(sess => {
+                const sessionKey = `${shopper.id}_sess_${sess.sessionNumber}`;
+                const isSessionExpanded = isShopperExpanded || expandedSessions.has(sessionKey);
+                const displayEvents = isSessionExpanded ? sess.events : sess.events.slice(0, 3);
+                const hasMore = sess.events.length > 3;
+
+                return `
+                  <div class="rounded-xl bg-zinc-900/60 border border-zinc-800/80 p-3 space-y-2">
+                    <div class="flex items-center justify-between text-xs pb-1 border-b border-zinc-800">
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-zinc-200">Session #${sess.sessionNumber}</span>
+                        <span class="text-[11px] text-zinc-400">(${sess.events.length} actions in this visit)</span>
+                        ${sess.isActive ? `
+                          <span class="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">Active Visit</span>
+                        ` : ''}
+                      </div>
+                      <div class="text-[11px] text-zinc-400">
+                        ${formatPhilippineTime(sess.startTime)} &rarr; ${formatPhilippineTime(sess.endTime)}
+                      </div>
+                    </div>
+
+                    <!-- Events List -->
+                    <div class="space-y-1.5">
+                      ${displayEvents.map(ev => renderEventRow(ev)).join('')}
+                    </div>
+
+                    <!-- Expansion toggle if session has > 3 events -->
+                    ${hasMore ? `
+                      <div class="pt-1 text-center">
+                        <button onclick="toggleSessionExpand('${sessionKey}')" class="text-[11px] font-semibold text-amber-400 hover:text-amber-300 transition">
+                          ${isSessionExpanded ? '▲ Collapse session actions' : `▼ View all ${sess.events.length} actions in Session #${sess.sessionNumber}`}
+                        </button>
+                      </div>
+                    ` : ''}
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Helper to render an individual event step cleanly inside a session
+    function renderEventRow(ev) {
+      const props = ev.properties || {};
+      let actionIcon = '⚡';
+      let actionBadge = 'EVENT';
+      let badgeColor = 'bg-zinc-800 text-zinc-300 border-zinc-700';
+      let detailsHtml = '';
+
+      if (ev.eventType === 'item_click') {
+        actionIcon = '🟡';
+        actionBadge = 'PRODUCT CLICK';
+        badgeColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+        detailsHtml = `
+          <div>
+            <span class="text-amber-300 font-bold">${props.title || 'Product'}</span>
+            ${props.price ? `<span class="ml-1.5 text-emerald-400 font-bold">(${props.price})</span>` : ''}
+            ${props.url ? `<a href="${props.url}" target="_blank" class="ml-1 text-zinc-500 hover:text-white font-mono underline text-[10.5px]">link</a>` : ''}
+          </div>
+        `;
+      } else if (ev.eventType === 'category_click') {
+        actionIcon = '💡';
+        actionBadge = 'COLLECTION';
+        badgeColor = 'bg-violet-500/10 text-violet-400 border-violet-500/20';
+        detailsHtml = `
+          <div>
+            <span class="text-violet-300 font-bold">${props.title || 'Collection'}</span>
+            <span class="ml-1 text-zinc-400 font-mono text-[10.5px]">${props.path || props.url || ''}</span>
+          </div>
+        `;
+      } else if (ev.eventType === 'page_view') {
+        actionIcon = '🟢';
+        actionBadge = 'PAGE ACCESS';
+        badgeColor = 'bg-sky-500/10 text-sky-400 border-sky-500/20';
+        detailsHtml = `
+          <div>
+            <span class="text-zinc-200 font-mono">${props.path || props.url || '/'}</span>
+            ${props.title ? `<span class="ml-1 text-zinc-400 truncate">"${props.title}"</span>` : ''}
+            ${props.productPrice ? `<span class="ml-1.5 text-emerald-400 font-bold text-[10.5px]">(${props.productPrice})</span>` : ''}
+          </div>
+        `;
+      } else if (ev.eventType === 'page_leave') {
+        actionIcon = '🚪';
+        actionBadge = 'PAGE LEAVE';
+        badgeColor = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+        detailsHtml = `
+          <div>
+            <span class="text-zinc-300 font-mono">${props.path || props.url || '/'}</span>
+            <span class="ml-2 text-zinc-400 text-[10.5px]">Stayed: <strong class="text-zinc-200">${props.duration_seconds || 0}s</strong>${props.max_scroll_percent ? ` • Scrolled ${props.max_scroll_percent}%` : ''}</span>
+          </div>
+        `;
+      } else if (ev.eventType === 'add_to_cart' || ev.eventType === 'add_to_cart_click') {
+        actionIcon = '🛒';
+        actionBadge = 'ADD TO CART';
+        badgeColor = 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+        detailsHtml = `
+          <div>
+            <span class="text-orange-300 font-bold">Added item to cart: ${props.title || 'Product'}</span>
+            ${props.price ? `<span class="ml-1.5 text-emerald-400 font-bold text-[10.5px]">(${props.price})</span>` : ''}
+          </div>
+        `;
+      } else if (ev.eventType === 'identify' || ev.eventType === 'checkout_identify') {
+        actionIcon = '🎉';
+        actionBadge = 'IDENTIFIED';
+        badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+        detailsHtml = `
+          <div>
+            <span class="text-emerald-300 font-bold">Entered checkout email: ${ev.customerEmail}</span>
+            <span class="ml-1 text-zinc-400 text-[10.5px]">(stitched anonymous history)</span>
+          </div>
+        `;
+      } else {
+        actionIcon = '⚡';
+        actionBadge = ev.eventType.toUpperCase();
+        detailsHtml = `<span class="text-zinc-300 font-mono text-[10.5px] truncate">${JSON.stringify(props)}</span>`;
+      }
+
+      return `
+        <div class="flex items-start justify-between gap-2 text-xs p-2 rounded-lg bg-zinc-950/80 border border-zinc-800/60">
+          <div class="flex items-start gap-2 flex-1 min-w-0">
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold border ${badgeColor} shrink-0 mt-0.5 flex items-center gap-1">
+              <span>${actionIcon}</span>
+              <span>${actionBadge}</span>
+            </span>
+            <div class="flex-1 min-w-0 truncate text-xs pt-0.5">
+              ${detailsHtml}
+            </div>
+          </div>
+          <div class="text-[10.5px] text-zinc-400 whitespace-nowrap text-right shrink-0">
+            <div>${formatPhilippineTime(ev.createdAt)}</div>
+            <div class="text-zinc-500 text-[10px]">(${formatRelativeTime(ev.createdAt)})</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Raw Stream Mode (Alternative View)
+    function renderStreamView() {
+      const container = document.getElementById('events-feed');
+      container.className = 'grid grid-cols-1 lg:grid-cols-2 gap-3 min-h-[400px] max-h-[720px] overflow-y-auto pr-1';
+
       const filtered = liveEvents.filter(ev => {
         if (currentFilter === 'all') return true;
         if (currentFilter === 'item_click') return ev.eventType === 'item_click';
@@ -500,12 +985,12 @@
         return true;
       });
 
-      document.getElementById('activity-counter-pill').textContent = `${filtered.length} Activities Loaded`;
+      document.getElementById('activity-counter-pill').textContent = `${filtered.length} Stream Activities`;
 
       if (filtered.length === 0) {
         container.innerHTML = `
           <div class="col-span-full p-12 text-center text-zinc-500 text-xs border border-dashed border-zinc-800 rounded-xl">
-            No activities matching the "${currentFilter}" filter. Browse homecartel.net to see real-time updates here!
+            No activities matching the "${currentFilter}" stream filter.
           </div>
         `;
         return;
@@ -535,9 +1020,7 @@
           badgeColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
           summaryHtml = `
             <div>
-              <div class="text-amber-300 font-bold text-xs truncate" title="${props.title || 'Product'}">
-                ${props.title || 'Product'}
-              </div>
+              <div class="text-amber-300 font-bold text-xs truncate" title="${props.title || 'Product'}">${props.title || 'Product'}</div>
               <div class="flex items-center gap-2 mt-1">
                 ${props.price ? `<span class="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 font-bold text-[11px]">${props.price}</span>` : ''}
                 ${props.url ? `<a href="${props.url}" target="_blank" class="text-[11px] text-zinc-400 hover:text-white font-mono truncate underline">${props.url.replace('https://homecartel.net', '')}</a>` : ''}
@@ -550,12 +1033,8 @@
           badgeColor = 'bg-violet-500/10 text-violet-400 border-violet-500/20';
           summaryHtml = `
             <div>
-              <div class="text-violet-300 font-bold text-xs">
-                ${props.title || 'Collection'}
-              </div>
-              <div class="text-[11px] text-zinc-400 font-mono mt-0.5 truncate">
-                ${props.path || props.url || '/collections'}
-              </div>
+              <div class="text-violet-300 font-bold text-xs">${props.title || 'Collection'}</div>
+              <div class="text-[11px] text-zinc-400 font-mono mt-0.5 truncate">${props.path || props.url || '/collections'}</div>
             </div>
           `;
         } else if (ev.eventType === 'page_view') {
@@ -564,9 +1043,7 @@
           badgeColor = 'bg-sky-500/10 text-sky-400 border-sky-500/20';
           summaryHtml = `
             <div>
-              <div class="text-zinc-200 font-mono text-xs truncate" title="${props.path || props.url || '/'}">
-                ${props.path || props.url || '/'}
-              </div>
+              <div class="text-zinc-200 font-mono text-xs truncate" title="${props.path || props.url || '/'}">${props.path || props.url || '/'}</div>
               ${props.title ? `<div class="text-[11px] text-zinc-400 mt-0.5 truncate">"${props.title}"</div>` : ''}
               ${props.productPrice ? `<span class="inline-block mt-1 px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 font-bold text-[10px]">${props.productPrice}</span>` : ''}
             </div>
@@ -633,6 +1110,64 @@
       }).join('');
     }
 
+    // Mode & Filter Switchers
+    function setViewMode(mode) {
+      currentViewMode = mode;
+      const shoppersBtn = document.getElementById('view-mode-shoppers-btn');
+      const streamBtn = document.getElementById('view-mode-stream-btn');
+      const shoppersBar = document.getElementById('shoppers-control-bar');
+      const streamBar = document.getElementById('stream-control-bar');
+
+      if (mode === 'shoppers') {
+        shoppersBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-amber-500 text-black shadow';
+        streamBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 text-zinc-400 hover:text-white';
+        shoppersBar.classList.remove('hidden');
+        streamBar.classList.add('hidden');
+      } else {
+        streamBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-amber-500 text-black shadow';
+        shoppersBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 text-zinc-400 hover:text-white';
+        streamBar.classList.remove('hidden');
+        shoppersBar.classList.add('hidden');
+      }
+      renderEventsFeed();
+    }
+
+    function filterShoppers(category) {
+      currentShopperFilter = category;
+      document.querySelectorAll('.shopper-filter-btn').forEach(btn => {
+        btn.className = 'shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800';
+      });
+      const activeBtn = document.getElementById(`shopper-filter-${category}`);
+      if (activeBtn) activeBtn.className = 'shopper-filter-btn px-2.5 py-1 rounded-lg bg-zinc-800 text-white font-medium border border-zinc-700';
+      renderShoppersView();
+    }
+
+    function handleShopperSearch(query) {
+      shopperSearchQuery = query;
+      renderShoppersView();
+    }
+
+    function handleShopperSort(mode) {
+      shopperSortMode = mode;
+      renderShoppersView();
+    }
+
+    function toggleSessionExpand(sessionKey) {
+      if (expandedSessions.has(sessionKey)) {
+        expandedSessions.delete(sessionKey);
+      } else {
+        expandedSessions.add(sessionKey);
+      }
+      renderShoppersView();
+    }
+
+    function toggleExpandAllShoppers() {
+      allJourneysExpanded = !allJourneysExpanded;
+      const btn = document.getElementById('btn-expand-all');
+      btn.textContent = allJourneysExpanded ? 'Collapse All Journeys' : 'Expand All Journeys';
+      renderShoppersView();
+    }
+
     function filterEvents(category) {
       currentFilter = category;
       document.querySelectorAll('.event-filter-btn').forEach(btn => {
@@ -642,7 +1177,7 @@
           btn.className = 'event-filter-btn px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800';
         }
       });
-      renderEventsFeed();
+      renderStreamView();
     }
 
     function connectSse() {
@@ -679,7 +1214,7 @@
 
             if (data.event) {
               liveEvents.unshift(data.event);
-              if (liveEvents.length > 200) liveEvents.pop();
+              if (liveEvents.length > 500) liveEvents.pop();
               renderEventsFeed();
               fetchStagedFlows();
               refreshOverviewCounts();
@@ -697,7 +1232,7 @@
 
     async function fetchRecentEvents() {
       try {
-        const res = await fetch('/api/admin/events?limit=80');
+        const res = await fetch('/api/admin/events?limit=300');
         if (res.ok) {
           const data = await res.json();
           liveEvents = data.events || [];

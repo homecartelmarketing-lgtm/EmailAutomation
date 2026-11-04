@@ -238,7 +238,7 @@ export async function registerAdminRoutes(app, { db }) {
 
   // Real-time shopper events feed
   app.get('/api/admin/events', async (req) => {
-    const limit = Math.min(Number(req.query?.limit) || 50, 200);
+    const limit = Math.min(Number(req.query?.limit) || 200, 1000);
     const rawEvents = db.getRecentEvents(limit);
 
     const events = rawEvents.map(ev => {
@@ -261,6 +261,111 @@ export async function registerAdminRoutes(app, { db }) {
     });
 
     return { events, count: events.length };
+  });
+
+  // Grouped shoppers endpoint (distinct visitors & sessions)
+  app.get('/api/admin/shoppers', async (req) => {
+    const limit = Math.min(Number(req.query?.limit) || 300, 1000);
+    const rawEvents = db.getRecentEvents(limit);
+
+    const events = rawEvents.map(ev => {
+      let parsedProps = {};
+      try {
+        parsedProps = typeof ev.properties_json === 'string' ? JSON.parse(ev.properties_json) : (ev.properties_json || {});
+      } catch (e) {}
+
+      return {
+        id: ev.id,
+        visitorId: ev.visitor_id,
+        customerId: ev.customer_id,
+        customerEmail: ev.customer_email || null,
+        customerName: ev.customer_name || null,
+        eventType: ev.event_type,
+        properties: parsedProps,
+        createdAt: toIsoUtc(ev.created_at),
+        isIdentified: !!ev.customer_id
+      };
+    });
+
+    // Group by customer email or visitorId
+    const shoppersMap = new Map();
+    events.forEach(ev => {
+      const key = ev.customerEmail || ev.visitorId || 'unknown';
+      if (!shoppersMap.has(key)) {
+        shoppersMap.set(key, {
+          id: key,
+          visitorId: ev.visitorId,
+          customerEmail: ev.customerEmail || null,
+          customerName: ev.customerName || null,
+          isIdentified: !!ev.isIdentified,
+          events: []
+        });
+      }
+      const shopper = shoppersMap.get(key);
+      if (ev.customerEmail && !shopper.customerEmail) {
+        shopper.customerEmail = ev.customerEmail;
+        shopper.isIdentified = true;
+      }
+      if (ev.customerName && !shopper.customerName) {
+        shopper.customerName = ev.customerName;
+      }
+      shopper.events.push(ev);
+    });
+
+    const shoppers = Array.from(shoppersMap.values()).map(s => {
+      const sorted = [...s.events].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      const firstSeen = sorted[0]?.createdAt || s.events[0]?.createdAt;
+      const lastSeen = sorted[sorted.length - 1]?.createdAt || s.events[0]?.createdAt;
+
+      // Group into sessions with 30-minute inactivity threshold
+      const sessions = [];
+      let cur = [];
+      sorted.forEach((e, idx) => {
+        if (idx === 0) {
+          cur.push(e);
+        } else {
+          const prev = new Date(sorted[idx - 1].createdAt).getTime();
+          const now = new Date(e.createdAt).getTime();
+          if (now - prev > 30 * 60 * 1000) {
+            sessions.push({
+              sessionNumber: sessions.length + 1,
+              startTime: cur[0].createdAt,
+              endTime: cur[cur.length - 1].createdAt,
+              events: [...cur].reverse()
+            });
+            cur = [e];
+          } else {
+            cur.push(e);
+          }
+        }
+      });
+      if (cur.length > 0) {
+        sessions.push({
+          sessionNumber: sessions.length + 1,
+          startTime: cur[0].createdAt,
+          endTime: cur[cur.length - 1].createdAt,
+          events: [...cur].reverse()
+        });
+      }
+
+      return {
+        id: s.id,
+        visitorId: s.visitorId,
+        customerEmail: s.customerEmail,
+        customerName: s.customerName,
+        isIdentified: s.isIdentified,
+        firstSeen,
+        lastSeen,
+        totalEvents: sorted.length,
+        sessionCount: sessions.length,
+        sessions: sessions.reverse() // Most recent session first
+      };
+    });
+
+    // Sort shoppers by most recent activity descending
+    shoppers.sort((a, b) => new Date(b.lastSeen) - new Date(a.lastSeen));
+
+    return { shoppers, totalShoppers: shoppers.length };
   });
 
   // Real-time Server-Sent Events (SSE) Stream
