@@ -797,7 +797,8 @@
       try {
         const res = await fetch(`/api/admin/jobs/${jobId}/send`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
         });
         const data = await res.json();
         if (res.ok) {
@@ -824,7 +825,11 @@
     async function cancelStagedJob(jobId) {
       if (!confirm('Dismiss this staged email without sending?')) return;
       try {
-        const res = await fetch(`/api/admin/jobs/${jobId}/cancel`, { method: 'POST' });
+        const res = await fetch(`/api/admin/jobs/${jobId}/cancel`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
         if (res.ok) {
           showNotice(`Staged job #${jobId} cancelled.`);
           await fetchStagedFlows();

@@ -55,8 +55,12 @@ export async function buildServer(envOverrides = {}) {
   // Preserve raw request body for accurate HMAC signature validation
   app.addContentTypeParser('application/json', { parseAs: 'buffer' }, (req, body, done) => {
     req.rawBody = body;
+    const str = body ? body.toString('utf8').trim() : '';
+    if (!str) {
+      return done(null, {});
+    }
     try {
-      const json = JSON.parse(body.toString('utf8'));
+      const json = JSON.parse(str);
       done(null, json);
     } catch (err) {
       done(err, undefined);
