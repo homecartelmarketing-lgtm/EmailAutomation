@@ -1,6 +1,18 @@
 import { verifyShopifyHmac } from '../shopify/hmac.js';
 import { eventBus } from '../events/bus.js';
 
+function toIsoUtc(val) {
+  if (!val) return new Date().toISOString();
+  let s = String(val).trim();
+  if (s.includes(' ') && !s.includes('T')) {
+    s = s.replace(' ', 'T');
+  }
+  if (!s.endsWith('Z') && !s.includes('+') && !s.includes('-', 10)) {
+    s += 'Z';
+  }
+  return s;
+}
+
 export const recentWebhookLogs = [];
 
 /**
@@ -106,7 +118,7 @@ export async function registerWebhookRoutes(app, { db, secret }) {
           customerName,
           eventType: 'checkout_identify',
           properties: { email: cleanEmail, checkoutId, reconciledEvents: reconciled },
-          createdAt: idEvent.created_at,
+          createdAt: toIsoUtc(idEvent.created_at),
           isIdentified: true
         }
       });
@@ -153,7 +165,7 @@ export async function registerWebhookRoutes(app, { db, secret }) {
           items: data.line_items || [],
           subtotal: data.total_price || '0.00'
         },
-        createdAt: chkEvent.created_at,
+        createdAt: toIsoUtc(chkEvent.created_at),
         isIdentified: true
       }
     });
@@ -217,7 +229,7 @@ export async function registerWebhookRoutes(app, { db, secret }) {
           customerEmail: cleanEmail,
           eventType: 'order_completed',
           properties: { orderId: data.id, total: data.total_price },
-          createdAt: orderEvent.created_at,
+          createdAt: toIsoUtc(orderEvent.created_at),
           isIdentified: true
         }
       });

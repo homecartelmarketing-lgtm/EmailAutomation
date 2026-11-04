@@ -60,10 +60,6 @@
         </div>
       </div>
       <div class="flex items-center gap-3">
-        <a href="/domain-guide" target="_blank" class="px-3.5 py-2 text-xs font-semibold rounded-lg bg-[var(--secondary)] text-zinc-300 hover:text-white border border-zinc-700 transition flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          GoDaddy Manual
-        </a>
         <button onclick="refreshData()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90 transition flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           Refresh Feed
@@ -203,7 +199,7 @@
             <span class="absolute left-2.5 top-1.5 text-zinc-500 text-xs">🔍</span>
           </div>
           <select id="shopper-sort-select" onchange="handleShopperSort(this.value)" class="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-zinc-300 focus:outline-none">
-            <option value="recent">⚡ Most Recent Activity</option>
+            <option value="recent" selected>⚡ Most Recent Shopper First</option>
             <option value="actions">🔥 Most Engaged (Highest Actions)</option>
             <option value="cart">🛒 Cart Intent First</option>
           </select>
@@ -574,10 +570,31 @@
       ];
 
       const shoppers = Array.from(shoppersMap.values()).map(shopper => {
+        // Accurately determine the absolute latest and earliest event timestamps for this shopper
+        let maxTimeMs = 0;
+        let minTimeMs = Infinity;
+        let latestEventCreatedAt = shopper.events[0]?.createdAt;
+        let oldestEventCreatedAt = shopper.events[0]?.createdAt;
+
+        shopper.events.forEach(e => {
+          const t = parseToDate(e.createdAt).getTime();
+          if (t >= maxTimeMs) {
+            maxTimeMs = t;
+            latestEventCreatedAt = e.createdAt;
+          }
+          if (t <= minTimeMs) {
+            minTimeMs = t;
+            oldestEventCreatedAt = e.createdAt;
+          }
+        });
+
+        const lastSeenMs = maxTimeMs || Date.now();
+        const firstSeenMs = minTimeMs || lastSeenMs;
+        const lastSeen = latestEventCreatedAt || new Date().toISOString();
+        const firstSeen = oldestEventCreatedAt || lastSeen;
+
         // Sort chronologically (oldest to newest) to partition sessions
-        const sorted = [...shopper.events].sort((a, b) => parseToDate(a.createdAt) - parseToDate(b.createdAt));
-        const firstSeen = sorted[0]?.createdAt || shopper.events[0]?.createdAt;
-        const lastSeen = sorted[sorted.length - 1]?.createdAt || shopper.events[0]?.createdAt;
+        const sorted = [...shopper.events].sort((a, b) => parseToDate(a.createdAt).getTime() - parseToDate(b.createdAt).getTime());
 
         // Partition into distinct sessions using 30-minute inactivity threshold
         const SESSION_GAP_MS = 30 * 60 * 1000;
@@ -615,7 +632,6 @@
           };
         }).reverse(); // Show newest session first
 
-        const lastSeenMs = parseToDate(lastSeen).getTime();
         const isActiveNow = (nowMs - lastSeenMs) < (15 * 60 * 1000);
 
         // Analyze intent, products, and collections browsed
@@ -667,18 +683,24 @@
           shortVid,
           firstSeen,
           lastSeen,
+          firstSeenMs,
+          lastSeenMs,
           isActiveNow,
           hasCart,
           intent,
           theme,
           viewedProducts: Array.from(viewedProducts),
           viewedCategories: Array.from(viewedCategories),
-          totalEvents: sorted.length,
+          totalEvents: shopper.events.length,
           sessions
         };
       });
 
+      // Strictly sort all shoppers from most recent access to least recent access
+      shoppers.sort((a, b) => b.lastSeenMs - a.lastSeenMs);
+
       return shoppers;
+    }
     }
 
     function renderEventsFeed() {
@@ -726,13 +748,13 @@
         });
       }
 
-      // Sort
+      // Strictly Sort: Most recent shopper that accessed the site, to least recent
       if (shopperSortMode === 'recent') {
-        filtered.sort((a, b) => parseToDate(b.lastSeen) - parseToDate(a.lastSeen));
+        filtered.sort((a, b) => b.lastSeenMs - a.lastSeenMs);
       } else if (shopperSortMode === 'actions') {
-        filtered.sort((a, b) => b.totalEvents - a.totalEvents);
+        filtered.sort((a, b) => (b.totalEvents - a.totalEvents) || (b.lastSeenMs - a.lastSeenMs));
       } else if (shopperSortMode === 'cart') {
-        filtered.sort((a, b) => (b.hasCart ? 1 : 0) - (a.hasCart ? 1 : 0) || parseToDate(b.lastSeen) - parseToDate(a.lastSeen));
+        filtered.sort((a, b) => ((b.hasCart ? 1 : 0) - (a.hasCart ? 1 : 0)) || (b.lastSeenMs - a.lastSeenMs));
       }
 
       if (filtered.length === 0) {
@@ -984,6 +1006,9 @@
         if (currentFilter === 'identified') return ev.isIdentified;
         return true;
       });
+
+      // Strictly sort most recent event to least recent
+      filtered.sort((a, b) => parseToDate(b.createdAt).getTime() - parseToDate(a.createdAt).getTime());
 
       document.getElementById('activity-counter-pill').textContent = `${filtered.length} Stream Activities`;
 

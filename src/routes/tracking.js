@@ -1,5 +1,17 @@
 import { eventBus } from '../events/bus.js';
 
+function toIsoUtc(val) {
+  if (!val) return new Date().toISOString();
+  let s = String(val).trim();
+  if (s.includes(' ') && !s.includes('T')) {
+    s = s.replace(' ', 'T');
+  }
+  if (!s.endsWith('Z') && !s.includes('+') && !s.includes('-', 10)) {
+    s += 'Z';
+  }
+  return s;
+}
+
 /**
  * Registers Storefront Behavioral Tracking API Routes
  * @param {import('fastify').FastifyInstance} app
@@ -35,7 +47,7 @@ export async function registerTrackingRoutes(app, { db }) {
         customerName: recorded.customer_name || null,
         eventType: recorded.event_type,
         properties,
-        createdAt: recorded.created_at,
+        createdAt: toIsoUtc(recorded.created_at),
         isIdentified: !!recorded.customer_id
       }
     });

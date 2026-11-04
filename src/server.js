@@ -124,18 +124,6 @@ export async function buildServer(envOverrides = {}) {
   app.get('/admin', serveDashboard);
   app.get('/dashboard', serveDashboard);
 
-  // Serve GoDaddy Domain Connect authorization instructional guide
-  const serveDomainGuide = async (req, reply) => {
-    const guidePath = path.resolve(process.cwd(), 'public/domain-guide.html');
-    if (fs.existsSync(guidePath)) {
-      reply.header('Content-Type', 'text/html; charset=utf-8');
-      return reply.send(fs.readFileSync(guidePath, 'utf8'));
-    }
-    return reply.code(404).send('Domain guide not found');
-  };
-  app.get('/domain-guide', serveDomainGuide);
-  app.get('/domain-guide.html', serveDomainGuide);
-
   // Serve client tracker script directly
   app.get('/homecartel-tracker.js', async (req, reply) => {
     const trackerPath = path.resolve(process.cwd(), 'public/homecartel-tracker.js');
