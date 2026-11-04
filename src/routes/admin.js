@@ -3,6 +3,18 @@ import { recentWebhookLogs } from './webhooks.js';
 import { eventBus } from '../events/bus.js';
 import { generateUnsubscribeToken } from './unsubscribe.js';
 
+function toIsoUtc(val) {
+  if (!val) return val;
+  let s = String(val).trim();
+  if (s.includes(' ') && !s.includes('T')) {
+    s = s.replace(' ', 'T');
+  }
+  if (!s.endsWith('Z') && !s.includes('+') && !s.includes('-', 10)) {
+    s += 'Z';
+  }
+  return s;
+}
+
 /**
  * Registers Admin Dashboard, Staged Client Flows & Simulation Endpoints
  * @param {import('fastify').FastifyInstance} app
@@ -15,8 +27,15 @@ export async function registerAdminRoutes(app, { db }) {
 
     const customers = raw.prepare('SELECT * FROM customers ORDER BY id DESC LIMIT 10').all();
     const carts = raw.prepare('SELECT * FROM carts ORDER BY id DESC LIMIT 10').all();
-    const jobs = raw.prepare('SELECT * FROM scheduled_jobs ORDER BY id DESC LIMIT 15').all();
-    const logs = raw.prepare('SELECT * FROM email_logs ORDER BY id DESC LIMIT 10').all();
+    const jobs = raw.prepare('SELECT * FROM scheduled_jobs ORDER BY id DESC LIMIT 15').all().map(j => ({
+      ...j,
+      execute_at: toIsoUtc(j.execute_at),
+      created_at: toIsoUtc(j.created_at)
+    }));
+    const logs = raw.prepare('SELECT * FROM email_logs ORDER BY id DESC LIMIT 10').all().map(l => ({
+      ...l,
+      sent_at: toIsoUtc(l.sent_at)
+    }));
 
     const counts = {
       customers: raw.prepare('SELECT COUNT(*) as c FROM customers').get().c,
@@ -101,9 +120,9 @@ export async function registerAdminRoutes(app, { db }) {
         customerName: r.customer_name || parsedContext.name || 'Valued Shopper',
         summary,
         context: parsedContext,
-        executeAt: r.execute_at,
+        executeAt: toIsoUtc(r.execute_at),
         status: r.status,
-        createdAt: r.created_at
+        createdAt: toIsoUtc(r.created_at)
       };
     });
 
@@ -236,7 +255,7 @@ export async function registerAdminRoutes(app, { db }) {
         customerName: ev.customer_name || null,
         eventType: ev.event_type,
         properties: parsedProps,
-        createdAt: ev.created_at,
+        createdAt: toIsoUtc(ev.created_at),
         isIdentified: !!ev.customer_id
       };
     });
@@ -273,11 +292,10 @@ export async function registerAdminRoutes(app, { db }) {
     });
   });
 
-  // Simulator helper to stage any of the 5 behavioral flows without sending automatically
+  // Simulator helper (retained for programmatic tests)
   app.post('/api/admin/simulate', async (req, reply) => {
     const { scenario, data = {} } = req.body || {};
 
-    // Flow 1: Abandoned Cart
     if (scenario === 'abandoned_cart' || scenario === 'flow_1') {
       const email = data.email || 'sophia.designer@studio.ph';
       const checkoutId = String(Date.now());
@@ -317,7 +335,6 @@ export async function registerAdminRoutes(app, { db }) {
       };
     }
 
-    // Flow 2: Welcome & Onboarding Series
     if (scenario === 'welcome' || scenario === 'flow_2') {
       const email = data.email || `new.subscriber.${Math.floor(Math.random() * 1000)}@gmail.com`;
       const name = data.name || 'Maria Santos';
@@ -337,7 +354,6 @@ export async function registerAdminRoutes(app, { db }) {
       };
     }
 
-    // Flow 3: Browse Abandonment
     if (scenario === 'browse_abandonment' || scenario === 'flow_3') {
       const email = data.email || 'claire.architect@design.ph';
       const name = data.name || 'Claire Dizon';
@@ -361,7 +377,6 @@ export async function registerAdminRoutes(app, { db }) {
       };
     }
 
-    // Flow 4: Post-Purchase Care & Review Request
     if (scenario === 'post_purchase' || scenario === 'flow_4') {
       const email = data.email || 'joshua.homeowner@gmail.com';
       const name = data.name || 'Joshua Hernandez';
@@ -385,7 +400,6 @@ export async function registerAdminRoutes(app, { db }) {
       };
     }
 
-    // Flow 5: Winback / Customer Re-engagement
     if (scenario === 'winback' || scenario === 'flow_5') {
       const email = data.email || 'angela.client@gmail.com';
       const name = data.name || 'Angela Lopez';
@@ -422,150 +436,6 @@ export async function registerAdminRoutes(app, { db }) {
     }
 
     return reply.code(400).send({ error: 'Unknown scenario' });
-  });
-
-  // Comprehensive shopper journey simulation: Anonymous -> View -> Click -> Leave -> Add to Cart -> Checkout Email -> Staged Flow 1
-  app.post('/api/admin/simulate-shopper-journey', async (req) => {
-    const randomSuffix = Math.random().toString(36).substring(2, 8);
-    const visitorId = `anon_hc_${randomSuffix}`;
-    const email = req.body?.email || `shopper.${randomSuffix}@gmail.com`;
-    const name = req.body?.name || 'Bea Valenzuela';
-
-    // Step 1: Anonymous Accesses Homepage
-    db.recordEvent({
-      visitorId,
-      eventType: 'page_view',
-      propertiesJson: JSON.stringify({
-        url: 'https://homecartel.net/',
-        path: '/',
-        title: 'HomeCartel Lighting • Modern & Minimalist Fixtures',
-        page_type: 'home',
-        timestamp: new Date().toISOString()
-      })
-    });
-
-    // Step 2: Anonymous Clicks an Item
-    db.recordEvent({
-      visitorId,
-      eventType: 'item_click',
-      propertiesJson: JSON.stringify({
-        title: 'Vanja 5 | Glass Luxe Chandelier',
-        url: 'https://homecartel.net/products/vanja-5-glass-luxe-chandelier',
-        price: '₱16,995.00',
-        timestamp: new Date().toISOString()
-      })
-    });
-
-    // Step 3: Anonymous Views the Product Page
-    db.recordEvent({
-      visitorId,
-      eventType: 'page_view',
-      propertiesJson: JSON.stringify({
-        url: 'https://homecartel.net/products/vanja-5-glass-luxe-chandelier',
-        path: '/products/vanja-5-glass-luxe-chandelier',
-        title: 'Vanja 5 | Glass Luxe Chandelier – HomeCartel',
-        page_type: 'product',
-        timestamp: new Date().toISOString()
-      })
-    });
-
-    // Step 4: Anonymous Adds to Cart
-    db.recordEvent({
-      visitorId,
-      eventType: 'add_to_cart',
-      propertiesJson: JSON.stringify({
-        title: 'Vanja 5 | Glass Luxe Chandelier',
-        price: '₱16,995.00',
-        quantity: 1,
-        timestamp: new Date().toISOString()
-      })
-    });
-
-    // Step 5: Anonymous Leaves Page after 34 seconds
-    db.recordEvent({
-      visitorId,
-      eventType: 'page_leave',
-      propertiesJson: JSON.stringify({
-        url: 'https://homecartel.net/products/vanja-5-glass-luxe-chandelier',
-        path: '/products/vanja-5-glass-luxe-chandelier',
-        duration_seconds: 34,
-        max_scroll_percent: 88,
-        timestamp: new Date().toISOString()
-      })
-    });
-
-    // Step 6: Customer Enters Email in Checkout! (Identity Reconciliation)
-    const customerId = db.upsertCustomer({ email, name });
-    const reconciledCount = db.linkVisitorEventsToCustomer(visitorId, customerId);
-
-    const ev6 = db.recordEvent({
-      customerId,
-      visitorId,
-      eventType: 'identify',
-      propertiesJson: JSON.stringify({
-        email,
-        name,
-        reconciledEvents: reconciledCount,
-        note: `Identity stitched: ${visitorId} is now ${email}`,
-        timestamp: new Date().toISOString()
-      })
-    });
-
-    // Step 7: Stage Abandoned Cart Flow 1 awaiting manual approval (DO NOT send automatically!)
-    const items = [
-      { title: 'Vanja 5 | Glass Luxe Chandelier', price: '₱16,995.00', quantity: 1 }
-    ];
-    const checkoutId = String(Date.now());
-    db.upsertCart({
-      checkoutId,
-      email,
-      cartToken: 'tok_' + checkoutId,
-      itemsJson: JSON.stringify(items),
-      subtotal: '16995.00',
-      recoveryUrl: `https://homecartel.net/checkouts/${checkoutId}`,
-      status: 'abandoned'
-    });
-
-    const stagedJobId = db.scheduleJob({
-      flowType: 'abandoned_cart',
-      recipientEmail: email,
-      contextJson: JSON.stringify({
-        checkoutId,
-        recoveryUrl: `https://homecartel.net/checkouts/${checkoutId}`,
-        items
-      }),
-      executeAt: new Date().toISOString()
-    });
-
-    // Emit live event to SSE subscribers
-    eventBus.emit('event', {
-      type: 'identify',
-      visitorId,
-      customerId,
-      email,
-      name,
-      reconciledEvents: reconciledCount,
-      event: {
-        id: ev6.id,
-        visitorId,
-        customerId,
-        customerEmail: email,
-        customerName: name,
-        eventType: 'identify',
-        properties: { email, name, reconciledEvents: reconciledCount },
-        createdAt: ev6.created_at,
-        isIdentified: true
-      }
-    });
-
-    return {
-      success: true,
-      visitorId,
-      email,
-      reconciledCount,
-      stagedJobId,
-      message: `Shopper journey completed for ${visitorId}! Reconciled ${reconciledCount} anonymous events into ${email}. Flow 1 is staged in your review queue awaiting manual send.`
-    };
   });
 
   // Endpoint to preview any template directly

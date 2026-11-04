@@ -56,7 +56,7 @@
               Manual Review Mode Active
             </span>
           </h1>
-          <p class="text-sm text-[var(--muted-foreground)]">Behavioral tracking active &bull; Auto-send paused &bull; One-click manual flow dispatch (Flows 1–5)</p>
+          <p class="text-sm text-[var(--muted-foreground)]">Storefront behavioral tracking active &bull; Auto-send paused &bull; Philippine Time (PHT, UTC+8)</p>
         </div>
       </div>
       <div class="flex items-center gap-3">
@@ -96,7 +96,7 @@
       <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm col-span-2 md:col-span-1">
         <p class="text-xs text-[var(--muted-foreground)] font-medium">Delivered Emails</p>
         <p id="stat-sent" class="text-2xl font-bold mt-1 text-violet-400">0</p>
-        <p class="text-[12px] text-violet-400 mt-0.5">Manually sent so far</p>
+        <p class="text-[12px] text-violet-400 mt-0.5">Manually dispatched</p>
       </div>
     </div>
 
@@ -107,7 +107,7 @@
     </div>
 
     <!-- ========================================================================= -->
-    <!-- SECTION 1: STAGED CLIENT BEHAVIORAL FLOWS (MANUAL SEND ONLY) -->
+    <!-- SECTION 1: STAGED CLIENT BEHAVIORAL FLOWS (MANUAL SEND CONTROL) -->
     <!-- ========================================================================= -->
     <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border)] pb-4">
@@ -121,18 +121,8 @@
             </span>
           </div>
           <p class="text-xs text-zinc-400 mt-0.5">
-            Automated emails are paused. When clients trigger any behavior (Flows 1–5), they are safely listed below. Click <strong>"Send Flow Email"</strong> to review and dispatch.
+            Automated sending is disabled. When shoppers qualify for Flows 1–5 on <strong>homecartel.net</strong>, they are safely staged below. Click <strong>"Send Flow Email"</strong> to dispatch.
           </p>
-        </div>
-
-        <!-- Quick Stage Simulators for Testing -->
-        <div class="flex items-center gap-1.5 flex-wrap">
-          <span class="text-[11px] text-zinc-400 font-medium">Test Stage:</span>
-          <button onclick="stageSimulatedFlow('flow_1')" class="px-2 py-1 text-[11px] font-semibold rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition">+ Flow 1</button>
-          <button onclick="stageSimulatedFlow('flow_2')" class="px-2 py-1 text-[11px] font-semibold rounded bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 transition">+ Flow 2</button>
-          <button onclick="stageSimulatedFlow('flow_3')" class="px-2 py-1 text-[11px] font-semibold rounded bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/30 transition">+ Flow 3</button>
-          <button onclick="stageSimulatedFlow('flow_4')" class="px-2 py-1 text-[11px] font-semibold rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition">+ Flow 4</button>
-          <button onclick="stageSimulatedFlow('flow_5')" class="px-2 py-1 text-[11px] font-semibold rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition">+ Flow 5</button>
         </div>
       </div>
 
@@ -144,14 +134,14 @@
               <th class="py-3 px-4">Client Recipient</th>
               <th class="py-3 px-4">Triggered Behavioral Flow</th>
               <th class="py-3 px-4">Activity &amp; Cart Context</th>
-              <th class="py-3 px-4">Triggered Time</th>
+              <th class="py-3 px-4">Triggered Time (Philippine Time)</th>
               <th class="py-3 px-4 text-right">Manual Action</th>
             </tr>
           </thead>
           <tbody id="staged-flows-tbody" class="divide-y divide-zinc-800/80 text-zinc-200">
             <tr>
               <td colspan="5" class="p-8 text-center text-zinc-500">
-                No clients currently staged. Real shopper triggers will appear here automatically, or click any "+ Flow" button above to test!
+                No clients currently staged. As customers browse homecartel.net and abandon carts or subscribe, they will automatically appear here awaiting your manual send.
               </td>
             </tr>
           </tbody>
@@ -175,15 +165,8 @@
             </span>
           </div>
           <p class="text-xs text-zinc-400 mt-0.5">
-            Watches live clicks, page views, and duration before leaving. When shopper enters checkout email, all prior actions are stitched.
+            Real-time feed of live shopper clicks, page views, and duration on <strong>homecartel.net</strong>. When a shopper enters checkout, past actions reconcile to their email.
           </p>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <button onclick="simulateShopperJourney()" id="btn-sim-journey" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-black shadow transition flex items-center gap-1.5">
-            <span>▶</span>
-            <span>Simulate Full Shopper Journey</span>
-          </button>
         </div>
       </div>
 
@@ -200,7 +183,7 @@
       <!-- Feed Container -->
       <div id="events-feed" class="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
         <div class="p-8 text-center text-zinc-500 text-xs border border-dashed border-zinc-800 rounded-xl">
-          Waiting for live shopper activity...
+          Waiting for live shopper activity on homecartel.net...
         </div>
       </div>
     </div>
@@ -240,7 +223,7 @@
         <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">
           <div class="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
             <h3 class="text-sm font-semibold text-[var(--foreground)]">Delivered Campaign Logs</h3>
-            <span class="text-xs text-zinc-400">All successful dispatches</span>
+            <span class="text-xs text-zinc-400">All successful dispatches (PHT)</span>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
@@ -248,7 +231,7 @@
                 <tr>
                   <th class="py-2.5 px-4">Recipient</th>
                   <th class="py-2.5 px-4">Flow</th>
-                  <th class="py-2.5 px-4 text-right">Sent Time</th>
+                  <th class="py-2.5 px-4 text-right">Sent Time (PHT)</th>
                 </tr>
               </thead>
               <tbody id="logs-tbody" class="divide-y divide-[var(--border)] text-[var(--foreground)]">
@@ -325,22 +308,49 @@
       setTimeout(() => banner.classList.add('hidden'), 7000);
     }
 
-    function formatDateTime(isoString) {
-      if (!isoString) return '';
-      const d = new Date(isoString);
-      return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' +
-             d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    // --- Philippine Standard Time (PST/PHT, UTC+8) Parsers & Formatters ---
+    function parseToDate(val) {
+      if (!val) return new Date();
+      if (val instanceof Date) return val;
+      let s = String(val).trim();
+      // If SQLite returned UTC without T or Z, format as ISO UTC
+      if (s.includes(' ') && !s.includes('T')) {
+        s = s.replace(' ', 'T');
+      }
+      if (!s.endsWith('Z') && !s.includes('+') && !s.includes('-', 10)) {
+        s += 'Z';
+      }
+      return new Date(s);
     }
 
-    function timeAgo(isoString) {
-      if (!isoString) return '';
-      const secs = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
-      if (secs < 5) return 'just now';
+    function formatPhilippineTime(val) {
+      if (!val) return '';
+      const d = parseToDate(val);
+      return d.toLocaleString('en-US', {
+        timeZone: 'Asia/Manila',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      }) + ' PHT';
+    }
+
+    function formatRelativeTime(val) {
+      if (!val) return '';
+      const d = parseToDate(val);
+      const diffMs = Date.now() - d.getTime();
+      const secs = Math.floor(diffMs / 1000);
+      if (secs < 0 || secs < 5) return 'just now';
       if (secs < 60) return `${secs}s ago`;
       const mins = Math.floor(secs / 60);
       if (mins < 60) return `${mins}m ago`;
       const hrs = Math.floor(mins / 60);
-      return `${hrs}h ago`;
+      if (hrs < 24) return `${hrs}h ago`;
+      const days = Math.floor(hrs / 24);
+      return `${days}d ago`;
     }
 
     // =========================================================================
@@ -361,7 +371,7 @@
           tbody.innerHTML = `
             <tr>
               <td colspan="5" class="p-8 text-center text-zinc-500 text-xs">
-                No clients currently staged. Automated sending is disabled — real client triggers will appear here awaiting your manual click.
+                No clients currently staged. As customers browse homecartel.net and abandon carts or subscribe, they will automatically appear here awaiting your manual send.
               </td>
             </tr>
           `;
@@ -383,8 +393,8 @@
               <div class="text-zinc-300 text-xs truncate" title="${j.summary}">${j.summary}</div>
             </td>
             <td class="py-3 px-4 whitespace-nowrap text-zinc-400">
-              <div>${formatDateTime(j.createdAt)}</div>
-              <div class="text-[10px] text-zinc-400">(${timeAgo(j.createdAt)})</div>
+              <div class="font-medium text-zinc-300">${formatPhilippineTime(j.createdAt)}</div>
+              <div class="text-[11px] text-zinc-400">(${formatRelativeTime(j.createdAt)})</div>
             </td>
             <td class="py-3 px-4 text-right whitespace-nowrap space-x-1.5">
               <button onclick="previewStagedJob(${j.id}, '${j.flowLabel}', '${j.recipientEmail}')" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold border border-zinc-700 transition">
@@ -472,24 +482,6 @@
       document.getElementById('preview-modal').classList.add('hidden');
     }
 
-    async function stageSimulatedFlow(flowKey) {
-      try {
-        const res = await fetch('/api/admin/simulate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ scenario: flowKey })
-        });
-        const data = await res.json();
-        if (data.success) {
-          showNotice(`📥 ${data.message}`);
-          await fetchStagedFlows();
-          await refreshOverviewCounts();
-        }
-      } catch (e) {
-        showNotice('Failed staging flow', true);
-      }
-    }
-
     // =========================================================================
     // 2. REAL-TIME ACTIVITY STREAM
     // =========================================================================
@@ -507,7 +499,7 @@
       if (filtered.length === 0) {
         container.innerHTML = `
           <div class="p-8 text-center text-zinc-500 text-xs border border-dashed border-zinc-800 rounded-xl">
-            No events matching the "${currentFilter}" filter.
+            Waiting for live activity on homecartel.net...
           </div>
         `;
         return;
@@ -610,8 +602,8 @@
               </div>
               <div class="text-[11px] text-zinc-400 flex items-center gap-1.5 shrink-0">
                 <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span>${formatDateTime(ev.createdAt)}</span>
-                <span class="text-zinc-400">(${timeAgo(ev.createdAt)})</span>
+                <span>${formatPhilippineTime(ev.createdAt)}</span>
+                <span class="text-zinc-400">(${formatRelativeTime(ev.createdAt)})</span>
               </div>
             </div>
             <div class="text-xs pt-0.5">
@@ -695,30 +687,6 @@
       } catch (e) {}
     }
 
-    async function simulateShopperJourney() {
-      const btn = document.getElementById('btn-sim-journey');
-      btn.disabled = true;
-      btn.innerHTML = '<span>Simulating...</span>';
-
-      try {
-        const res = await fetch('/api/admin/simulate-shopper-journey', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
-        });
-        const data = await res.json();
-        if (data.success) {
-          showNotice(`🎉 ${data.message}`);
-          await fetchRecentEvents();
-          await fetchStagedFlows();
-          await refreshOverviewCounts();
-        }
-      } catch (e) {} finally {
-        btn.disabled = false;
-        btn.innerHTML = '<span>▶</span><span>Simulate Full Shopper Journey</span>';
-      }
-    }
-
     // =========================================================================
     // 3. DIRECT TEST EMAIL & DELIVERED LOGS
     // =========================================================================
@@ -769,7 +737,7 @@
               <tr class="hover:bg-zinc-900/50 transition">
                 <td class="py-2.5 px-4 font-medium text-white">${l.recipient_email}</td>
                 <td class="py-2.5 px-4 text-emerald-400 font-semibold">${l.flow_name}</td>
-                <td class="py-2.5 px-4 text-right text-zinc-400">${formatDateTime(l.sent_at)}</td>
+                <td class="py-2.5 px-4 text-right text-zinc-400">${formatPhilippineTime(l.sent_at)}</td>
               </tr>
             `).join('');
           } else {
