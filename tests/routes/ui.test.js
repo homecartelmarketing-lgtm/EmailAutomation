@@ -54,4 +54,12 @@ describe('UI Dashboard Endpoints', () => {
     expect(json.status).toBe('online');
     expect(json.store).toBe('homecartel.net');
   });
+
+  it('serves domain authorization instructional guide on /domain-guide', async () => {
+    const res = await app.inject({ method: 'GET', url: '/domain-guide' });
+    expect(res.statusCode).toBe(200);
+    expect(res.headers['content-type']).toContain('text/html');
+    expect(res.payload).toContain('GoDaddy Email Authorization Manual');
+    expect(res.payload).toContain('resend._domainkey');
+  });
 });
