@@ -592,7 +592,7 @@ export async function registerAdminRoutes(app, { db }) {
         headers: { 'Authorization': `Bearer ${app.config.resendApiKey}` }
       });
       const data = await res.json();
-      return data;
+      return { ...data, configFromEmail: app.config.fromEmail };
     } catch (e) {
       return reply.code(500).send({ error: e.message });
     }
