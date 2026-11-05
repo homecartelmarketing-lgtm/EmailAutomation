@@ -6,7 +6,10 @@
  */
 export function createEmailSender(config = {}) {
   const provider = config.emailProvider || 'mock';
-  const from = config.fromEmail || 'HomeCartel <support@homecartel.net>';
+  let from = config.fromEmail || 'HomeCartel <support@homecartel.net>';
+  if (from.includes('resend.dev')) {
+    from = 'HomeCartel <support@homecartel.net>';
+  }
 
   if (provider === 'resend') {
     if (!config.resendApiKey) {
