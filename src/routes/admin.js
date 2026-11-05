@@ -588,7 +588,7 @@ export async function registerAdminRoutes(app, { db }) {
       return reply.code(400).send({ error: 'No RESEND_API_KEY configured' });
     }
     try {
-      const res = await fetch('https://api.resend.com/domains', {
+      const res = await fetch('https://api.resend.com/domains/02c0e71c-3a6c-4436-b651-f1a618577243', {
         headers: { 'Authorization': `Bearer ${app.config.resendApiKey}` }
       });
       const data = await res.json();
