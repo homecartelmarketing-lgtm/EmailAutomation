@@ -1,6 +1,7 @@
 import { verifyShopifyHmac } from '../shopify/hmac.js';
 import { eventBus } from '../events/bus.js';
 import { enrichCartItemsWithImages } from '../shopify/catalog.js';
+import { validateCustomerEmail } from '../utils/emailValidator.js';
 
 function toIsoUtc(val) {
   if (!val) return new Date().toISOString();
@@ -85,6 +86,13 @@ export async function registerWebhookRoutes(app, { db, secret }) {
 
     const cleanEmail = String(email).trim().toLowerCase();
     const customerName = data.customer ? `${data.customer.first_name || ''} ${data.customer.last_name || ''}`.trim() : '';
+
+    // Validate email against disposable/bot filter
+    const validation = validateCustomerEmail(cleanEmail, customerName);
+    if (!validation.valid) {
+      console.warn(`[Shopify Webhook] Skipping cart/checkout for ${cleanEmail}: ${validation.reason}`);
+      return reply.code(200).send({ skipped: `Bot or disposable email ignored (${validation.reason})` });
+    }
 
     // Upsert customer record
     const customerId = db.upsertCustomer({ email: cleanEmail, name: customerName });
@@ -270,6 +278,14 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     if (email) {
       const cleanEmail = String(email).trim().toLowerCase();
       const name = `${data.first_name || ''} ${data.last_name || ''}`.trim();
+
+      // Validate email against disposable/bot filter
+      const validation = validateCustomerEmail(cleanEmail, name);
+      if (!validation.valid) {
+        console.warn(`[Shopify Webhook] Skipping welcome flow for ${cleanEmail}: ${validation.reason}`);
+        return reply.code(200).send({ skipped: `Bot or disposable email ignored (${validation.reason})` });
+      }
+
       const customerId = db.upsertCustomer({ email: cleanEmail, name });
 
       db.recordEvent({

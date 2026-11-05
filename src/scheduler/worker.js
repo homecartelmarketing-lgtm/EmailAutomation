@@ -1,4 +1,5 @@
 import { enrichCartItemsWithImages } from '../shopify/catalog.js';
+import { validateCustomerEmail } from '../utils/emailValidator.js';
 
 /**
  * Runs a single cycle of the delay scheduler.
@@ -25,6 +26,15 @@ export async function runSchedulerCycle({ db, sender, renderer, now = new Date()
     // 1. Check customer subscription status
     const customer = db.getCustomerByEmail(job.recipient_email);
     if (customer && customer.status === 'unsubscribed') {
+      db.rawDb.prepare("UPDATE scheduled_jobs SET status = 'cancelled' WHERE id = ?").run(job.id);
+      cancelled++;
+      continue;
+    }
+
+    // 1b. Check disposable / bot email status
+    const emailValidation = validateCustomerEmail(job.recipient_email);
+    if (!emailValidation.valid) {
+      console.warn(`[Scheduler] Cancelling job ${job.id} for invalid/disposable recipient: ${job.recipient_email} (${emailValidation.reason})`);
       db.rawDb.prepare("UPDATE scheduled_jobs SET status = 'cancelled' WHERE id = ?").run(job.id);
       cancelled++;
       continue;

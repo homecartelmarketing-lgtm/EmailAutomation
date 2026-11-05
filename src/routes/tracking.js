@@ -1,4 +1,5 @@
 import { eventBus } from '../events/bus.js';
+import { validateCustomerEmail } from '../utils/emailValidator.js';
 
 function toIsoUtc(val) {
   if (!val) return new Date().toISOString();
@@ -63,6 +64,11 @@ export async function registerTrackingRoutes(app, { db }) {
     }
 
     const cleanEmail = String(email).trim().toLowerCase();
+    const validation = validateCustomerEmail(cleanEmail, name);
+    if (!validation.valid) {
+      return reply.code(400).send({ error: `Invalid or disposable email rejected (${validation.reason})` });
+    }
+
     const customerId = db.upsertCustomer({ email: cleanEmail, name });
     const reconciledEvents = db.linkVisitorEventsToCustomer(visitorId, customerId);
 
