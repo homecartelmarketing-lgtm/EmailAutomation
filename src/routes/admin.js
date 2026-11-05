@@ -3,6 +3,7 @@ import { recentWebhookLogs } from './webhooks.js';
 import { eventBus } from '../events/bus.js';
 import { generateUnsubscribeToken } from './unsubscribe.js';
 import { enrichCartItemsWithImages } from '../shopify/catalog.js';
+import { validateCustomerEmail } from '../utils/emailValidator.js';
 
 function toIsoUtc(val) {
   if (!val) return val;
@@ -62,6 +63,26 @@ export async function registerAdminRoutes(app, { db }) {
       autoDispatchEnabled: !!app.config.autoDispatch,
       recentWebhookAttempts: recentWebhookLogs
     };
+  });
+
+  // Prune disposable and bot emails from database
+  app.post('/api/admin/clean-bots', async () => {
+    const raw = db.rawDb;
+    const customers = raw.prepare('SELECT id, email, name FROM customers').all();
+    const removed = [];
+
+    for (const c of customers) {
+      const val = validateCustomerEmail(c.email, c.name);
+      if (!val.valid) {
+        raw.prepare('DELETE FROM email_logs WHERE recipient_email = ?').run(c.email);
+        raw.prepare('DELETE FROM scheduled_jobs WHERE recipient_email = ?').run(c.email);
+        raw.prepare('DELETE FROM events WHERE customer_id = ?').run(c.id);
+        raw.prepare('DELETE FROM customers WHERE id = ?').run(c.id);
+        removed.push({ id: c.id, email: c.email, reason: val.reason });
+      }
+    }
+
+    return { success: true, removedCount: removed.length, removed };
   });
 
   // Returns all staged clients qualified for behavioral flows (Flows 1-5) awaiting manual send
