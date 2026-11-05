@@ -582,6 +582,51 @@ export async function registerAdminRoutes(app, { db }) {
     reply.type('text/html').send(html);
   });
 
+  // Query Resend Domain verification status
+  app.get('/api/admin/resend/status', async (req, reply) => {
+    if (!app.config.resendApiKey) {
+      return reply.code(400).send({ error: 'No RESEND_API_KEY configured' });
+    }
+    try {
+      const res = await fetch('https://api.resend.com/domains', {
+        headers: { 'Authorization': `Bearer ${app.config.resendApiKey}` }
+      });
+      const data = await res.json();
+      return data;
+    } catch (e) {
+      return reply.code(500).send({ error: e.message });
+    }
+  });
+
+  // Trigger Resend to immediately re-verify DNS records for homecartel.net
+  app.post('/api/admin/resend/verify', async (req, reply) => {
+    if (!app.config.resendApiKey) {
+      return reply.code(400).send({ error: 'No RESEND_API_KEY configured' });
+    }
+    try {
+      // 1. Get all domains to find homecartel.net's ID
+      const listRes = await fetch('https://api.resend.com/domains', {
+        headers: { 'Authorization': `Bearer ${app.config.resendApiKey}` }
+      });
+      const listData = await listRes.json();
+      const domain = (listData.data || []).find(d => d.name === 'homecartel.net') || listData.data?.[0];
+
+      if (!domain) {
+        return reply.code(404).send({ error: 'No domain found in Resend', listData });
+      }
+
+      // 2. Trigger verification
+      const verifyRes = await fetch(`https://api.resend.com/domains/${domain.id}/verify`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${app.config.resendApiKey}` }
+      });
+      const verifyData = await verifyRes.json();
+      return { success: true, domain, result: verifyData };
+    } catch (e) {
+      return reply.code(500).send({ error: e.message });
+    }
+  });
+
   // Endpoint to send an immediate real or mock test email to any inbox
   app.post('/api/admin/send-test', async (req, reply) => {
     const { to, template = 'abandoned_cart' } = req.body || {};
