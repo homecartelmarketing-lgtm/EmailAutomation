@@ -56,6 +56,8 @@ export async function registerAdminRoutes(app, { db }) {
     const sec = app.config.shopifyWebhookSecret || '';
     return {
       status: 'online',
+      version: '273ed33',
+      flows: ['abandoned_cart', 'welcome', 'browse_abandonment', 'winback'],
       shopDomain: app.config.shopDomain,
       secretConfigured: sec ? `${sec.substring(0, 6)}... (${sec.length} chars)` : 'none',
       emailProvider: app.config.emailProvider,
