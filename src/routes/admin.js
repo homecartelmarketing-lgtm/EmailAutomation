@@ -628,11 +628,28 @@ export async function registerAdminRoutes(app, { db }) {
     }
   });
 
+  // Get Resend email delivery status
+  app.get('/api/admin/resend/email/:id', async (req, reply) => {
+    if (!app.config.resendApiKey) {
+      return reply.code(400).send({ error: 'No RESEND_API_KEY configured' });
+    }
+    try {
+      const res = await fetch(`https://api.resend.com/emails/${req.params.id}`, {
+        headers: { 'Authorization': `Bearer ${app.config.resendApiKey}` }
+      });
+      const data = await res.json();
+      return data;
+    } catch (e) {
+      return reply.code(500).send({ error: e.message });
+    }
+  });
+
   // Endpoint to send an immediate real or mock test email to any inbox
   app.post('/api/admin/send-test', async (req, reply) => {
     const {
       to,
       template = 'abandoned_cart',
+      subject: customSubject,
       items: customItems,
       viewedItems: customViewedItems,
       customerName = 'HomeCartel Shopper',
@@ -708,9 +725,10 @@ export async function registerAdminRoutes(app, { db }) {
     });
 
     try {
+      const finalSubject = customSubject || `[HomeCartel Test] ${subject}`;
       const result = await app.emailSender.send({
         to,
-        subject: `[HomeCartel Test] ${subject}`,
+        subject: finalSubject,
         html,
         text: `HomeCartel test email for ${template}`
       });
