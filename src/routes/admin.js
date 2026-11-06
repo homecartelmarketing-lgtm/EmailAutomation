@@ -725,7 +725,7 @@ export async function registerAdminRoutes(app, { db }) {
     });
 
     try {
-      const finalSubject = customSubject || subject;
+      const finalSubject = customSubject || `[Test Email Only] ${subject}`;
       const result = await app.emailSender.send({
         to,
         subject: finalSubject,
