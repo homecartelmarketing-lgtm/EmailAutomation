@@ -1,4 +1,5 @@
 import { renderCanvaCartTemplate } from './canvaCart.js';
+import { renderCanvaWelcomeTemplate } from './canvaWelcome.js';
 
 const STORE_ADDRESS = '673 Banawe Street, Santa Mesa Heights, Quezon City, Metro Manila, Philippines';
 
@@ -64,24 +65,7 @@ export function renderTemplate(templateName, context = {}) {
     }
 
     case 'welcome': {
-      const contentHtml = `
-        <h2>Welcome to HomeCartel, ${customerName}!</h2>
-        <p>Thank you for subscribing to our community. We believe great lighting elevates any interior from ordinary to extraordinary.</p>
-        <p>Explore our signature collections:</p>
-        <ul>
-          <li><strong>Pendant Lights:</strong> Perfect for kitchen islands, dining tables, and accent corners.</li>
-          <li><strong>Statement Chandeliers:</strong> Centerpieces designed for high ceilings and open living areas.</li>
-          <li><strong>Architectural Wall Sconces:</strong> Ambient layers of warm glow for hallways and bedframes.</li>
-        </ul>
-        <div style="text-align: center;">
-          <a href="https://homecartel.net/collections/all" class="btn">Explore All Collections</a>
-        </div>
-      `;
-
-      return {
-        subject: `Welcome to HomeCartel, ${customerName}! Let's illuminate your space`,
-        html: wrapBaseLayout({ title: 'Welcome to HomeCartel', contentHtml, unsubscribeUrl })
-      };
+      return renderCanvaWelcomeTemplate(context);
     }
 
     case 'post_purchase': {
