@@ -630,51 +630,79 @@ export async function registerAdminRoutes(app, { db }) {
 
   // Endpoint to send an immediate real or mock test email to any inbox
   app.post('/api/admin/send-test', async (req, reply) => {
-    const { to, template = 'abandoned_cart' } = req.body || {};
+    const {
+      to,
+      template = 'abandoned_cart',
+      items: customItems,
+      viewedItems: customViewedItems,
+      customerName = 'HomeCartel Shopper',
+      claimUrl
+    } = req.body || {};
     if (!to) {
       return reply.code(400).send({ error: 'Recipient "to" email address is required' });
     }
 
-    const realHistory = db.getCustomerBrowsingHistory(to);
-    const viewedItems = (realHistory && realHistory.length > 0) ? realHistory : [
+    const defaultItems = [
       {
-        title: 'Aura Modern Brass Chandelier',
-        price: '₱18,500.00',
-        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/O1CN01qZZIHQ2CRlojwy1uX__1703828471.jpg?v=1713427031',
-        url: 'https://homecartel.net/products/aura-modern-brass-chandelier'
+        title: 'Talisa | Modern Chandelier',
+        price: '₱27,920.00',
+        quantity: 1,
+        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/t2_b06b3de7-0e1d-42a9-98a9-3e015a618d6e.jpg?v=1685505425',
+        url: 'https://homecartel.net/products/talisa-modern-chandelier'
       },
       {
-        title: 'Solomon Nordic Pendant Light',
-        price: '₱4,200.00',
-        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/products/whitebackgroundceilingmounted.jpg?v=1612841482',
-        url: 'https://homecartel.net/products/solomon-nordic-pendant'
-      },
-      {
-        title: 'Baron Square Ceiling Fixture',
-        price: '₱2,850.00',
-        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/products/whitebackgroundceilingmounted.jpg?v=1612841482',
-        url: 'https://homecartel.net/products/baron-square-ceiling-light'
-      },
-      {
-        title: 'Aerik Modern Gold Ceiling Light',
-        price: '₱3,450.00',
-        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/O1CN01qZZIHQ2CRlojwy1uX__1703828471.jpg?v=1713427031',
-        url: 'https://homecartel.net/products/aerik-ceiling-light'
+        title: 'Kevin | Pendant Light',
+        price: '₱3,970.00',
+        quantity: 2,
+        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/Kevin-ModelPhoto-clean.jpg?v=1793324913',
+        url: 'https://homecartel.net/products/kevin-pendant-light'
       }
     ];
 
+    const defaultViewedItems = [
+      {
+        title: 'Talisa | Modern Chandelier',
+        price: '₱27,920.00',
+        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/t2_b06b3de7-0e1d-42a9-98a9-3e015a618d6e.jpg?v=1685505425',
+        url: 'https://homecartel.net/products/talisa-modern-chandelier'
+      },
+      {
+        title: 'Lorvanar | Alabaster Pendant Light',
+        price: '₱41,500.00',
+        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/64fbd9107f02d0e14fe3ca29fd6a6e0bfaab8e81_img.jpg?v=1775610039',
+        url: 'https://homecartel.net/products/lorvanar-alabaster-pendant-light'
+      },
+      {
+        title: 'Anastasia | Luxe Chandelier',
+        price: '₱10,995.00',
+        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/RS23012.jpg?v=1714015261',
+        url: 'https://homecartel.net/products/anastasia-luxe-chandelier'
+      },
+      {
+        title: 'Kevin | Pendant Light',
+        price: '₱3,970.00',
+        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/Kevin-ModelPhoto-clean.jpg?v=1793324913',
+        url: 'https://homecartel.net/products/kevin-pendant-light'
+      }
+    ];
+
+    const realHistory = db.getCustomerBrowsingHistory(to);
+    const viewedItems = (customViewedItems && customViewedItems.length > 0)
+      ? customViewedItems
+      : ((realHistory && realHistory.length > 0) ? realHistory : defaultViewedItems);
+
+    const items = (customItems && customItems.length > 0) ? customItems : defaultItems;
+
     const { html, subject } = renderTemplate(template, {
-      customerName: 'HomeCartel Shopper',
+      customerName,
       storeName: 'HomeCartel',
-      items: [
-        { title: 'Aura Modern Brass Chandelier', price: '₱18,500.00', quantity: 1 },
-        { title: 'Solomon Nordic Pendant Light', price: '₱4,200.00', quantity: 2 }
-      ],
+      items,
       viewedItems,
       fixtureTitle: viewedItems[0].title,
       fixturePrice: viewedItems[0].price,
       fixtureImage: viewedItems[0].imageUrl,
       fixtureUrl: viewedItems[0].url,
+      claimUrl: claimUrl || 'https://homecartel.net/products/talisa-modern-chandelier?discount=WELCOMEBACK10',
       recoveryUrl: 'https://homecartel.net/cart',
       unsubscribeUrl: `${app.config.appBaseUrl}/api/unsubscribe?email=${encodeURIComponent(to)}`
     });
