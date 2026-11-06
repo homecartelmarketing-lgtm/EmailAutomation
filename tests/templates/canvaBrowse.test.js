@@ -45,4 +45,67 @@ describe('Canva Browse Abandonment Template', () => {
     expect(html).toContain('Custom Pendant 3');
     expect(html).toContain('₱7,000.00');
   });
+
+  it('makes the hero photo responsive to the most recent browsed item and recommendation photos responsive to history', () => {
+    const history = [
+      {
+        title: 'Nordic Glass Chandelier',
+        price: '₱14,800.00',
+        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/nordic-hero.jpg',
+        url: 'https://homecartel.net/products/nordic-glass-chandelier'
+      },
+      {
+        title: 'Minimalist Wall Sconce',
+        price: '₱3,100.00',
+        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/sconce-rec1.jpg',
+        url: 'https://homecartel.net/products/minimalist-wall-sconce'
+      },
+      {
+        title: 'Smoked Glass Pendant',
+        price: '₱4,500.00',
+        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/pendant-rec2.jpg',
+        url: 'https://homecartel.net/products/smoked-glass-pendant'
+      },
+      {
+        title: 'Brushed Brass Table Lamp',
+        price: '₱2,900.00',
+        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/lamp-rec3.jpg',
+        url: 'https://homecartel.net/products/brushed-brass-lamp'
+      }
+    ];
+
+    const { subject, html } = renderCanvaBrowseTemplate({
+      customerName: 'Elena',
+      viewedItems: history,
+      unsubscribeUrl: 'https://homecartel.net/unsubscribe'
+    });
+
+    expect(subject).toMatch(/nordic glass chandelier/i);
+
+    // 1. First photo shown (hero) must be responsive to the most recent browsed item
+    expect(html).toContain('https://cdn.shopify.com/s/files/1/1870/0659/files/nordic-hero.jpg');
+    expect(html).toContain('Nordic Glass Chandelier');
+    expect(html).toContain('https://homecartel.net/products/nordic-glass-chandelier');
+
+    // 2. Photos in "More items you'll love" must be responsive to browsing history
+    expect(html).toContain('https://cdn.shopify.com/s/files/1/1870/0659/files/sconce-rec1.jpg');
+    expect(html).toContain('Minimalist Wall Sconce');
+    expect(html).toContain('₱3,100.00');
+
+    expect(html).toContain('https://cdn.shopify.com/s/files/1/1870/0659/files/pendant-rec2.jpg');
+    expect(html).toContain('Smoked Glass Pendant');
+    expect(html).toContain('₱4,500.00');
+
+    expect(html).toContain('https://cdn.shopify.com/s/files/1/1870/0659/files/lamp-rec3.jpg');
+    expect(html).toContain('Brushed Brass Table Lamp');
+    expect(html).toContain('₱2,900.00');
+
+    // Ensure raw placeholder images from Canva are not present
+    expect(html).not.toContain('366023d2834a428fbcb8a67fe62f1fd6');
+    expect(html).not.toContain('dd37a0048d6b92a55ad7d360fc06951f');
+    expect(html).not.toContain('ec1f40a02977cf474dfda728c4cc9e53');
+    expect(html).not.toContain('0d4bd847cd36449b3d3c1bf962f9ec3b');
+    expect(html).not.toContain('Steel Chair in Warm Cedar');
+    expect(html).not.toContain('673 Banawe Street');
+  });
 });

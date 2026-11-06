@@ -655,6 +655,34 @@ export async function registerAdminRoutes(app, { db }) {
       return reply.code(400).send({ error: 'Recipient "to" email address is required' });
     }
 
+    const realHistory = db.getCustomerBrowsingHistory(to);
+    const viewedItems = (realHistory && realHistory.length > 0) ? realHistory : [
+      {
+        title: 'Aura Modern Brass Chandelier',
+        price: '₱18,500.00',
+        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/O1CN01qZZIHQ2CRlojwy1uX__1703828471.jpg?v=1713427031',
+        url: 'https://homecartel.net/products/aura-modern-brass-chandelier'
+      },
+      {
+        title: 'Solomon Nordic Pendant Light',
+        price: '₱4,200.00',
+        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/products/whitebackgroundceilingmounted.jpg?v=1612841482',
+        url: 'https://homecartel.net/products/solomon-nordic-pendant'
+      },
+      {
+        title: 'Baron Square Ceiling Fixture',
+        price: '₱2,850.00',
+        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/products/whitebackgroundceilingmounted.jpg?v=1612841482',
+        url: 'https://homecartel.net/products/baron-square-ceiling-light'
+      },
+      {
+        title: 'Aerik Modern Gold Ceiling Light',
+        price: '₱3,450.00',
+        imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/O1CN01qZZIHQ2CRlojwy1uX__1703828471.jpg?v=1713427031',
+        url: 'https://homecartel.net/products/aerik-ceiling-light'
+      }
+    ];
+
     const { html, subject } = renderTemplate(template, {
       customerName: 'HomeCartel Shopper',
       storeName: 'HomeCartel',
@@ -662,8 +690,11 @@ export async function registerAdminRoutes(app, { db }) {
         { title: 'Aura Modern Brass Chandelier', price: '₱18,500.00', quantity: 1 },
         { title: 'Solomon Nordic Pendant Light', price: '₱4,200.00', quantity: 2 }
       ],
-      fixtureTitle: 'Aura Modern Brass Chandelier',
-      fixtureUrl: 'https://homecartel.net/products/aura-modern-brass-chandelier',
+      viewedItems,
+      fixtureTitle: viewedItems[0].title,
+      fixturePrice: viewedItems[0].price,
+      fixtureImage: viewedItems[0].imageUrl,
+      fixtureUrl: viewedItems[0].url,
       recoveryUrl: 'https://homecartel.net/cart',
       unsubscribeUrl: `${app.config.appBaseUrl}/api/unsubscribe?email=${encodeURIComponent(to)}`
     });

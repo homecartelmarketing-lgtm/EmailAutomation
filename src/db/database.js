@@ -202,6 +202,45 @@ export function initDatabase(dbPath = ':memory:') {
       return db.prepare('SELECT * FROM events WHERE customer_id = ? ORDER BY created_at DESC').all(customerId);
     },
 
+    getCustomerBrowsingHistory(customerIdOrEmail) {
+      let customerId = typeof customerIdOrEmail === 'number' ? customerIdOrEmail : null;
+      if (!customerId && customerIdOrEmail) {
+        const cust = db.prepare('SELECT id FROM customers WHERE email = ?').get(String(customerIdOrEmail).toLowerCase().trim());
+        if (cust) customerId = cust.id;
+      }
+      if (!customerId) return [];
+
+      const rows = db.prepare(`
+        SELECT event_type, properties_json, created_at
+        FROM events
+        WHERE customer_id = ? AND event_type IN ('item_click', 'product_view', 'page_view')
+        ORDER BY id DESC
+        LIMIT 20
+      `).all(customerId);
+
+      const viewed = [];
+      const seenTitles = new Set();
+
+      for (const r of rows) {
+        let p = {};
+        try { p = JSON.parse(r.properties_json || '{}'); } catch (e) {}
+        const title = (p.title || p.productTitle || '').trim();
+        if (!title || title.toLowerCase() === 'home' || title.toLowerCase() === 'cart') continue;
+
+        if (!seenTitles.has(title.toLowerCase())) {
+          seenTitles.add(title.toLowerCase());
+          viewed.push({
+            title,
+            price: p.price || null,
+            imageUrl: p.imageUrl || p.image || null,
+            url: p.url || (p.path ? ('https://homecartel.net' + p.path) : null) || 'https://homecartel.net'
+          });
+        }
+      }
+
+      return viewed;
+    },
+
     upsertCart({ checkoutId, email, cartToken = '', itemsJson = '[]', subtotal = '0.00', recoveryUrl = '', status = 'active' }) {
       const existing = db.prepare('SELECT id FROM carts WHERE checkout_id = ?').get(checkoutId);
       if (existing) {
