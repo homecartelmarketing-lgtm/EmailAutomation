@@ -103,10 +103,11 @@ export function renderCanvaCartTemplate(context = {}) {
     .replace(/\{\{\s*view_in_browser\s*\}\}/g, viewInBrowserUrl);
 
   const fullHtml = header + dynamicItemsHtml + remainder;
-  const customerName = context.customerName ? ', ' + context.customerName : '';
+  const name = context.customerName && context.customerName !== 'there' ? context.customerName.trim() : '';
+  const subject = name ? `${name}, your cart is still waiting` : 'Your cart is still waiting';
 
   return {
-    subject: 'Did you leave something behind' + customerName + '? | Still thinking it over? | HomeCartel',
+    subject,
     html: fullHtml
   };
 }

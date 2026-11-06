@@ -35,9 +35,10 @@ export function renderCanvaWelcomeTemplate(context = {}) {
   html = html.replace(/\{\{\s*unsubscribe\s*\}\}/g, unsubscribeUrl);
   html = html.replace(/\{\{\s*view_in_browser\s*\}\}/g, viewInBrowserUrl);
 
+  const discount = context.discount || '10%';
   const subject = customerName 
-    ? `Welcome to HomeCartel, ${customerName} | Enjoy 10% Off`
-    : 'Welcome to HomeCartel | Enjoy 10% Off Your Next Order';
+    ? `Welcome to HomeCartel, ${customerName} | ${discount} off your first order`
+    : `Welcome to HomeCartel | ${discount} off your first order`;
 
   return { subject, html };
 }

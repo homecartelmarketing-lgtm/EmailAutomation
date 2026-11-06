@@ -9,7 +9,7 @@ describe('Canva Cart Abandonment Template', () => {
       recoveryUrl: 'https://homecartel.net/cart'
     });
 
-    expect(subject).toMatch(/still thinking it over/i);
+    expect(subject).toMatch(/claire, your cart is still waiting/i);
     expect(html).toContain('Still thinking it over?');
     expect(html).toContain('Shop now');
     expect(html).toContain('Item');

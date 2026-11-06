@@ -49,9 +49,10 @@ export function renderCanvaWinbackTemplate(context = {}) {
   html = html.replace(/\{\{\s*unsubscribe\s*\}\}/g, unsubscribeUrl);
   html = html.replace(/\{\{\s*view_in_browser\s*\}\}/g, viewInBrowserUrl);
 
+  const discount = context.discount || '10%';
   const subject = customerName
-    ? `We miss you, ${customerName} | Enjoy 10% Off Your Next Order | HomeCartel`
-    : "It's been a while | We'd love to have you back (10% Off) | HomeCartel";
+    ? `We miss you, ${customerName} | ${discount} off your next order`
+    : `We miss you | ${discount} off your next order`;
 
   return { subject, html };
 }

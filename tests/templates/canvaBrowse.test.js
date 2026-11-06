@@ -9,7 +9,7 @@ describe('Canva Browse Abandonment Template', () => {
       viewInBrowserUrl: 'https://homecartel.net'
     });
 
-    expect(subject).toMatch(/claire/i);
+    expect(subject).toMatch(/grajek \| shaded table lamp is waiting for you/i);
     expect(html).toContain('Grajek | Shaded Table Lamp');
     expect(html).toContain('Check availability');
     expect(html).toContain('Something caught your eye?');
@@ -35,7 +35,7 @@ describe('Canva Browse Abandonment Template', () => {
       ]
     });
 
-    expect(subject).toMatch(/elysian minimalist sconce/i);
+    expect(subject).toMatch(/the elysian minimalist sconce is waiting for you/i);
     expect(html).toContain('Elysian Minimalist Sconce');
     expect(html).toContain('https://homecartel.net/products/elysian-sconce');
     expect(html).toContain('Custom Pendant 1');
@@ -80,7 +80,7 @@ describe('Canva Browse Abandonment Template', () => {
       unsubscribeUrl: 'https://homecartel.net/unsubscribe'
     });
 
-    expect(subject).toMatch(/nordic glass chandelier/i);
+    expect(subject).toMatch(/the nordic glass chandelier is waiting for you/i);
 
     // 1. First photo shown (hero) must be responsive to the most recent browsed item
     expect(html).toContain('https://cdn.shopify.com/s/files/1/1870/0659/files/nordic-hero.jpg');

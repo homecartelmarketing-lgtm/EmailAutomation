@@ -11,7 +11,7 @@ describe('Canva Welcome Guide Template', () => {
     });
 
     // Subject personalization
-    expect(subject).toBe('Welcome to HomeCartel, Sarah | Enjoy 10% Off');
+    expect(subject).toBe('Welcome to HomeCartel, Sarah | 10% off your first order');
 
     // 10% Off discount promise
     expect(html).toContain('Here’s our promise.');
@@ -44,7 +44,7 @@ describe('Canva Welcome Guide Template', () => {
 
   it('renders clean fallback when customerName is not provided', () => {
     const { subject, html } = renderCanvaWelcomeTemplate({});
-    expect(subject).toBe('Welcome to HomeCartel | Enjoy 10% Off Your Next Order');
+    expect(subject).toBe('Welcome to HomeCartel | 10% off your first order');
     expect(html).toContain('Thank you for signing up! Enjoy');
   });
 });

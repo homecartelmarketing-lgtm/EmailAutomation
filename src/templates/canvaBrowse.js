@@ -194,9 +194,8 @@ export function renderCanvaBrowseTemplate(context = {}) {
   html = html.replace(/\{\{\s*unsubscribe\s*\}\}/g, unsubscribeUrl);
   html = html.replace(/\{\{\s*view_in_browser\s*\}\}/g, viewInBrowserUrl);
 
-  const subject = customerName
-    ? `Still thinking about ${heroItem.title}, ${customerName}? | HomeCartel`
-    : `You left a limited item behind: ${heroItem.title} | HomeCartel`;
+  const productName = heroItem.title || 'fixture';
+  const subject = `The ${productName} is waiting for you`;
 
   return { subject, html };
 }

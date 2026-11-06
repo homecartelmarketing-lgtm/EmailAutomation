@@ -9,7 +9,7 @@ describe('Canva Customer Winback Template (Flow #4)', () => {
       viewInBrowserUrl: 'https://homecartel.net'
     });
 
-    expect(subject).toMatch(/we miss you, marcus/i);
+    expect(subject).toBe('We miss you, Marcus | 10% off your next order');
     expect(html).toContain('It’s been a while, Marcus.');
     expect(html).toContain('Claim now');
     expect(html).toContain('Chandeliers');
@@ -30,7 +30,7 @@ describe('Canva Customer Winback Template (Flow #4)', () => {
       unsubscribeUrl: 'https://homecartel.net/unsubscribe'
     });
 
-    expect(subject).toMatch(/it's been a while/i);
+    expect(subject).toBe('We miss you | 10% off your next order');
     expect(html).toContain('It’s been a while.');
     expect(html).toContain('Claim now');
   });

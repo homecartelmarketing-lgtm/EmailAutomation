@@ -11,7 +11,7 @@ describe('Email Template Renderer', () => {
       unsubscribeUrl: 'https://api.homecartel.net/unsubscribe?t=tok'
     });
 
-    expect(subject).toMatch(/leave something behind/i);
+    expect(subject).toBe('Claire, your cart is still waiting');
     expect(html).toContain('Nordic Glass Chandelier');
     expect(html).toContain('₱12,500');
     expect(html).toContain('homecartel.net');
@@ -73,7 +73,7 @@ describe('Email Template Renderer', () => {
       unsubscribeUrl: 'https://api.homecartel.net/unsubscribe?t=tok'
     });
 
-    expect(subject).toMatch(/still thinking about aura modern brass chandelier, claire\?/i);
+    expect(subject).toBe('The Aura Modern Brass Chandelier is waiting for you');
     expect(html).toContain('Aura Modern Brass Chandelier');
     expect(html).toContain('https://homecartel.net/products/aura-modern-brass-chandelier');
     expect(html).toContain('Check availability');
