@@ -56,7 +56,7 @@ export async function registerAdminRoutes(app, { db }) {
     const sec = app.config.shopifyWebhookSecret || '';
     return {
       status: 'online',
-      version: '273ed33',
+      version: process.env.RAILWAY_GIT_COMMIT_SHA?.substring(0, 7) || '761920b',
       flows: ['abandoned_cart', 'welcome', 'browse_abandonment', 'winback'],
       shopDomain: app.config.shopDomain,
       secretConfigured: sec ? `${sec.substring(0, 6)}... (${sec.length} chars)` : 'none',
