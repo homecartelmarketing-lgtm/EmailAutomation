@@ -85,7 +85,7 @@ export async function registerAdminRoutes(app, { db }) {
     return { success: true, removedCount: removed.length, removed };
   });
 
-  // Returns all staged clients qualified for behavioral flows (Flows 1-5) awaiting manual send
+  // Returns all staged clients qualified for behavioral flows (Flows 1-4) awaiting manual send
   app.get('/api/admin/staged-jobs', async () => {
     const rows = db.rawDb.prepare(`
       SELECT 
@@ -107,8 +107,7 @@ export async function registerAdminRoutes(app, { db }) {
       abandoned_cart: { flowNumber: 1, label: 'Flow 1: Abandoned Cart', badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
       welcome: { flowNumber: 2, label: 'Flow 2: Welcome Onboarding', badge: 'bg-sky-500/10 text-sky-400 border-sky-500/20' },
       browse_abandonment: { flowNumber: 3, label: 'Flow 3: Browse Abandonment', badge: 'bg-violet-500/10 text-violet-400 border-violet-500/20' },
-      post_purchase: { flowNumber: 4, label: 'Flow 4: Post-Purchase Care', badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
-      winback: { flowNumber: 5, label: 'Flow 5: Winback & Re-engagement', badge: 'bg-rose-500/10 text-rose-400 border-rose-500/20' }
+      winback: { flowNumber: 4, label: 'Flow 4: Customer Winback', badge: 'bg-rose-500/10 text-rose-400 border-rose-500/20' }
     };
 
     const stagedJobs = rows.map(r => {
@@ -126,10 +125,8 @@ export async function registerAdminRoutes(app, { db }) {
         summary = 'New subscriber welcome & 10% voucher (LIGHT10)';
       } else if (r.flow_type === 'browse_abandonment') {
         summary = `Viewed fixture: "${parsedContext.fixtureTitle || 'Modern Chandelier'}"`;
-      } else if (r.flow_type === 'post_purchase') {
-        summary = `Order ${parsedContext.orderId ? `#${parsedContext.orderId}` : 'care'} fulfillment follow-up & review`;
       } else if (r.flow_type === 'winback') {
-        summary = 'Inactive customer (60+ days) new collection invitation';
+        summary = 'Inactive customer (60+ days) new collection invitation & 10% appreciation discount';
       }
 
       return {
@@ -525,45 +522,26 @@ export async function registerAdminRoutes(app, { db }) {
       };
     }
 
-    if (scenario === 'post_purchase' || scenario === 'flow_4') {
-      const email = data.email || 'joshua.homeowner@gmail.com';
-      const name = data.name || 'Joshua Hernandez';
-      db.upsertCustomer({ email, name });
-      const jobId = db.scheduleJob({
-        flowType: 'post_purchase',
-        recipientEmail: email,
-        contextJson: JSON.stringify({
-          name,
-          orderNumber: '1088',
-          orderId: '54210'
-        }),
-        executeAt: new Date().toISOString()
-      });
-      return {
-        success: true,
-        message: `Staged Flow 4 (Post-Purchase Care) for ${email}. Ready for manual send!`,
-        jobId,
-        email,
-        flow: 'Flow 4'
-      };
-    }
-
-    if (scenario === 'winback' || scenario === 'flow_5') {
+    if (scenario === 'winback' || scenario === 'flow_4') {
       const email = data.email || 'angela.client@gmail.com';
       const name = data.name || 'Angela Lopez';
       db.upsertCustomer({ email, name });
       const jobId = db.scheduleJob({
         flowType: 'winback',
         recipientEmail: email,
-        contextJson: JSON.stringify({ name }),
+        contextJson: JSON.stringify({
+          name,
+          customerName: name,
+          claimUrl: 'https://homecartel.net?discount=WELCOMEBACK10'
+        }),
         executeAt: new Date().toISOString()
       });
       return {
         success: true,
-        message: `Staged Flow 5 (Customer Winback) for ${email}. Ready for manual send!`,
+        message: `Staged Flow 4 (Customer Winback) for ${email}. Ready for manual send!`,
         jobId,
         email,
-        flow: 'Flow 5'
+        flow: 'Flow 4'
       };
     }
 

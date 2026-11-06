@@ -81,7 +81,7 @@ describe('Shopify Webhook Routes', () => {
     expect(pending.filter(j => j.recipient_email === 'buyer@homecartel.ph').length).toBe(0);
   });
 
-  it('schedules post-purchase review job upon order fulfillment', async () => {
+  it('acknowledges order fulfillment webhook without scheduling post-purchase job (flow disabled)', async () => {
     const fulfillmentPayload = JSON.stringify({
       id: 888,
       email: 'fulfilled_user@homecartel.ph',
@@ -101,7 +101,7 @@ describe('Shopify Webhook Routes', () => {
     expect(res.statusCode).toBe(200);
 
     const futureJobs = db.getPendingDueJobs(new Date(Date.now() + 691200000).toISOString()); // +8 days
-    expect(futureJobs.some(j => j.flow_type === 'post_purchase')).toBe(true);
+    expect(futureJobs.some(j => j.flow_type === 'post_purchase')).toBe(false);
   });
 
   it('schedules welcome onboarding job upon customer creation', async () => {

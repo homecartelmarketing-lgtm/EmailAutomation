@@ -83,15 +83,18 @@ describe('Email Template Renderer', () => {
     expect(html).toContain('© 2026 Home Cartel');
   });
 
-  it('renders post purchase care and review email', () => {
-    const { subject, html } = renderTemplate('post_purchase', {
+  it('renders customer winback email (Flow 4) with 10% voucher and category links', () => {
+    const { subject, html } = renderTemplate('winback', {
       customerName: 'Joshua',
-      orderNumber: '1088',
       unsubscribeUrl: 'https://api.homecartel.net/unsubscribe?t=tok'
     });
 
-    expect(subject).toMatch(/recent order/i);
+    expect(subject).toMatch(/we miss you, joshua/i);
     expect(html).toContain('Joshua');
-    expect(html).toContain('1088');
+    expect(html).toContain('Claim now');
+    expect(html).toContain('https://homecartel.net/collections/chandelier-1');
+    expect(html).not.toContain('673 Banawe Street');
+    expect(html).toContain('homecartel.net');
+    expect(html).toContain('© 2026 Home Cartel');
   });
 });

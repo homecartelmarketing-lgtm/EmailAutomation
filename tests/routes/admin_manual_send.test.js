@@ -18,7 +18,7 @@ describe('Admin Manual Send & Staged Behavioral Flows', () => {
     try { if (fs.existsSync(`${testDb}-shm`)) fs.unlinkSync(`${testDb}-shm`); } catch (e) {}
   });
 
-  it('stages Flow 1 to Flow 5 without sending automatically', async () => {
+  it('stages Flow 1 to Flow 4 without sending automatically', async () => {
     // Stage Flow 1: Abandoned Cart
     const res1 = await app.inject({
       method: 'POST',
@@ -43,21 +43,13 @@ describe('Admin Manual Send & Staged Behavioral Flows', () => {
     });
     expect(res3.statusCode).toBe(200);
 
-    // Stage Flow 4: Post-Purchase
+    // Stage Flow 4: Customer Winback
     const res4 = await app.inject({
       method: 'POST',
       url: '/api/admin/simulate',
-      payload: { scenario: 'post_purchase', data: { email: 'client4@homecartel.ph', name: 'Client Four' } }
+      payload: { scenario: 'winback', data: { email: 'client4@homecartel.ph', name: 'Client Four' } }
     });
     expect(res4.statusCode).toBe(200);
-
-    // Stage Flow 5: Winback
-    const res5 = await app.inject({
-      method: 'POST',
-      url: '/api/admin/simulate',
-      payload: { scenario: 'winback', data: { email: 'client5@homecartel.ph', name: 'Client Five' } }
-    });
-    expect(res5.statusCode).toBe(200);
 
     // Fetch staged jobs
     const stagedRes = await app.inject({
@@ -66,15 +58,14 @@ describe('Admin Manual Send & Staged Behavioral Flows', () => {
     });
     expect(stagedRes.statusCode).toBe(200);
     const data = JSON.parse(stagedRes.body);
-    expect(data.stagedJobs.length).toBe(5);
+    expect(data.stagedJobs.length).toBe(4);
 
-    // Verify all 5 flow numbers and emails are listed
+    // Verify all 4 flow numbers and emails are listed
     const flows = data.stagedJobs.map(j => ({ flow: j.flowNumber, email: j.recipientEmail }));
     expect(flows).toContainEqual({ flow: 1, email: 'client1@homecartel.ph' });
     expect(flows).toContainEqual({ flow: 2, email: 'client2@homecartel.ph' });
     expect(flows).toContainEqual({ flow: 3, email: 'client3@homecartel.ph' });
     expect(flows).toContainEqual({ flow: 4, email: 'client4@homecartel.ph' });
-    expect(flows).toContainEqual({ flow: 5, email: 'client5@homecartel.ph' });
 
     // Verify 0 emails have been sent yet (safety guarantee)
     const logsRes = await app.inject({ method: 'GET', url: '/api/admin/overview' });

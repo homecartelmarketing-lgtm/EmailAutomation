@@ -1,6 +1,7 @@
 import { renderCanvaCartTemplate } from './canvaCart.js';
 import { renderCanvaWelcomeTemplate } from './canvaWelcome.js';
 import { renderCanvaBrowseTemplate } from './canvaBrowse.js';
+import { renderCanvaWinbackTemplate } from './canvaWinback.js';
 
 function wrapBaseLayout({ title, contentHtml, unsubscribeUrl = '#', viewInBrowserUrl = 'https://homecartel.net', baseUrl = 'https://emailautomation-production-d651.up.railway.app' }) {
   const cleanBaseUrl = baseUrl.replace(/\/+$/, '');
@@ -71,44 +72,12 @@ export function renderTemplate(templateName, context = {}) {
       return renderCanvaWelcomeTemplate(context);
     }
 
-    case 'post_purchase': {
-      const orderNumber = context.orderNumber || '';
-      const contentHtml = `
-        <h2>How is your recent order ${orderNumber ? `#${orderNumber}` : ''}, ${customerName}?</h2>
-        <p>We hope your new HomeCartel lighting fixtures arrived safely and look stunning in your home.</p>
-        <h3>Installation & Care Tips:</h3>
-        <p>• Always turn off the circuit breaker before installing any fixture.<br>
-           • For best ambiance, we recommend 2700K or 3000K warm white LED bulbs.<br>
-           • Clean brass and metal surfaces with a dry microfiber cloth; avoid harsh chemical cleaners.</p>
-        <p>Would you share a quick photo or review to let us know how they look?</p>
-        <div style="text-align: center;">
-          <a href="https://homecartel.net" class="btn">Share Your Review</a>
-        </div>
-      `;
-
-      return {
-        subject: `How is your recent order ${orderNumber ? `#${orderNumber}` : ''}? | HomeCartel`,
-        html: wrapBaseLayout({ title: 'Order Follow-up', contentHtml, unsubscribeUrl })
-      };
-    }
-
     case 'browse_abandonment': {
       return renderCanvaBrowseTemplate(context);
     }
 
     case 'winback': {
-      const contentHtml = `
-        <h2>We miss you, ${customerName}!</h2>
-        <p>It's been a while since your last visit to HomeCartel. We've added new chandeliers, minimalist wall sconces, and outdoor architectural fixtures to our lineup.</p>
-        <div style="text-align: center;">
-          <a href="https://homecartel.net/collections/new-arrivals" class="btn">View New Arrivals</a>
-        </div>
-      `;
-
-      return {
-        subject: `We miss you at HomeCartel | Discover our newest fixtures`,
-        html: wrapBaseLayout({ title: 'New Arrivals', contentHtml, unsubscribeUrl })
-      };
+      return renderCanvaWinbackTemplate(context);
     }
 
     default:

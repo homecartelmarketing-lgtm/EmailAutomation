@@ -251,23 +251,9 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     return reply.code(200).send({ success: true, cart_cancelled: true });
   });
 
-  // 3. Fulfillments (Order fulfilled -> schedule post-purchase follow-up in 7 days)
+  // 3. Fulfillments (Post-purchase flow disabled)
   app.post('/api/webhooks/shopify/fulfillments', async (req, reply) => {
-    const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const email = data.email || (data.customer ? data.customer.email : null);
-
-    if (email) {
-      const cleanEmail = String(email).trim().toLowerCase();
-      const executeAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-      db.scheduleJob({
-        flowType: 'post_purchase',
-        recipientEmail: cleanEmail,
-        contextJson: JSON.stringify({ orderId: data.order_id, fulfillmentId: data.id }),
-        executeAt
-      });
-    }
-
-    return reply.code(200).send({ success: true, scheduled: 'post_purchase' });
+    return reply.code(200).send({ success: true, message: 'Post-purchase flow disabled' });
   });
 
   // 4. Customers (New customer / newsletter signup -> trigger welcome series)
