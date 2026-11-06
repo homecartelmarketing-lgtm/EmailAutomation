@@ -52,7 +52,7 @@ describe('Email Template Renderer', () => {
     expect(html).toContain('₱6,300.00'); // Dynamic total calculation
   });
 
-  it('renders welcome series with lighting guide and store address', () => {
+  it('renders welcome series with luxury guide and consistent footer without physical address', () => {
     const { subject, html } = renderTemplate('welcome', {
       customerName: 'Maria',
       unsubscribeUrl: 'https://api.homecartel.net/unsubscribe?t=tok'
@@ -60,7 +60,9 @@ describe('Email Template Renderer', () => {
 
     expect(subject).toMatch(/welcome to homecartel/i);
     expect(html).toContain('Maria');
-    expect(html).toContain('673 Banawe Street');
+    expect(html).not.toContain('673 Banawe Street');
+    expect(html).toContain('homecartel.net');
+    expect(html).toContain('© 2026 Home Cartel');
   });
 
   it('renders post purchase care and review email', () => {

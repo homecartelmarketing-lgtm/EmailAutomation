@@ -10,9 +10,9 @@ const code = `/**
  * - Direct links to Chandeliers, Pendant Lights, Table Lamps & Full Collection
  * - Responsive layout with mobile scaling
  * - Full mso Outlook support
+ * - Clean unified footer without physical address
  */
 
-const STORE_ADDRESS = '673 Banawe Street, Santa Mesa Heights, Quezon City, Metro Manila, Philippines';
 const rawTemplate = ${JSON.stringify(rawHtml)};
 
 export function renderCanvaWelcomeTemplate(context = {}) {
@@ -40,14 +40,6 @@ export function renderCanvaWelcomeTemplate(context = {}) {
   html = html.replace(/\\{\\{\\s*unsubscribe\\s*\\}\\}/g, unsubscribeUrl);
   html = html.replace(/\\{\\{\\s*view_in_browser\\s*\\}\\}/g, viewInBrowserUrl);
 
-  // 4. Inject physical store address before copyright for CAN-SPAM / DKIM compliance
-  if (!html.includes(STORE_ADDRESS)) {
-    html = html.replace(
-      '© 2026 Home Cartel ®. All rights reserved.',
-      'HomeCartel Lighting & Home Decor • ' + STORE_ADDRESS + '<br>\\n© 2026 Home Cartel ®. All rights reserved.'
-    );
-  }
-
   const subject = customerName 
     ? \`Welcome to HomeCartel, \${customerName} | Enjoy 10% Off\`
     : 'Welcome to HomeCartel | Enjoy 10% Off Your Next Order';
@@ -57,4 +49,4 @@ export function renderCanvaWelcomeTemplate(context = {}) {
 `;
 
 fs.writeFileSync(path.resolve('src/templates/canvaWelcome.js'), code, 'utf8');
-console.log('Successfully generated src/templates/canvaWelcome.js with compliance footer');
+console.log('Successfully regenerated src/templates/canvaWelcome.js without physical address');

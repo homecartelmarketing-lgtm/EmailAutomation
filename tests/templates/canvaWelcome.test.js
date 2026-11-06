@@ -36,8 +36,10 @@ describe('Canva Welcome Guide Template', () => {
     expect(html).toContain('https://homecartel.net/unsub?tok=abc123xyz');
     expect(html).toContain('https://homecartel.net/email/view/welcome');
 
-    // Legal compliance store address
-    expect(html).toContain('673 Banawe Street');
+    // Footer and branding (no physical address)
+    expect(html).not.toContain('673 Banawe Street');
+    expect(html).toContain('© 2026 Home Cartel');
+    expect(html).toContain('homecartel.net');
   });
 
   it('renders clean fallback when customerName is not provided', () => {
