@@ -662,6 +662,8 @@ export async function registerAdminRoutes(app, { db }) {
         { title: 'Aura Modern Brass Chandelier', price: '₱18,500.00', quantity: 1 },
         { title: 'Solomon Nordic Pendant Light', price: '₱4,200.00', quantity: 2 }
       ],
+      fixtureTitle: 'Aura Modern Brass Chandelier',
+      fixtureUrl: 'https://homecartel.net/products/aura-modern-brass-chandelier',
       recoveryUrl: 'https://homecartel.net/cart',
       unsubscribeUrl: `${app.config.appBaseUrl}/api/unsubscribe?email=${encodeURIComponent(to)}`
     });

@@ -65,6 +65,24 @@ describe('Email Template Renderer', () => {
     expect(html).toContain('© 2026 Home Cartel');
   });
 
+  it('renders browse abandonment with luxury hero fixture and recommendations without physical address', () => {
+    const { subject, html } = renderTemplate('browse_abandonment', {
+      customerName: 'Claire',
+      fixtureTitle: 'Aura Modern Brass Chandelier',
+      fixtureUrl: 'https://homecartel.net/products/aura-modern-brass-chandelier',
+      unsubscribeUrl: 'https://api.homecartel.net/unsubscribe?t=tok'
+    });
+
+    expect(subject).toMatch(/still thinking about aura modern brass chandelier, claire\?/i);
+    expect(html).toContain('Aura Modern Brass Chandelier');
+    expect(html).toContain('https://homecartel.net/products/aura-modern-brass-chandelier');
+    expect(html).toContain('Check availability');
+    expect(html).not.toContain('673 Banawe Street');
+    expect(html).not.toContain('Steel Chair in Warm Cedar');
+    expect(html).toContain('homecartel.net');
+    expect(html).toContain('© 2026 Home Cartel');
+  });
+
   it('renders post purchase care and review email', () => {
     const { subject, html } = renderTemplate('post_purchase', {
       customerName: 'Joshua',

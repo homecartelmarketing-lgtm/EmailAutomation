@@ -1,5 +1,6 @@
 import { renderCanvaCartTemplate } from './canvaCart.js';
 import { renderCanvaWelcomeTemplate } from './canvaWelcome.js';
+import { renderCanvaBrowseTemplate } from './canvaBrowse.js';
 
 function wrapBaseLayout({ title, contentHtml, unsubscribeUrl = '#', viewInBrowserUrl = 'https://homecartel.net', baseUrl = 'https://emailautomation-production-d651.up.railway.app' }) {
   const cleanBaseUrl = baseUrl.replace(/\/+$/, '');
@@ -92,19 +93,7 @@ export function renderTemplate(templateName, context = {}) {
     }
 
     case 'browse_abandonment': {
-      const fixtureTitle = context.fixtureTitle || 'your favorite fixture';
-      const contentHtml = `
-        <h2>Still thinking about ${fixtureTitle}, ${customerName}?</h2>
-        <p>We noticed you were exploring our fixtures recently. Statement lighting requires thought, and we're here to help you get the sizing and luminescence right.</p>
-        <div style="text-align: center;">
-          <a href="${context.fixtureUrl || 'https://homecartel.net'}" class="btn">Take Another Look</a>
-        </div>
-      `;
-
-      return {
-        subject: `Still thinking about ${fixtureTitle}? | HomeCartel`,
-        html: wrapBaseLayout({ title: 'Browse Follow-up', contentHtml, unsubscribeUrl })
-      };
+      return renderCanvaBrowseTemplate(context);
     }
 
     case 'winback': {
