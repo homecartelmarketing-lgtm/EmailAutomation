@@ -1,37 +1,109 @@
 /**
- * Canva-designed Luxury Welcome Guide Template for HomeCartel
- * Features:
- * - 10% Off welcome discount callout
- * - Direct links to Chandeliers, Pendant Lights, Table Lamps & Full Collection
- * - Responsive layout with mobile scaling
- * - Full mso Outlook support
- * - Clean unified footer without physical address
+ * Canva-designed Luxury Welcome Series (3-Message Drip) for HomeCartel
+ * - Email 1 (welcome / welcome_1): Welcome Promise & 10% Voucher (immediate on signup)
+ * - Email 2 (welcome_2): Social Proof & Influencer Spaces (2 days after Email 1)
+ * - Email 3 (welcome_3): Best Sellers & Voucher Urgency (3 days after Email 2)
  */
 
-const rawTemplate = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"preload\" as=\"image\" href=\"images/3ef43aae1391d3855242f78c9975c8b9.png\"><link rel=\"preload\" as=\"image\" href=\"images/5fde53c52841ffe349002090665198c3.jpg\"><link rel=\"preload\" as=\"image\" href=\"images/a89ad58ed97e6b7b206f01871a6f4e7c.jpg\"><link rel=\"preload\" as=\"image\" href=\"images/fbabf6ac28afc37202c02e74f0d21b81.jpg\"><link rel=\"preload\" as=\"image\" href=\"images/0c1e4739a88dabe014008f6e9f3ce186.jpg\"><link rel=\"preload\" as=\"image\" href=\"images/763f33ee9394810652d07ec15d4354e3.jpg\"><link rel=\"preload\" as=\"image\" href=\"images/db14bb4f8487787d5f106be9f940c58f.jpg\"><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta name=\"format-detection\" content=\"telephone=no, date=no, address=no, email=no\"><meta name=\"x-apple-disable-message-reformatting\"><meta name=\"keywords\" content=\"DAHaGGu1mZk, BAGkOITyY_4\"><style>body{margin:0;padding:0}table{mso-table-lspace:0;mso-table-rspace:0}p,span,h1,h2,h3,h4,h5,h6{margin:0;padding:0}p{line-height:inherit}a[x-apple-data-detectors]{color:inherit!important;text-decoration:inherit!important}#MessageViewBody a{color:inherit;text-decoration:none}img+div{display:none}@media (max-width:599px){.ecw{width:100%!important;min-width:0!important}}</style><!--[if mso]><div>\n                <noscript>\n                  <xml>\n                    <w:WordDocument xmlns:w=\"urn:schemas-microsoft-com:office:word\">\n                      <w:DontUseAdvancedTypographyReadingMail/>\n                    </w:WordDocument>\n                    <o:OfficeDocumentSettings>\n                      <o:AllowPNG/>\n                      <o:PixelsPerInch>96</o:PixelsPerInch>\n                    </o:OfficeDocumentSettings>\n                  </xml>\n                </noscript></div><![endif]--><style>@media(max-width:550px){.ers-fs-213{font-size:18.7px!important}.ers-fs-320{font-size:24px!important}.ers-fs-333{font-size:24.7px!important}}</style></head><body style=\"width:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;background-color:#f0f1f5;margin:0;padding:0\"><table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" bgcolor=\"#f0f1f5\" style=\"background-color:#f0f1f5\"><tbody><tr><td style=\"background-color:#f0f1f5\"><!--[if mso]><center>\n                    <table align=\"center\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\">\n                      <tbody>\n                        <tr>\n                          <td><![endif]--><table align=\"center\" width=\"600\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\" class=\"ecw\" style=\"max-width:600px;min-height:600px;margin:0 auto;background-color:#ffffff;width:600px;min-width:600px\"><tbody><tr><td style=\"vertical-align:top\"></td></tr><tr><td style=\"vertical-align:top\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%\"><tbody><tr><td align=\"center\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;max-width:600px\"><tbody><tr><td style=\"width:100%\"><img src=\"images/3ef43aae1391d3855242f78c9975c8b9.png\" width=\"600\" height=\"180\" style=\"display:block;width:600px;height:auto;max-width:100%\"></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td style=\"vertical-align:top;padding:0px\n           0px\n           0px\n           0px\"><table align=\"center\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\"><tbody><tr><td style=\"vertical-align:top\"><table align=\"center\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\" style=\"color:#000;font-style:normal;font-weight:normal;font-size:16px;line-height:1.4;letter-spacing:0;text-align:left;direction:ltr;border-collapse:collapse;font-family:Arial, Helvetica, sans-serif;white-space:normal;word-wrap:break-word;word-break:break-word\"><tbody><tr><td style=\"padding:24px 0px 16px\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%\"><tbody><tr><td align=\"center\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;max-width:600px\"><tbody><tr><td style=\"width:100%\"><img src=\"images/5fde53c52841ffe349002090665198c3.jpg\" width=\"600\" height=\"377\" style=\"display:block;width:600px;height:auto;max-width:100%\"></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td dir=\"ltr\" style=\"color:#272e1c;font-size:1.3px;font-weight:700;white-space:pre-wrap;text-align:left;padding:0px 24px 16px;line-height:20.8px;mso-line-height-alt:20.8px;text-decoration:none\">&nbsp;</td></tr><tr><td dir=\"ltr\" class=\"ers-fs-320\" style=\"font-size:32px;font-weight:700;font-family:Verdana, Geneva, sans-serif;white-space:pre-wrap;text-align:center;padding:0px 24px 16px;line-height:1.3;mso-line-height-alt:41.6px\">Here’s our promise.<br></td></tr><tr><td dir=\"ltr\" style=\"font-size:16px;font-family:Verdana, Geneva, sans-serif;text-align:center;padding:0px 24px 16px;line-height:1.3;mso-line-height-alt:20.8px\"><span style=\"white-space:pre-wrap\">Thank you for signing up! Enjoy </span><span style=\"font-weight:700;text-decoration:underline;white-space:pre-wrap\">10% off</span><span style=\"white-space:pre-wrap\"> your next purchase, our way of saying welcome. Use it on the lighting that makes your home feel like yours.</span><br></td></tr><tr><td style=\"padding:0px 24px 16px\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%\"><tbody><tr><td align=\"center\"><!--[if mso]><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"189\" style=\"width:189px\"><tbody><tr><td><![endif]--><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;max-width:189px\"><tbody><tr><td style=\"width:100%\"><!--[if mso]><v:roundrect xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:w=\"urn:schemas-microsoft-com:office:word\" href=\"https://homecartel.net\" style=\"height:37px;width:189px;v-text-anchor:middle;\" arcsize=\"70%\" fillcolor=\"#ff9900\"><v:stroke dashstyle=\"Solid\" weight=\"0px\" color=\"#ff9900\"/><w:anchorlock/><v:textbox inset=\"0px,0px,0px,0px\"><center dir=\"false\" style=\"color:#000000;font-family:sans-serif;font-size:13.8px;font-weight:700\">Shop now</center></v:textbox></v:roundrect><![endif]--><!--[if !mso]><!--><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"width:100%;max-width:100%;border-collapse:separate;border-spacing:0\"><tbody><tr><td bgcolor=\"#ff9900\" style=\"background-color:#ff9900;border-bottom:0px solid transparent;border-left:0px solid transparent;border-radius:26px;border-right:0px solid transparent;border-top:0px solid transparent;mso-border-alt:none\"><a href=\"https://homecartel.net\" target=\"_blank\" rel=\"noopener\" ses:no-track=\"\" style=\"color:#000000;text-decoration:none;display:block;padding-top:9px;padding-bottom:9px;padding-left:8px;padding-right:8px;text-align:center;font-family:Arial, Helvetica, sans-serif;font-size:13.8px;font-weight:700;letter-spacing:0em;line-height:19.3px;box-sizing:border-box;mso-line-height-rule:exactly\"><span style=\"word-break:break-word;line-height:19.3px;color:#000000;mso-style-textfill-type:solid;mso-style-textfill-fill-color:#000000\">Shop now</span></a></td></tr></tbody></table><!--<![endif]--></td></tr></tbody></table><!--[if mso]></td></tr></tbody></table><![endif]--></td></tr></tbody></table></td></tr><tr><td dir=\"ltr\" style=\"font-size:1.3px;font-family:Verdana, Geneva, sans-serif;white-space:pre-wrap;text-align:left;padding:0px 24px 16px;line-height:22.4px;mso-line-height-alt:22.4px;text-decoration:none\">&nbsp;</td></tr><tr><td style=\"padding:0px 24px 16px\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"layout-0\" align=\"center\" style=\"display:table;border-spacing:0px;border-collapse:separate;width:100%;max-width:100%;table-layout:fixed;margin:0 auto\"><tbody><tr><td style=\"text-align:center\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-spacing:0px;border-collapse:separate;width:100%;max-width:552px;table-layout:fixed;margin:0 auto\"><tbody><tr><td width=\"48.55%\" style=\"width:48.55%;box-sizing:border-box;vertical-align:top\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-spacing:0px;border-collapse:separate;width:100%;table-layout:fixed\"><tbody><tr><td><table align=\"center\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\" style=\"color:#000;font-style:normal;font-weight:normal;font-size:16px;line-height:1.4;letter-spacing:0;text-align:left;direction:ltr;border-collapse:collapse;font-family:Arial, Helvetica, sans-serif;white-space:normal;word-wrap:break-word;word-break:break-word\"><tbody><tr><td><a href=\"https://homecartel.net/collections/chandelier-1\" target=\"_blank\" rel=\"noopener nofollow\" ses:no-track=\"\" style=\"display:block;text-decoration:none;border:none;outline:none\" aria-label=\"https://homecartel.net/collections/chandelier-1\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%\"><tbody><tr><td align=\"center\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;max-width:268px\"><tbody><tr><td style=\"width:100%\"><img src=\"images/a89ad58ed97e6b7b206f01871a6f4e7c.jpg\" width=\"268\" height=\"206\" style=\"display:block;width:268px;height:auto;max-width:100%\"></td></tr></tbody></table></td></tr></tbody></table></a></td></tr></tbody></table></td></tr></tbody></table></td><td width=\"16\" style=\"width:16px;box-sizing:border-box;font-size:0\">&nbsp;</td><td width=\"48.55%\" style=\"width:48.55%;box-sizing:border-box;vertical-align:top\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-spacing:0px;border-collapse:separate;width:100%;table-layout:fixed\"><tbody><tr><td style=\"padding:18px\"><table align=\"center\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\" style=\"color:#000;font-style:normal;font-weight:normal;font-size:16px;line-height:1.4;letter-spacing:0;text-align:left;direction:ltr;border-collapse:collapse;font-family:Arial, Helvetica, sans-serif;white-space:normal;word-wrap:break-word;word-break:break-word\"><tbody><tr><td dir=\"ltr\" class=\"ers-fs-213\" style=\"font-size:21.3px;font-weight:700;text-decoration:underline;font-family:Verdana, Geneva, sans-serif;white-space:pre-wrap;text-align:left;padding:0px 0px 16px;line-height:1.4;mso-line-height-alt:29.8px\"><a href=\"https://homecartel.net/collections/chandelier-1\" target=\"_blank\" rel=\"noopener nofollow\" ses:no-track=\"\" style=\"color:inherit;text-decoration:inherit\">Chandeliers</a><br></td></tr><tr><td dir=\"ltr\" style=\"font-size:16px;font-family:Verdana, Geneva, sans-serif;white-space:pre-wrap;text-align:left;line-height:1.4;mso-line-height-alt:22.4px\"><a href=\"https://homecartel.net/collections/chandelier-1\" target=\"_blank\" rel=\"noopener nofollow\" ses:no-track=\"\" style=\"color:inherit;text-decoration:inherit\">Crystal, alabaster, and cluster designs that anchor a room.</a><br></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td style=\"padding:0px 24px 16px\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"layout-1\" align=\"center\" style=\"display:table;border-spacing:0px;border-collapse:separate;width:100%;max-width:100%;table-layout:fixed;margin:0 auto\"><tbody><tr><td style=\"text-align:center\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-spacing:0px;border-collapse:separate;width:100%;max-width:552px;table-layout:fixed;margin:0 auto\"><tbody><tr><td width=\"48.55%\" style=\"width:48.55%;box-sizing:border-box;vertical-align:top\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-spacing:0px;border-collapse:separate;width:100%;table-layout:fixed\"><tbody><tr><td><table align=\"center\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\" style=\"color:#000;font-style:normal;font-weight:normal;font-size:16px;line-height:1.4;letter-spacing:0;text-align:left;direction:ltr;border-collapse:collapse;font-family:Arial, Helvetica, sans-serif;white-space:normal;word-wrap:break-word;word-break:break-word\"><tbody><tr><td><a href=\"https://homecartel.net/collections/pendant-lights\" target=\"_blank\" rel=\"noopener nofollow\" ses:no-track=\"\" style=\"display:block;text-decoration:none;border:none;outline:none\" aria-label=\"https://homecartel.net/collections/pendant-lights\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%\"><tbody><tr><td align=\"center\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;max-width:268px\"><tbody><tr><td style=\"width:100%\"><img src=\"images/fbabf6ac28afc37202c02e74f0d21b81.jpg\" width=\"268\" height=\"204\" style=\"display:block;width:268px;height:auto;max-width:100%\"></td></tr></tbody></table></td></tr></tbody></table></a></td></tr></tbody></table></td></tr></tbody></table></td><td width=\"16\" style=\"width:16px;box-sizing:border-box;font-size:0\">&nbsp;</td><td width=\"48.55%\" style=\"width:48.55%;box-sizing:border-box;vertical-align:top\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-spacing:0px;border-collapse:separate;width:100%;table-layout:fixed\"><tbody><tr><td style=\"padding:18px\"><table align=\"center\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\" style=\"color:#000;font-style:normal;font-weight:normal;font-size:16px;line-height:1.4;letter-spacing:0;text-align:left;direction:ltr;border-collapse:collapse;font-family:Arial, Helvetica, sans-serif;white-space:normal;word-wrap:break-word;word-break:break-word\"><tbody><tr><td dir=\"ltr\" class=\"ers-fs-213\" style=\"font-size:21.3px;font-weight:700;text-decoration:underline;font-family:Verdana, Geneva, sans-serif;white-space:pre-wrap;text-align:left;padding:0px 0px 16px;line-height:1.4;mso-line-height-alt:29.8px\"><a href=\"https://homecartel.net/collections/pendant-lights\" target=\"_blank\" rel=\"noopener nofollow\" ses:no-track=\"\" style=\"color:inherit;text-decoration:inherit\">Pendant Lights</a><br></td></tr><tr><td dir=\"ltr\" style=\"font-size:16px;font-family:Verdana, Geneva, sans-serif;white-space:pre-wrap;text-align:left;line-height:1.4;mso-line-height-alt:22.4px\"><a href=\"https://homecartel.net/collections/pendant-lights\" target=\"_blank\" rel=\"noopener nofollow\" ses:no-track=\"\" style=\"color:inherit;text-decoration:inherit\">Statement lighting for dining tables, kitchen islands and bedrooms.</a><br></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td style=\"padding:0px 24px 16px\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"layout-2\" align=\"center\" style=\"display:table;border-spacing:0px;border-collapse:separate;width:100%;max-width:100%;table-layout:fixed;margin:0 auto\"><tbody><tr><td style=\"text-align:center\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-spacing:0px;border-collapse:separate;width:100%;max-width:552px;table-layout:fixed;margin:0 auto\"><tbody><tr><td width=\"48.55%\" style=\"width:48.55%;box-sizing:border-box;vertical-align:top\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-spacing:0px;border-collapse:separate;width:100%;table-layout:fixed\"><tbody><tr><td><table align=\"center\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\" style=\"color:#000;font-style:normal;font-weight:normal;font-size:16px;line-height:1.4;letter-spacing:0;text-align:left;direction:ltr;border-collapse:collapse;font-family:Arial, Helvetica, sans-serif;white-space:normal;word-wrap:break-word;word-break:break-word\"><tbody><tr><td><a href=\"https://homecartel.net/collections/table-lamps\" target=\"_blank\" rel=\"noopener nofollow\" ses:no-track=\"\" style=\"display:block;text-decoration:none;border:none;outline:none\" aria-label=\"https://homecartel.net/collections/table-lamps\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%\"><tbody><tr><td align=\"center\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;max-width:268px\"><tbody><tr><td style=\"width:100%\"><img src=\"images/0c1e4739a88dabe014008f6e9f3ce186.jpg\" width=\"268\" height=\"204\" style=\"display:block;width:268px;height:auto;max-width:100%\"></td></tr></tbody></table></td></tr></tbody></table></a></td></tr></tbody></table></td></tr></tbody></table></td><td width=\"16\" style=\"width:16px;box-sizing:border-box;font-size:0\">&nbsp;</td><td width=\"48.55%\" style=\"width:48.55%;box-sizing:border-box;vertical-align:top\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-spacing:0px;border-collapse:separate;width:100%;table-layout:fixed\"><tbody><tr><td style=\"padding:18px\"><table align=\"center\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\" style=\"color:#000;font-style:normal;font-weight:normal;font-size:16px;line-height:1.4;letter-spacing:0;text-align:left;direction:ltr;border-collapse:collapse;font-family:Arial, Helvetica, sans-serif;white-space:normal;word-wrap:break-word;word-break:break-word\"><tbody><tr><td dir=\"ltr\" class=\"ers-fs-213\" style=\"font-size:21.3px;font-weight:700;text-decoration:underline;font-family:Verdana, Geneva, sans-serif;white-space:pre-wrap;text-align:left;padding:0px 0px 16px;line-height:1.4;mso-line-height-alt:29.8px\"><a href=\"https://homecartel.net/collections/table-lamps\" target=\"_blank\" rel=\"noopener nofollow\" ses:no-track=\"\" style=\"color:inherit;text-decoration:inherit\">Table Lamps</a><br></td></tr><tr><td dir=\"ltr\" style=\"font-size:16px;font-family:Verdana, Geneva, sans-serif;white-space:pre-wrap;text-align:left;line-height:1.4;mso-line-height-alt:22.4px\"><a href=\"https://homecartel.net/collections/table-lamps\" target=\"_blank\" rel=\"noopener nofollow\" ses:no-track=\"\" style=\"color:inherit;text-decoration:inherit\">Soft, sculptural light for bedsides, consoles and work desks.</a><br></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td style=\"padding:0px 24px 16px\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"layout-3\" align=\"center\" style=\"display:table;border-spacing:0px;border-collapse:separate;width:100%;max-width:100%;table-layout:fixed;margin:0 auto\"><tbody><tr><td style=\"text-align:center\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-spacing:0px;border-collapse:separate;width:100%;max-width:552px;table-layout:fixed;margin:0 auto\"><tbody><tr><td width=\"48.55%\" style=\"width:48.55%;box-sizing:border-box;vertical-align:top\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-spacing:0px;border-collapse:separate;width:100%;table-layout:fixed\"><tbody><tr><td><table align=\"center\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\" style=\"color:#000;font-style:normal;font-weight:normal;font-size:16px;line-height:1.4;letter-spacing:0;text-align:left;direction:ltr;border-collapse:collapse;font-family:Arial, Helvetica, sans-serif;white-space:normal;word-wrap:break-word;word-break:break-word\"><tbody><tr><td><a href=\"https://homecartel.net/collections/all-lighting\" target=\"_blank\" rel=\"noopener nofollow\" ses:no-track=\"\" style=\"display:block;text-decoration:none;border:none;outline:none\" aria-label=\"https://homecartel.net/collections/all-lighting\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%\"><tbody><tr><td align=\"center\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;max-width:268px\"><tbody><tr><td style=\"width:100%\"><img src=\"images/763f33ee9394810652d07ec15d4354e3.jpg\" width=\"268\" height=\"204\" style=\"display:block;width:268px;height:auto;max-width:100%\"></td></tr></tbody></table></td></tr></tbody></table></a></td></tr></tbody></table></td></tr></tbody></table></td><td width=\"16\" style=\"width:16px;box-sizing:border-box;font-size:0\">&nbsp;</td><td width=\"48.55%\" style=\"width:48.55%;box-sizing:border-box;vertical-align:top\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-spacing:0px;border-collapse:separate;width:100%;table-layout:fixed\"><tbody><tr><td style=\"padding:18px\"><table align=\"center\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\" style=\"color:#000;font-style:normal;font-weight:normal;font-size:16px;line-height:1.4;letter-spacing:0;text-align:left;direction:ltr;border-collapse:collapse;font-family:Arial, Helvetica, sans-serif;white-space:normal;word-wrap:break-word;word-break:break-word\"><tbody><tr><td dir=\"ltr\" class=\"ers-fs-213\" style=\"font-size:21.3px;font-weight:700;font-family:Verdana, Geneva, sans-serif;white-space:pre-wrap;text-align:left;padding:0px 0px 16px;line-height:1.4;mso-line-height-alt:29.8px\"><a href=\"https://homecartel.net/collections/all-lighting\" target=\"_blank\" rel=\"noopener nofollow\" ses:no-track=\"\" style=\"color:inherit;text-decoration:inherit\">... and more!</a><br></td></tr><tr><td dir=\"ltr\" style=\"font-size:16px;font-family:Verdana, Geneva, sans-serif;white-space:pre-wrap;text-align:left;line-height:1.4;mso-line-height-alt:22.4px\"><a href=\"https://homecartel.net/collections/all-lighting\" target=\"_blank\" rel=\"noopener nofollow\" ses:no-track=\"\" style=\"color:inherit;text-decoration:inherit\">Browse our full range of lighting fixtures and find the perfect one for your space.</a><br></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td style=\"padding:0px 24px 16px\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"layout-4\" align=\"center\" style=\"display:table;border-spacing:0px;border-collapse:separate;width:100%;max-width:100%;table-layout:fixed;margin:0 auto;background-color:#f5f5f5;border-top-left-radius:10px;border-top-right-radius:10px;border-bottom-left-radius:10px;border-bottom-right-radius:10px\"><tbody><tr><td style=\"text-align:center;padding:20.619905168107458px 26.378022850391606px\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-spacing:0px;border-collapse:separate;width:100%;max-width:500px;table-layout:fixed;margin:0 auto\"><tbody><tr><td width=\"100.00%\" style=\"width:100.00%;box-sizing:border-box;vertical-align:top;border-top-left-radius:0;border-top-right-radius:0;border-bottom-left-radius:0;border-bottom-right-radius:0\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-spacing:0px;border-collapse:separate;width:100%;table-layout:fixed\"><tbody><tr><td><table align=\"center\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\" style=\"color:#000;font-style:normal;font-weight:normal;font-size:16px;line-height:1.4;letter-spacing:0;text-align:left;direction:ltr;border-collapse:collapse;font-family:Arial, Helvetica, sans-serif;white-space:normal;word-wrap:break-word;word-break:break-word\"><tbody><tr><td dir=\"ltr\" class=\"ers-fs-333\" style=\"color:#ff9900;font-size:33.3px;letter-spacing:-0.02em;font-family:Verdana, Geneva, sans-serif;white-space:pre-wrap;text-align:left;padding:0px 0px 16px;line-height:1.4;mso-line-height-alt:46.6px\">Find the light that fits your space.<br></td></tr><tr><td dir=\"ltr\" style=\"color:#272e1c;font-size:16px;letter-spacing:-0.02em;font-family:Verdana, Geneva, sans-serif;white-space:pre-wrap;text-align:left;line-height:1.4;mso-line-height-alt:22.4px\">From statement chandeliers to sculptural pendants, floor and table lamps, and wall lights, our pieces come in finishes like brass, alabaster, crystal and frosted glass. Browse the collection and use your 10% off on your next order.<br></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td style=\"padding:0px 24px 16px\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%\"><tbody><tr><td align=\"center\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;max-width:552px\"><tbody><tr><td height=\"1\" style=\"height:1px;border-radius:999px;line-height:1px;mso-line-height-rule:exactly;font-size:0;background-color:#0d161b\">&nbsp;</td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td style=\"padding:0px 0px 16px\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%\"><tbody><tr><td align=\"center\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;max-width:600px\"><tbody><tr><td style=\"width:100%\"><img src=\"images/db14bb4f8487787d5f106be9f940c58f.jpg\" width=\"600\" height=\"411\" style=\"display:block;width:600px;height:auto;max-width:100%\"></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td style=\"padding:0px 24px 16px\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%\"><tbody><tr><td align=\"center\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;max-width:552px\"><tbody><tr><td height=\"1\" style=\"height:1px;border-radius:999px;line-height:1px;mso-line-height-rule:exactly;font-size:0;background-color:#0d161b\">&nbsp;</td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td dir=\"ltr\" style=\"color:#0d161b;font-size:13.3px;font-family:Verdana, Geneva, sans-serif;text-align:center;padding:0px 24px 16px;line-height:22.4px;mso-line-height-alt:22.4px\"><span style=\"white-space:pre-wrap\">You received this email from your activity on </span><span style=\"font-weight:700;white-space:pre-wrap\"><a href=\"http://homecartel.net\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color:#0d161b;text-decoration:none\">homecartel.net</a>. </span><br></td></tr><tr><td dir=\"ltr\" style=\"font-size:13.3px;font-weight:700;font-family:Verdana, Geneva, sans-serif;text-align:center;padding:0px 24px 16px;line-height:22.4px;mso-line-height-alt:22.4px\"><a href=\"{{ unsubscribe }}\" target=\"_blank\" rel=\"noopener nofollow\" style=\"color:inherit;text-decoration:inherit\"><span style=\"text-decoration:underline;white-space:pre-wrap\">Unsubscribe</span></a><span style=\"white-space:pre-wrap\"> | </span><a href=\"{{ view_in_browser }}\" target=\"_blank\" rel=\"noopener nofollow\" style=\"color:inherit;text-decoration:inherit\"><span style=\"text-decoration:underline;white-space:pre-wrap\">View in browser</span></a><br></td></tr><tr><td dir=\"ltr\" style=\"color:#0d161b;font-size:13.3px;font-family:Verdana, Geneva, sans-serif;white-space:pre-wrap;text-align:center;padding:0px 24px 24px;line-height:22.4px;mso-line-height-alt:22.4px\">© 2026 Home Cartel ®. All rights reserved.<br></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td height=\"100%\" style=\"height:100%;font-size:0;line-height:0\" aria-hidden=\"true\">&nbsp;</td></tr></tbody></table><!--[if mso]></td>\n                </tr>\n              </tbody>\n            </table>\n          </center><![endif]--></td></tr></tbody></table></body></html>";
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+const rawWelcome1 = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preload" as="image" href="images/3ef43aae1391d3855242f78c9975c8b9.png">
+  <link rel="preload" as="image" href="images/5fde53c52841ffe349002090665198c3.jpg">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+  <style>body{margin:0;padding:0}table{border-collapse:collapse}p,span,h1,h2,h3{margin:0;padding:0}@media (max-width:599px){.ecw{width:100%!important;min-width:0!important}}</style>
+</head>
+<body style="width:100%;background-color:#f0f1f5;margin:0;padding:0">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#f0f1f5">
+    <tr><td>
+      <table align="center" width="600" border="0" cellpadding="0" cellspacing="0" class="ecw" style="max-width:600px;margin:0 auto;background-color:#ffffff;width:600px">
+        <tr><td align="center"><img src="images/3ef43aae1391d3855242f78c9975c8b9.png" width="600" style="display:block;width:100%;max-width:600px;height:auto"></td></tr>
+        <tr><td style="padding:24px 0 16px"><img src="images/5fde53c52841ffe349002090665198c3.jpg" width="600" style="display:block;width:100%;max-width:600px;height:auto"></td></tr>
+        <tr><td style="font-size:30px;font-weight:700;font-family:Verdana,sans-serif;text-align:center;padding:12px 24px 16px;color:#0d161b">Here’s our promise.</td></tr>
+        <tr><td style="font-size:16px;font-family:Verdana,sans-serif;text-align:center;padding:0 28px 20px;line-height:1.5;color:#272e1c">Thank you for signing up! Enjoy <span style="font-weight:700;text-decoration:underline">10% off</span> your next purchase, our way of saying welcome. Use voucher code <strong style="color:#ff9900;letter-spacing:1px">WELCOME10</strong> on the lighting that makes your home feel like yours.</td></tr>
+        <tr><td align="center" style="padding:0 24px 24px">
+          <table border="0" cellpadding="0" cellspacing="0"><tr><td bgcolor="#ff9900" style="background-color:#ff9900;border-radius:26px">
+            <a href="https://homecartel.net?discount=WELCOME10" target="_blank" style="color:#000000;text-decoration:none;display:block;padding:12px 32px;font-family:Arial,sans-serif;font-size:14px;font-weight:700">Shop now</a>
+          </td></tr></table>
+        </td></tr>
+        <tr><td style="padding:16px 24px">
+          <table width="100%" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="48%" valign="top">
+                <a href="https://homecartel.net/collections/chandelier-1" target="_blank" style="text-decoration:none;color:inherit">
+                  <img src="images/a89ad58ed97e6b7b206f01871a6f4e7c.jpg" width="268" style="display:block;width:100%;height:auto;border-radius:4px" />
+                  <div style="font-weight:700;font-size:16px;margin-top:8px;font-family:Verdana,sans-serif;text-decoration:underline">Chandeliers</div>
+                  <div style="font-size:13px;color:#555;margin-top:4px;font-family:Verdana,sans-serif">Crystal, alabaster, and cluster designs that anchor a room.</div>
+                </a>
+              </td>
+              <td width="4%">&nbsp;</td>
+              <td width="48%" valign="top">
+                <a href="https://homecartel.net/collections/pendant-lights" target="_blank" style="text-decoration:none;color:inherit">
+                  <img src="images/fbabf6ac28afc37202c02e74f0d21b81.jpg" width="268" style="display:block;width:100%;height:auto;border-radius:4px" />
+                  <div style="font-weight:700;font-size:16px;margin-top:8px;font-family:Verdana,sans-serif;text-decoration:underline">Pendant Lights</div>
+                  <div style="font-size:13px;color:#555;margin-top:4px;font-family:Verdana,sans-serif">Statement lighting for dining tables, kitchen islands and bedrooms.</div>
+                </a>
+              </td>
+            </tr>
+            <tr><td colspan="3" height="20"></td></tr>
+            <tr>
+              <td width="48%" valign="top">
+                <a href="https://homecartel.net/collections/table-lamps" target="_blank" style="text-decoration:none;color:inherit">
+                  <img src="images/0c1e4739a88dabe014008f6e9f3ce186.jpg" width="268" style="display:block;width:100%;height:auto;border-radius:4px" />
+                  <div style="font-weight:700;font-size:16px;margin-top:8px;font-family:Verdana,sans-serif;text-decoration:underline">Table Lamps</div>
+                  <div style="font-size:13px;color:#555;margin-top:4px;font-family:Verdana,sans-serif">Soft, sculptural light for bedsides, consoles and work desks.</div>
+                </a>
+              </td>
+              <td width="4%">&nbsp;</td>
+              <td width="48%" valign="top">
+                <a href="https://homecartel.net/collections/all-lighting" target="_blank" style="text-decoration:none;color:inherit">
+                  <img src="images/763f33ee9394810652d07ec15d4354e3.jpg" width="268" style="display:block;width:100%;height:auto;border-radius:4px" />
+                  <div style="font-weight:700;font-size:16px;margin-top:8px;font-family:Verdana,sans-serif;text-decoration:underline">... and more!</div>
+                  <div style="font-size:13px;color:#555;margin-top:4px;font-family:Verdana,sans-serif">Browse our full range of fixtures to find the perfect match.</div>
+                </a>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+        <tr><td align="center" style="padding:24px 0 16px"><img src="images/db14bb4f8487787d5f106be9f940c58f.jpg" width="600" style="display:block;width:100%;max-width:600px;height:auto"></td></tr>
+        <tr><td style="padding:24px;text-align:center">
+          <div style="color:#0d161b;font-size:13px;font-family:Verdana,sans-serif">You received this email from your activity on <a href="https://homecartel.net" target="_blank" rel="noopener noreferrer" style="color:#0d161b;font-weight:700;text-decoration:none">homecartel.net</a>.</div>
+          <div style="font-size:13px;font-weight:700;font-family:Verdana,sans-serif;margin:8px 0"><a href="{{ unsubscribe }}" style="color:inherit;text-decoration:underline">Unsubscribe</a> | <a href="{{ view_in_browser }}" style="color:inherit;text-decoration:underline">View in browser</a></div>
+          <div style="color:#0d161b;font-size:13px;font-family:Verdana,sans-serif">© 2026 Home Cartel ®. All rights reserved.</div>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
 
 export function renderCanvaWelcomeTemplate(context = {}) {
   const baseUrl = (context.baseUrl || 'https://emailautomation-production-d651.up.railway.app').replace(/\/+$/, '');
   const unsubscribeUrl = context.unsubscribeUrl || '#';
   const viewInBrowserUrl = context.viewInBrowserUrl || 'https://homecartel.net';
-  const customerName = context.customerName && context.customerName !== 'there' ? context.customerName : '';
+  const customerName = context.customerName && context.customerName !== 'there' ? context.customerName.trim() : '';
 
-  let html = rawTemplate;
-
-  // 1. Rewrite relative image paths to absolute Railway production URLs
+  let html = rawWelcome1;
   html = html.replace(/(src|href)=["']images\/([^"']+)["']/g, (match, attr, filename) => {
     return attr + '="' + baseUrl + '/images/' + filename + '"';
   });
 
-  // 2. Personalize greeting if customer name is available
   if (customerName) {
-    html = html.replace(
-      'Thank you for signing up! Enjoy',
-      'Thank you for signing up, ' + customerName + '! Enjoy'
-    );
+    html = html.replace('Thank you for signing up! Enjoy', 'Thank you for signing up, ' + escapeHtml(customerName) + '! Enjoy');
   }
 
-  // 3. Replace template placeholders
   html = html.replace(/\{\{\s*unsubscribe\s*\}\}/g, unsubscribeUrl);
   html = html.replace(/\{\{\s*view_in_browser\s*\}\}/g, viewInBrowserUrl);
 
@@ -39,6 +111,166 @@ export function renderCanvaWelcomeTemplate(context = {}) {
   const subject = customerName 
     ? `Welcome to HomeCartel, ${customerName} | ${discount} off your first order`
     : `Welcome to HomeCartel | ${discount} off your first order`;
+
+  return { subject, html };
+}
+
+/**
+ * Welcome Drip Email 2 (Social Proof & Influencer Showcase)
+ * Sent 2 days after Email 1
+ */
+export function renderWelcomeSocialProofTemplate(context = {}) {
+  const baseUrl = (context.baseUrl || 'https://emailautomation-production-d651.up.railway.app').replace(/\/+$/, '');
+  const unsubscribeUrl = context.unsubscribeUrl || '#';
+  const viewInBrowserUrl = context.viewInBrowserUrl || 'https://homecartel.net';
+  const customerName = context.customerName && context.customerName !== 'there' ? context.customerName.trim() : '';
+
+  const subject = customerName
+    ? `Seen in beautiful spaces: Inside real homes with HomeCartel, ${customerName}`
+    : 'Seen in beautiful spaces: Inside real homes with HomeCartel';
+
+  const introText = customerName
+    ? `Hi ${escapeHtml(customerName)}, discover how top interior designers, architects, and over 10,000+ homeowners use HomeCartel fixtures to turn dining rooms, kitchens, and living spaces into architectural statements.`
+    : 'Discover how top interior designers, architects, and over 10,000+ homeowners use HomeCartel fixtures to turn dining rooms, kitchens, and living spaces into architectural statements.';
+
+  const html = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>body{margin:0;padding:0}table{border-collapse:collapse}p,h1,h2,h3{margin:0;padding:0}@media(max-width:599px){.ecw{width:100%!important}}</style>
+</head>
+<body style="background-color:#f0f1f5;margin:0;padding:0;font-family:Verdana,sans-serif">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#f0f1f5">
+    <tr><td align="center" style="padding:20px 10px">
+      <table width="600" class="ecw" style="max-width:600px;background:#ffffff;border-radius:4px;overflow:hidden">
+        <tr><td align="center" style="background:#0d161b;padding:28px"><img src="${baseUrl}/images/3ef43aae1391d3855242f78c9975c8b9.png" width="220" style="display:block"></td></tr>
+        <tr><td style="padding:32px 28px 16px;text-align:center">
+          <h2 style="font-size:24px;font-weight:700;color:#0d161b;margin-bottom:12px">Styled by Leading Designers & Creators</h2>
+          <p style="font-size:14.5px;color:#4a5568;line-height:1.6">${introText}</p>
+        </td></tr>
+        
+        <!-- Social Proof Feature 1 -->
+        <tr><td style="padding:16px 28px">
+          <img src="${baseUrl}/images/5fde53c52841ffe349002090665198c3.jpg" width="544" style="display:block;width:100%;border-radius:6px;margin-bottom:12px">
+          <div style="background:#f8f9fa;padding:16px 20px;border-left:4px solid #ff9900;border-radius:4px">
+            <p style="font-style:italic;font-size:14px;color:#2d3748;line-height:1.6">"HomeCartel's statement chandelier was the single piece that pulled our entire open living concept together. The warm brass finish is timeless."</p>
+            <p style="font-size:12px;font-weight:700;color:#0d161b;margin-top:8px">— Featured Residence in Makati • Styled by Studio Interior</p>
+          </div>
+        </td></tr>
+
+        <!-- Social Proof Feature 2 -->
+        <tr><td style="padding:16px 28px">
+          <table width="100%" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="48%" valign="top">
+                <img src="${baseUrl}/images/a89ad58ed97e6b7b206f01871a6f4e7c.jpg" width="260" style="display:block;width:100%;border-radius:4px">
+                <p style="font-size:13px;font-weight:700;color:#0d161b;margin-top:8px">Talisa Modern Chandelier</p>
+                <p style="font-size:12px;color:#718096">⭐⭐⭐⭐⭐ 4.9/5 from 80+ Homeowners</p>
+              </td>
+              <td width="4%">&nbsp;</td>
+              <td width="48%" valign="top">
+                <img src="${baseUrl}/images/fbabf6ac28afc37202c02e74f0d21b81.jpg" width="260" style="display:block;width:100%;border-radius:4px">
+                <p style="font-size:13px;font-weight:700;color:#0d161b;margin-top:8px">Kevin Pendant Light</p>
+                <p style="font-size:12px;color:#718096">⭐⭐⭐⭐⭐ Featured in BGC Penthouses</p>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+
+        <!-- CTA & Discount Reminder -->
+        <tr><td style="padding:24px 28px;text-align:center;background:#fff8ee">
+          <p style="font-size:15px;font-weight:700;color:#0d161b;margin-bottom:6px">Your 10% Welcome Voucher is Active</p>
+          <p style="font-size:13px;color:#744210;margin-bottom:16px">Use code <strong style="letter-spacing:1px">WELCOME10</strong> at checkout</p>
+          <table align="center" border="0" cellpadding="0" cellspacing="0"><tr><td bgcolor="#ff9900" style="border-radius:24px"><a href="https://homecartel.net?discount=WELCOME10" target="_blank" style="display:block;padding:12px 32px;color:#000;font-size:13px;font-weight:700;text-decoration:none">Explore Designer Favorites</a></td></tr></table>
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td style="padding:24px;text-align:center">
+          <div style="color:#0d161b;font-size:13px">You received this email from your activity on <a href="https://homecartel.net" target="_blank" rel="noopener noreferrer" style="color:#0d161b;font-weight:700;text-decoration:none">homecartel.net</a>.</div>
+          <div style="font-size:13px;font-weight:700;margin:8px 0"><a href="${escapeHtml(unsubscribeUrl)}" style="color:inherit;text-decoration:underline">Unsubscribe</a> | <a href="${escapeHtml(viewInBrowserUrl)}" style="color:inherit;text-decoration:underline">View in browser</a></div>
+          <div style="color:#0d161b;font-size:13px">© 2026 Home Cartel ®. All rights reserved.</div>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  return { subject, html };
+}
+
+/**
+ * Welcome Drip Email 3 (Best Sellers & Voucher Urgency)
+ * Sent 3 days after Email 2
+ */
+export function renderWelcomeBestSellersTemplate(context = {}) {
+  const baseUrl = (context.baseUrl || 'https://emailautomation-production-d651.up.railway.app').replace(/\/+$/, '');
+  const unsubscribeUrl = context.unsubscribeUrl || '#';
+  const viewInBrowserUrl = context.viewInBrowserUrl || 'https://homecartel.net';
+  const customerName = context.customerName && context.customerName !== 'there' ? context.customerName.trim() : '';
+
+  const subject = customerName
+    ? `Your 10% welcome voucher is waiting, ${customerName} | HomeCartel Best Sellers`
+    : 'Your 10% welcome voucher is waiting | HomeCartel Best Sellers';
+
+  const html = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>body{margin:0;padding:0}table{border-collapse:collapse}p,h1,h2,h3{margin:0;padding:0}@media(max-width:599px){.ecw{width:100%!important}}</style>
+</head>
+<body style="background-color:#f0f1f5;margin:0;padding:0;font-family:Verdana,sans-serif">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#f0f1f5">
+    <tr><td align="center" style="padding:20px 10px">
+      <table width="600" class="ecw" style="max-width:600px;background:#ffffff;border-radius:4px;overflow:hidden">
+        <tr><td align="center" style="background:#0d161b;padding:28px"><img src="${baseUrl}/images/3ef43aae1391d3855242f78c9975c8b9.png" width="220" style="display:block"></td></tr>
+        <tr><td style="padding:32px 28px 16px;text-align:center">
+          <h2 style="font-size:24px;font-weight:700;color:#0d161b;margin-bottom:12px">Our Most-Loved Lighting Fixtures</h2>
+          <p style="font-size:14.5px;color:#4a5568;line-height:1.6">Still considering the right fixture for your space? Here are the pieces our clients and interior designers come back to time and again.</p>
+        </td></tr>
+
+        <!-- Showcase Image -->
+        <tr><td style="padding:0 28px 20px">
+          <img src="${baseUrl}/images/db14bb4f8487787d5f106be9f940c58f.jpg" width="544" style="display:block;width:100%;border-radius:6px">
+        </td></tr>
+
+        <!-- Featured Products -->
+        <tr><td style="padding:0 28px 24px">
+          <table width="100%" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="48%" style="padding:14px;background:#f8f9fa;border-radius:6px">
+                <p style="font-size:14px;font-weight:700;color:#0d161b">Talisa | Modern Chandelier</p>
+                <p style="font-size:13px;color:#c59b27;font-weight:700;margin:6px 0">₱27,920.00</p>
+                <p style="font-size:12px;color:#718096">Statement centerpiece for double-height ceilings and dining areas.</p>
+              </td>
+              <td width="4%">&nbsp;</td>
+              <td width="48%" style="padding:14px;background:#f8f9fa;border-radius:6px">
+                <p style="font-size:14px;font-weight:700;color:#0d161b">Kevin | Pendant Light</p>
+                <p style="font-size:13px;color:#c59b27;font-weight:700;margin:6px 0">₱3,970.00</p>
+                <p style="font-size:12px;color:#718096">Sculptural minimalism for kitchen islands and bedside accents.</p>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+
+        <!-- Voucher Urgency Box -->
+        <tr><td style="padding:24px 28px;text-align:center;background:#fff8ee;border-top:1px solid #fed7aa;border-bottom:1px solid #fed7aa">
+          <p style="font-size:16px;font-weight:700;color:#9a3412;margin-bottom:6px">Don’t forget your 10% welcome discount</p>
+          <p style="font-size:13px;color:#7c2d12;margin-bottom:16px">Enter voucher code <strong style="letter-spacing:1px;background:#ffedd5;padding:2px 8px;border-radius:4px">WELCOME10</strong> before it expires.</p>
+          <table align="center" border="0" cellpadding="0" cellspacing="0"><tr><td bgcolor="#ff9900" style="border-radius:24px"><a href="https://homecartel.net/collections/all?discount=WELCOME10" target="_blank" style="display:block;padding:12px 36px;color:#000;font-size:14px;font-weight:700;text-decoration:none">Claim 10% Off Now</a></td></tr></table>
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td style="padding:24px;text-align:center">
+          <div style="color:#0d161b;font-size:13px">You received this email from your activity on <a href="https://homecartel.net" target="_blank" rel="noopener noreferrer" style="color:#0d161b;font-weight:700;text-decoration:none">homecartel.net</a>.</div>
+          <div style="font-size:13px;font-weight:700;margin:8px 0"><a href="${escapeHtml(unsubscribeUrl)}" style="color:inherit;text-decoration:underline">Unsubscribe</a> | <a href="${escapeHtml(viewInBrowserUrl)}" style="color:inherit;text-decoration:underline">View in browser</a></div>
+          <div style="color:#0d161b;font-size:13px">© 2026 Home Cartel ®. All rights reserved.</div>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
 
   return { subject, html };
 }

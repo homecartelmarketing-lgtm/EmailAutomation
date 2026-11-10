@@ -40,6 +40,14 @@ export async function runSchedulerCycle({ db, sender, renderer, now = new Date()
       continue;
     }
 
+    // 1c. Check if flow toggle switch is enabled (Safety lock)
+    if (typeof db.isFlowEnabled === 'function' && !db.isFlowEnabled(job.flow_type)) {
+      console.log(`[Scheduler] Cancelling job ${job.id} because flow '${job.flow_type}' is currently toggled OFF.`);
+      db.rawDb.prepare("UPDATE scheduled_jobs SET status = 'cancelled' WHERE id = ?").run(job.id);
+      cancelled++;
+      continue;
+    }
+
     // 2. Frequency capping: max 1 marketing email per 48 hours
     const lastSentAt = db.getLastMarketingEmailTime(job.recipient_email);
     if (lastSentAt) {

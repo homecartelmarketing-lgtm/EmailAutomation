@@ -1,7 +1,12 @@
 import { renderCanvaCartTemplate } from './canvaCart.js';
-import { renderCanvaWelcomeTemplate } from './canvaWelcome.js';
+import {
+  renderCanvaWelcomeTemplate,
+  renderWelcomeSocialProofTemplate,
+  renderWelcomeBestSellersTemplate
+} from './canvaWelcome.js';
 import { renderCanvaBrowseTemplate } from './canvaBrowse.js';
 import { renderCanvaWinbackTemplate } from './canvaWinback.js';
+import { renderPostPurchaseReviewTemplate } from './postPurchase.js';
 
 function wrapBaseLayout({ title, contentHtml, unsubscribeUrl = '#', viewInBrowserUrl = 'https://homecartel.net', baseUrl = 'https://emailautomation-production-d651.up.railway.app' }) {
   const cleanBaseUrl = baseUrl.replace(/\/+$/, '');
@@ -56,29 +61,33 @@ function wrapBaseLayout({ title, contentHtml, unsubscribeUrl = '#', viewInBrowse
 
 /**
  * Renders a responsive HTML email for a given behavioral flow.
- * @param {string} templateName - 'abandoned_cart' | 'welcome' | 'post_purchase' | 'browse_abandonment' | 'winback'
+ * @param {string} templateName - 'abandoned_cart' | 'welcome' | 'welcome_1' | 'welcome_2' | 'welcome_3' | 'post_purchase' | 'browse_abandonment' | 'winback'
  * @param {object} context
  * @returns {{ subject: string, html: string }}
  */
 export function renderTemplate(templateName, context = {}) {
-  const { customerName = 'there', unsubscribeUrl = '#' } = context;
-
   switch (templateName) {
-    case 'abandoned_cart': {
+    case 'abandoned_cart':
       return renderCanvaCartTemplate(context);
-    }
 
-    case 'welcome': {
+    case 'welcome':
+    case 'welcome_1':
       return renderCanvaWelcomeTemplate(context);
-    }
 
-    case 'browse_abandonment': {
+    case 'welcome_2':
+      return renderWelcomeSocialProofTemplate(context);
+
+    case 'welcome_3':
+      return renderWelcomeBestSellersTemplate(context);
+
+    case 'browse_abandonment':
       return renderCanvaBrowseTemplate(context);
-    }
 
-    case 'winback': {
+    case 'winback':
       return renderCanvaWinbackTemplate(context);
-    }
+
+    case 'post_purchase':
+      return renderPostPurchaseReviewTemplate(context);
 
     default:
       throw new Error(`Unknown template: ${templateName}`);

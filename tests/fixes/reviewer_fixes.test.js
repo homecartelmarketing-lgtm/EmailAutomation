@@ -60,6 +60,7 @@ describe('Reviewer Fixes Verification', () => {
     const mockSender = { send: vi.fn().mockResolvedValue({ messageId: 'm1' }) };
     const mockRenderer = { render: vi.fn().mockReturnValue({ subject: 'Test', html: '<html></html>' }) };
 
+    db.setFlowEnabled('browse_abandonment', true);
     db.upsertCustomer({ email: 'cap_test@homecartel.ph', name: 'Cap Test' });
 
     // Simulate an email sent exactly 42 hours ago

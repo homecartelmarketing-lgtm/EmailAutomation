@@ -30,6 +30,9 @@ describe('UI Dashboard Endpoints', () => {
     expect(res.headers['content-type']).toContain('text/html');
     expect(res.payload).toContain('HomeCartel Automation Console');
     expect(res.payload).toContain('Scheduled Delay Queue');
+    expect(res.payload).toContain('flow-automations-section');
+    expect(res.payload).toContain('Behavioral Flow Automations');
+    expect(res.payload).toContain('flow-cards-container');
   });
 
   it('serves interactive HTML UI on GET /ui and GET /admin', async () => {

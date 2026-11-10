@@ -54,6 +54,15 @@ CREATE TABLE IF NOT EXISTS email_logs (
   sent_at TEXT DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS flow_settings (
+  flow_key TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  is_enabled INTEGER DEFAULT 0, -- 0 for off, 1 for on
+  delay_hours REAL DEFAULT 0,
+  description TEXT,
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
 CREATE INDEX IF NOT EXISTS idx_events_visitor ON events(visitor_id);
 CREATE INDEX IF NOT EXISTS idx_events_created ON events(created_at);

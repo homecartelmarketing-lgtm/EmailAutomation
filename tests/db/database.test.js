@@ -60,4 +60,32 @@ describe('Database State Store', () => {
     const dueJobs = db.getPendingDueJobs(new Date(Date.now() + 10000000).toISOString());
     expect(dueJobs.filter(j => j.recipient_email === 'shopper@test.com').length).toBe(0);
   });
+
+  it('initializes and manages per-flow settings and toggle state', () => {
+    const flows = db.getAllFlowSettings();
+    expect(flows.length).toBe(5);
+
+    // Verify all 5 core flows exist and default to disabled (0)
+    const keys = flows.map(f => f.flow_key);
+    expect(keys).toEqual(['welcome', 'abandoned_cart', 'browse_abandonment', 'winback', 'post_purchase']);
+    expect(db.isFlowEnabled('welcome')).toBe(false);
+    expect(db.isFlowEnabled('abandoned_cart')).toBe(false);
+    expect(db.isFlowEnabled('post_purchase')).toBe(false);
+
+    // Toggle on
+    db.setFlowEnabled('abandoned_cart', true);
+    expect(db.isFlowEnabled('abandoned_cart')).toBe(true);
+
+    // Sub-drip keys map to parent setting
+    expect(db.isFlowEnabled('welcome_1')).toBe(false);
+    db.setFlowEnabled('welcome', true);
+    expect(db.isFlowEnabled('welcome')).toBe(true);
+    expect(db.isFlowEnabled('welcome_1')).toBe(true);
+    expect(db.isFlowEnabled('welcome_2')).toBe(true);
+
+    // Toggle off
+    db.setFlowEnabled('welcome', false);
+    expect(db.isFlowEnabled('welcome')).toBe(false);
+    expect(db.isFlowEnabled('welcome_2')).toBe(false);
+  });
 });

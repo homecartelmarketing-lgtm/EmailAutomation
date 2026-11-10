@@ -112,6 +112,14 @@
           <span>Dashboard</span>
         </a>
 
+        <a href="#flow-automations-section" class="flex items-center justify-between px-4 py-3 rounded-2xl text-dabang-muted hover:text-dabang-navy hover:bg-[#F4F5FA] font-medium text-xs transition">
+          <div class="flex items-center gap-3.5">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            <span>Flow Automations</span>
+          </div>
+          <span id="nav-flows-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 text-zinc-700">0 Active</span>
+        </a>
+
         <a href="#staged-flows-section" class="flex items-center justify-between px-4 py-3 rounded-2xl text-dabang-muted hover:text-dabang-navy hover:bg-[#F4F5FA] font-medium text-xs transition">
           <div class="flex items-center gap-3.5">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
@@ -365,7 +373,40 @@
       </div>
 
       <!-- ========================================================================= -->
-      <!-- ROW 2: STAGED CLIENT FLOWS & QUEUE (MANUAL SEND CONTROL)                  -->
+      <!-- ROW 2: BEHAVIORAL FLOW AUTOMATIONS & TOGGLE SWITCHES                      -->
+      <!-- ========================================================================= -->
+      <section id="flow-automations-section" class="bg-white rounded-3xl p-6 border border-dabang-border card-shadow space-y-5">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-dabang-border pb-4">
+          <div>
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <h3 class="text-base font-bold text-dabang-navy flex items-center gap-2">
+                <span>⚡</span> Behavioral Flow Automations &amp; Toggle Controls
+              </h3>
+              <span id="master-safety-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span id="master-safety-text">Safe Mode: 0 / 5 Flows Active</span>
+              </span>
+            </div>
+            <p class="text-xs text-dabang-muted mt-1">
+              Independent On/Off control for all 5 behavioral flows. While a flow is toggled <strong>OFF</strong>, emails are safely paused and will NOT automatically dispatch. When toggled <strong>ON</strong>, qualifying shoppers on <strong>homecartel.net</strong> will dispatch on their scheduled delay.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="fetchFlowSettings()" class="px-3 py-1.5 rounded-xl bg-[#F8F9FA] hover:bg-[#EFF1F5] text-dabang-slate text-xs font-semibold border border-dabang-border transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+              <span>Refresh Status</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 5 Flow Toggle Cards Grid -->
+        <div id="flow-cards-container" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          <!-- Flow cards rendered dynamically by fetchFlowSettings() -->
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- ROW 3: STAGED CLIENT FLOWS & QUEUE (MANUAL SEND CONTROL)                  -->
       <!-- ========================================================================= -->
       <section id="staged-flows-section" class="bg-white rounded-3xl p-6 border border-dabang-border card-shadow space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-dabang-border pb-4">
@@ -714,6 +755,186 @@
       if (hrs < 24) return `${hrs}h ago`;
       const days = Math.floor(hrs / 24);
       return `${days}d ago`;
+    }
+
+    // =========================================================================
+    // 0. BEHAVIORAL FLOW AUTOMATIONS & TOGGLE SWITCHES
+    // =========================================================================
+    const flowUiMetadata = {
+      welcome: {
+        number: 1,
+        title: 'Welcome Series (3-Message Drip)',
+        icon: '👋',
+        badgeColor: 'bg-sky-50 text-sky-800 border-sky-200',
+        timing: 'Email 1: Immediate • Email 2: +2d • Email 3: +3d',
+        description: 'Omnisend-style 3-block drip: Email 1 welcome promise + 10% voucher; Email 2 social proof with influencer residence photos; Email 3 best sellers & urgency.'
+      },
+      abandoned_cart: {
+        number: 2,
+        title: 'Cart Abandonment',
+        icon: '🛒',
+        badgeColor: 'bg-amber-50 text-amber-800 border-amber-200',
+        timing: 'Delay: 2 Hours',
+        description: 'Dynamic cart restore reminder with customer items, Philippine Peso (₱) subtotal, and 1-click checkout recovery link.'
+      },
+      browse_abandonment: {
+        number: 3,
+        title: 'Browse Abandonment',
+        icon: '👀',
+        badgeColor: 'bg-purple-50 text-purple-800 border-purple-200',
+        timing: 'Delay: 3 Hours',
+        description: 'High-intent fixture view follow-up showcasing the last browsed lighting piece with 3 luxury responsive catalog recommendations.'
+      },
+      winback: {
+        number: 4,
+        title: 'Customer Winback',
+        icon: '💌',
+        badgeColor: 'bg-rose-50 text-rose-800 border-rose-200',
+        timing: 'Delay: 60 Days',
+        description: 'Inactive client re-engagement (60+ days) featuring latest collections and 10% appreciation voucher code WELCOMEBACK10.'
+      },
+      post_purchase: {
+        number: 5,
+        title: 'Post-Purchase Review & Care',
+        icon: '⭐',
+        badgeColor: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+        timing: 'Delay: 5 Days (+120h)',
+        description: 'Lighting care guide (circuit breaker safety, 2700K warm white tips, microfiber care) and review request inviting customer UGC tagged @homecartel.'
+      }
+    };
+
+    let cachedFlowSettings = [];
+
+    async function fetchFlowSettings() {
+      try {
+        const res = await fetch('/api/admin/flows');
+        if (!res.ok) return;
+        const data = await res.json();
+        const flows = data.flows || [];
+        cachedFlowSettings = flows;
+
+        const container = document.getElementById('flow-cards-container');
+        if (!container) return;
+
+        let activeCount = 0;
+
+        container.innerHTML = flows.map(f => {
+          if (f.is_enabled) activeCount++;
+          const meta = flowUiMetadata[f.flow_key] || {
+            number: 0,
+            title: f.name,
+            icon: '⚡',
+            badgeColor: 'bg-slate-50 text-slate-800 border-slate-200',
+            timing: `Delay: ${f.delay_hours}h`,
+            description: f.description || ''
+          };
+
+          const isChecked = f.is_enabled;
+          const statusBadge = isChecked
+            ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>Active (Auto-dispatch)</span>`
+            : `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-zinc-100 text-zinc-600 border border-zinc-200"><span class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>Paused (Safe Mode)</span>`;
+
+          return `
+            <div class="bg-[#F8F9FA] rounded-2xl p-5 border border-dabang-border flex flex-col justify-between transition hover:border-slate-300 hover:shadow-sm">
+              <div class="space-y-3">
+                <!-- Header: Icon, Flow Name & Toggle Switch -->
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-2xl">${meta.icon}</span>
+                    <div>
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-dabang-muted">Flow ${meta.number}</span>
+                      </div>
+                      <h4 class="font-bold text-sm text-dabang-navy leading-snug">${meta.title}</h4>
+                    </div>
+                  </div>
+
+                  <!-- iOS Style Toggle Switch -->
+                  <label class="relative inline-flex items-center cursor-pointer shrink-0 mt-0.5">
+                    <input type="checkbox" id="toggle-${f.flow_key}" class="sr-only peer" ${isChecked ? 'checked' : ''} onchange="toggleFlowSetting('${f.flow_key}', this)">
+                    <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner"></div>
+                  </label>
+                </div>
+
+                <!-- Timing & Queue Badges -->
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold border ${meta.badgeColor}">
+                    ⏱️ ${meta.timing}
+                  </span>
+                  <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-white text-dabang-slate border border-dabang-border">
+                    ${f.pendingCount || 0} staged • ${f.sentCount || 0} sent
+                  </span>
+                </div>
+
+                <!-- Description -->
+                <p class="text-xs text-dabang-slate leading-relaxed">
+                  ${meta.description}
+                </p>
+              </div>
+
+              <!-- Footer Status & Actions -->
+              <div class="pt-4 mt-3 border-t border-dabang-border flex items-center justify-between gap-2">
+                <div id="status-pill-${f.flow_key}">
+                  ${statusBadge}
+                </div>
+                <button onclick="testStageFlow('flow_${meta.number}')" class="px-2.5 py-1 text-[11px] font-semibold rounded-xl bg-white hover:bg-slate-100 text-dabang-slate border border-dabang-border transition shadow-sm">
+                  Test Stage
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Update Safety Badges
+        const safetyBadge = document.getElementById('master-safety-badge');
+        const safetyText = document.getElementById('master-safety-text');
+        const navBadge = document.getElementById('nav-flows-badge');
+
+        if (navBadge) navBadge.textContent = `${activeCount} Active`;
+
+        if (safetyBadge && safetyText) {
+          const firstDot = safetyBadge.querySelector('span:first-child');
+          if (activeCount === 0) {
+            safetyBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1.5';
+            if (firstDot) firstDot.className = 'w-2 h-2 rounded-full bg-amber-500';
+            safetyText.textContent = 'Safe Mode: 0 / 5 Flows Armed';
+          } else {
+            safetyBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1.5';
+            if (firstDot) firstDot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
+            safetyText.textContent = `Active: ${activeCount} / 5 Flows Armed`;
+          }
+        }
+      } catch (e) {
+        console.warn('Fetch flows error:', e);
+      }
+    }
+
+    async function toggleFlowSetting(flowKey, checkboxElem) {
+      const willEnable = checkboxElem.checked;
+      checkboxElem.disabled = true;
+
+      try {
+        const res = await fetch(`/api/admin/flows/${flowKey}/toggle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: willEnable })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showNotice(`⚡ ${data.message}`);
+          await fetchFlowSettings();
+          await fetchStagedFlows();
+        } else {
+          showNotice(`Error toggling flow: ${data.error || 'Request failed'}`, true);
+          checkboxElem.checked = !willEnable; // Revert
+        }
+      } catch (e) {
+        showNotice(`Network error: ${e.message}`, true);
+        checkboxElem.checked = !willEnable;
+      } finally {
+        checkboxElem.disabled = false;
+      }
     }
 
     // =========================================================================
@@ -1725,6 +1946,7 @@
     }
 
     async function refreshData() {
+      await fetchFlowSettings();
       await fetchStagedFlows();
       await fetchRecentEvents();
       await fetchDeliveredLogs();
@@ -1733,9 +1955,11 @@
 
     // Initial boot
     updatePreview('abandoned_cart');
+    fetchFlowSettings();
     refreshData();
     connectSse();
     setInterval(fetchStagedFlows, 5000);
+    setInterval(fetchFlowSettings, 10000);
     // Periodically update active status, relative timers (e.g. "Xm ago"), and presence
     setInterval(() => {
       if (liveEvents && liveEvents.length > 0) {

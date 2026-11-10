@@ -106,10 +106,14 @@ export async function registerAdminRoutes(app, { db }) {
     `).all();
 
     const flowMeta = {
-      abandoned_cart: { flowNumber: 1, label: 'Flow 1: Abandoned Cart', badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
-      welcome: { flowNumber: 2, label: 'Flow 2: Welcome Onboarding', badge: 'bg-sky-500/10 text-sky-400 border-sky-500/20' },
+      welcome: { flowNumber: 1, label: 'Flow 1: Welcome Series', badge: 'bg-sky-500/10 text-sky-400 border-sky-500/20' },
+      welcome_1: { flowNumber: 1, label: 'Flow 1: Welcome (Drip 1/3)', badge: 'bg-sky-500/10 text-sky-400 border-sky-500/20' },
+      welcome_2: { flowNumber: 1, label: 'Flow 1: Social Proof (Drip 2/3)', badge: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' },
+      welcome_3: { flowNumber: 1, label: 'Flow 1: Best Sellers (Drip 3/3)', badge: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
+      abandoned_cart: { flowNumber: 2, label: 'Flow 2: Cart Abandonment', badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
       browse_abandonment: { flowNumber: 3, label: 'Flow 3: Browse Abandonment', badge: 'bg-violet-500/10 text-violet-400 border-violet-500/20' },
-      winback: { flowNumber: 4, label: 'Flow 4: Customer Winback', badge: 'bg-rose-500/10 text-rose-400 border-rose-500/20' }
+      winback: { flowNumber: 4, label: 'Flow 4: Customer Winback', badge: 'bg-rose-500/10 text-rose-400 border-rose-500/20' },
+      post_purchase: { flowNumber: 5, label: 'Flow 5: Post-Purchase Review', badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' }
     };
 
     const stagedJobs = rows.map(r => {
@@ -123,12 +127,18 @@ export async function registerAdminRoutes(app, { db }) {
         const count = items.length;
         const firstTitle = items[0]?.title || 'Lighting fixture';
         summary = `${count} item(s) in cart: "${firstTitle}"${count > 1 ? ` +${count - 1} more` : ''}`;
-      } else if (r.flow_type === 'welcome') {
-        summary = 'New subscriber welcome & 10% voucher (LIGHT10)';
+      } else if (r.flow_type === 'welcome' || r.flow_type === 'welcome_1') {
+        summary = 'Welcome Email 1/3: 10% voucher (WELCOME10)';
+      } else if (r.flow_type === 'welcome_2') {
+        summary = 'Welcome Email 2/3 (+2d): Influencer styling & social proof';
+      } else if (r.flow_type === 'welcome_3') {
+        summary = 'Welcome Email 3/3 (+3d): Best-sellers & voucher reminder';
       } else if (r.flow_type === 'browse_abandonment') {
         summary = `Viewed fixture: "${parsedContext.fixtureTitle || 'Modern Chandelier'}"`;
       } else if (r.flow_type === 'winback') {
         summary = 'Inactive customer (60+ days) new collection invitation & 10% appreciation discount';
+      } else if (r.flow_type === 'post_purchase') {
+        summary = `Order follow-up ${parsedContext.orderNumber ? `#${parsedContext.orderNumber}` : ''}: Lighting care tips & review request`;
       }
 
       return {
@@ -254,6 +264,83 @@ export async function registerAdminRoutes(app, { db }) {
       db.rawDb.prepare("UPDATE scheduled_jobs SET status = 'cancelled' WHERE status = 'pending'").run();
     }
     return { success: true, autoDispatchEnabled: app.config.autoDispatch };
+  });
+
+  // Get all flow settings with status and counts
+  app.get('/api/admin/flows', async () => {
+    const flows = db.getAllFlowSettings();
+    const countsByFlow = db.rawDb.prepare(`
+      SELECT flow_type,
+             SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_count,
+             SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END) as sent_count
+      FROM scheduled_jobs
+      GROUP BY flow_type
+    `).all();
+
+    const countsMap = {};
+    for (const c of countsByFlow) {
+      countsMap[c.flow_type] = { pending: c.pending_count || 0, sent: c.sent_count || 0 };
+    }
+
+    const enhancedFlows = flows.map(f => {
+      let pending = 0;
+      let sent = 0;
+      if (f.flow_key === 'welcome') {
+        for (const k of ['welcome', 'welcome_1', 'welcome_2', 'welcome_3']) {
+          pending += countsMap[k]?.pending || 0;
+          sent += countsMap[k]?.sent || 0;
+        }
+      } else {
+        pending = countsMap[f.flow_key]?.pending || 0;
+        sent = countsMap[f.flow_key]?.sent || 0;
+      }
+      return {
+        ...f,
+        is_enabled: f.is_enabled === 1,
+        pendingCount: pending,
+        sentCount: sent
+      };
+    });
+
+    return { flows: enhancedFlows };
+  });
+
+  // Toggle specific flow on or off
+  app.post('/api/admin/flows/:flowKey/toggle', async (req, reply) => {
+    const { flowKey } = req.params;
+    const { enabled } = req.body || {};
+    const setting = db.getFlowSetting(flowKey);
+    if (!setting) {
+      return reply.code(404).send({ error: `Unknown flow: ${flowKey}` });
+    }
+
+    const newStatus = typeof enabled === 'boolean' ? enabled : setting.is_enabled === 0;
+    db.setFlowEnabled(flowKey, newStatus);
+
+    // If toggled OFF, cancel all currently pending jobs for this flow to immediately stop dispatch
+    if (!newStatus) {
+      const targetKeys = flowKey === 'welcome' ? ['welcome', 'welcome_1', 'welcome_2', 'welcome_3'] : [flowKey];
+      const placeholders = targetKeys.map(() => '?').join(',');
+      db.rawDb.prepare(`UPDATE scheduled_jobs SET status = 'cancelled' WHERE flow_type IN (${placeholders}) AND status = 'pending'`).run(...targetKeys);
+    }
+
+    return {
+      success: true,
+      flowKey,
+      isEnabled: newStatus,
+      message: `${setting.name} is now ${newStatus ? 'ACTIVE (Enabled)' : 'PAUSED (Disabled)'}.`
+    };
+  });
+
+  // Update delay hours for specific flow
+  app.post('/api/admin/flows/:flowKey/delay', async (req, reply) => {
+    const { flowKey } = req.params;
+    const { delayHours } = req.body || {};
+    if (typeof delayHours !== 'number' || delayHours < 0) {
+      return reply.code(400).send({ error: 'Valid positive delayHours number required' });
+    }
+    db.setFlowDelayHours(flowKey, delayHours);
+    return { success: true, flowKey, delayHours };
   });
 
   // Preview the exact email that will be sent for a specific staged job
@@ -560,6 +647,32 @@ export async function registerAdminRoutes(app, { db }) {
         jobId,
         email,
         flow: 'Flow 4'
+      };
+    }
+
+    if (scenario === 'post_purchase' || scenario === 'flow_5') {
+      const email = data.email || 'sophia.interior@design.ph';
+      const name = data.name || 'Sophia Reyes';
+      db.upsertCustomer({ email, name });
+      const jobId = db.scheduleJob({
+        flowType: 'post_purchase',
+        recipientEmail: email,
+        contextJson: JSON.stringify({
+          customerName: name,
+          orderNumber: data.orderNumber || 'HC-8492',
+          items: [
+            { title: 'Talisa | Modern Chandelier', price: '₱27,920.00' },
+            { title: 'Kevin | Pendant Light', price: '₱3,970.00' }
+          ]
+        }),
+        executeAt: new Date().toISOString()
+      });
+      return {
+        success: true,
+        message: `Staged Flow 5 (Post-Purchase Review) for ${email}. Ready for manual send!`,
+        jobId,
+        email,
+        flow: 'Flow 5'
       };
     }
 

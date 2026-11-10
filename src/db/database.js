@@ -79,7 +79,7 @@ export function initDatabase(dbPath = ':memory:') {
     `);
   }
 
-  // Ensure visitor_carts table exists if running against an existing SQLite file
+  // Ensure visitor_carts and flow_settings tables exist if running against an existing SQLite file
   try {
     db.exec(`
       CREATE TABLE IF NOT EXISTS visitor_carts (
@@ -87,7 +87,32 @@ export function initDatabase(dbPath = ':memory:') {
         visitor_id TEXT NOT NULL,
         created_at TEXT DEFAULT (datetime('now'))
       );
+      CREATE TABLE IF NOT EXISTS flow_settings (
+        flow_key TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        is_enabled INTEGER DEFAULT 0,
+        delay_hours REAL DEFAULT 0,
+        description TEXT,
+        updated_at TEXT DEFAULT (datetime('now'))
+      );
     `);
+
+    const seedFlows = [
+      { key: 'welcome', name: 'Welcome Series (3-Part Drip)', is_enabled: 0, delay_hours: 0, description: '3-message drip: Email 1 immediate, Email 2 after 2 days, Email 3 after 3 days with influencer social proof' },
+      { key: 'abandoned_cart', name: 'Cart Abandonment', is_enabled: 0, delay_hours: 2, description: 'Sends dynamic cart restore reminder with items and PHP subtotal after 2 hours' },
+      { key: 'browse_abandonment', name: 'Browse Abandonment', is_enabled: 0, delay_hours: 3, description: 'Highlights last viewed fixture with responsive recommendations after 3 hours' },
+      { key: 'winback', name: 'Customer Winback', is_enabled: 0, delay_hours: 1440, description: 'Re-engages inactive customers (> 60 days) with appreciation voucher' },
+      { key: 'post_purchase', name: 'Post-Purchase Review', is_enabled: 0, delay_hours: 120, description: 'Lighting care tips and review/UGC request 5 days after fulfillment' }
+    ];
+
+    const insertStmt = db.prepare(`
+      INSERT OR IGNORE INTO flow_settings (flow_key, name, is_enabled, delay_hours, description)
+      VALUES (?, ?, ?, ?, ?)
+    `);
+
+    for (const f of seedFlows) {
+      insertStmt.run(f.key, f.name, f.is_enabled, f.delay_hours, f.description);
+    }
   } catch (e) {}
 
   return {
@@ -329,6 +354,32 @@ export function initDatabase(dbPath = ':memory:') {
         str = str.replace(' ', 'T') + 'Z';
       }
       return str;
+    },
+
+    getAllFlowSettings() {
+      return db.prepare("SELECT * FROM flow_settings ORDER BY CASE flow_key WHEN 'welcome' THEN 1 WHEN 'abandoned_cart' THEN 2 WHEN 'browse_abandonment' THEN 3 WHEN 'winback' THEN 4 WHEN 'post_purchase' THEN 5 ELSE 6 END").all();
+    },
+
+    getFlowSetting(flowKey) {
+      return db.prepare('SELECT * FROM flow_settings WHERE flow_key = ?').get(flowKey);
+    },
+
+    isFlowEnabled(flowKey) {
+      // Map welcome sub-drip parts to parent 'welcome' setting
+      const rootKey = flowKey.startsWith('welcome') ? 'welcome' : flowKey;
+      const row = db.prepare('SELECT is_enabled FROM flow_settings WHERE flow_key = ?').get(rootKey);
+      return !!(row && row.is_enabled === 1);
+    },
+
+    setFlowEnabled(flowKey, isEnabled) {
+      const rootKey = flowKey.startsWith('welcome') ? 'welcome' : flowKey;
+      const val = isEnabled ? 1 : 0;
+      db.prepare("UPDATE flow_settings SET is_enabled = ?, updated_at = datetime('now') WHERE flow_key = ?").run(val, rootKey);
+      return val === 1;
+    },
+
+    setFlowDelayHours(flowKey, delayHours) {
+      db.prepare("UPDATE flow_settings SET delay_hours = ?, updated_at = datetime('now') WHERE flow_key = ?").run(delayHours, flowKey);
     }
   };
 }

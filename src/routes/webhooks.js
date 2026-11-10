@@ -186,20 +186,25 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     // Cancel any prior pending abandoned cart job for this specific checkout to avoid duplicate spam
     db.cancelPendingJobsByCheckoutId(checkoutId);
 
-    // Schedule abandoned cart email 2 hours from now
-    const executeAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
-    db.scheduleJob({
-      flowType: 'abandoned_cart',
-      recipientEmail: cleanEmail,
-      contextJson: JSON.stringify({
-        checkoutId,
-        recoveryUrl: data.abandoned_checkout_url,
-        items: enrichedLineItems
-      }),
-      executeAt
-    });
+    // Only schedule if abandoned_cart flow toggle is enabled
+    if (db.isFlowEnabled && db.isFlowEnabled('abandoned_cart')) {
+      const setting = db.getFlowSetting ? db.getFlowSetting('abandoned_cart') : null;
+      const delayMs = (setting?.delay_hours ?? 2) * 60 * 60 * 1000;
+      const executeAt = new Date(Date.now() + delayMs).toISOString();
+      db.scheduleJob({
+        flowType: 'abandoned_cart',
+        recipientEmail: cleanEmail,
+        contextJson: JSON.stringify({
+          checkoutId,
+          recoveryUrl: data.abandoned_checkout_url,
+          items: enrichedLineItems
+        }),
+        executeAt
+      });
+      return reply.code(200).send({ success: true, scheduled: 'abandoned_cart' });
+    }
 
-    return reply.code(200).send({ success: true, scheduled: 'abandoned_cart' });
+    return reply.code(200).send({ success: true, scheduled: 'skipped_flow_disabled' });
   };
 
   app.post('/api/webhooks/shopify/checkouts', handleCartOrCheckout);
@@ -251,12 +256,43 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     return reply.code(200).send({ success: true, cart_cancelled: true });
   });
 
-  // 3. Fulfillments (Post-purchase flow disabled)
+  // 3. Fulfillments (Post-purchase review & care flow)
   app.post('/api/webhooks/shopify/fulfillments', async (req, reply) => {
-    return reply.code(200).send({ success: true, message: 'Post-purchase flow disabled' });
+    const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const email = data.email || (data.customer ? data.customer.email : (data.destination ? data.destination.email : null));
+    const orderId = String(data.order_id || data.id || '');
+    const orderNumber = String(data.order_number || data.name || orderId);
+
+    if (email) {
+      const cleanEmail = String(email).trim().toLowerCase();
+      const customerName = data.customer ? `${data.customer.first_name || ''} ${data.customer.last_name || ''}`.trim() : '';
+
+      db.recordEvent({
+        eventType: 'fulfillment_created',
+        propertiesJson: JSON.stringify({ email: cleanEmail, orderId, orderNumber, timestamp: new Date().toISOString() })
+      });
+
+      if (db.isFlowEnabled && db.isFlowEnabled('post_purchase')) {
+        const setting = db.getFlowSetting ? db.getFlowSetting('post_purchase') : null;
+        const delayHours = setting?.delay_hours ?? 120; // 5 days default
+        const executeAt = new Date(Date.now() + delayHours * 60 * 60 * 1000).toISOString();
+        db.scheduleJob({
+          flowType: 'post_purchase',
+          recipientEmail: cleanEmail,
+          contextJson: JSON.stringify({
+            orderNumber,
+            customerName,
+            items: data.line_items || []
+          }),
+          executeAt
+        });
+        return reply.code(200).send({ success: true, scheduled: 'post_purchase' });
+      }
+    }
+    return reply.code(200).send({ success: true, message: 'Fulfillment recorded (post-purchase flow disabled)' });
   });
 
-  // 4. Customers (New customer / newsletter signup -> trigger welcome series)
+  // 4. Customers (New customer / newsletter signup -> trigger 3-message welcome series)
   app.post('/api/webhooks/shopify/customers', async (req, reply) => {
     const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const email = data.email;
@@ -280,15 +316,37 @@ export async function registerWebhookRoutes(app, { db, secret }) {
         propertiesJson: JSON.stringify({ email: cleanEmail, name, timestamp: new Date().toISOString() })
       });
 
-      // Immediate welcome email
-      db.scheduleJob({
-        flowType: 'welcome',
-        recipientEmail: cleanEmail,
-        contextJson: JSON.stringify({ name }),
-        executeAt: new Date().toISOString()
-      });
+      // Schedule 3-message drip if welcome flow is enabled
+      if (db.isFlowEnabled && db.isFlowEnabled('welcome')) {
+        const now = Date.now();
+        // Email 1: Sent upon sign up from website (immediate)
+        db.scheduleJob({
+          flowType: 'welcome_1',
+          recipientEmail: cleanEmail,
+          contextJson: JSON.stringify({ name }),
+          executeAt: new Date(now).toISOString()
+        });
+
+        // Email 2: Sent after 2 days from email 1 (+48 hours)
+        db.scheduleJob({
+          flowType: 'welcome_2',
+          recipientEmail: cleanEmail,
+          contextJson: JSON.stringify({ name }),
+          executeAt: new Date(now + 48 * 60 * 60 * 1000).toISOString()
+        });
+
+        // Email 3: Sent 3 days after email 2 is sent (+120 hours / 5 days total)
+        db.scheduleJob({
+          flowType: 'welcome_3',
+          recipientEmail: cleanEmail,
+          contextJson: JSON.stringify({ name }),
+          executeAt: new Date(now + 120 * 60 * 60 * 1000).toISOString()
+        });
+
+        return reply.code(200).send({ success: true, scheduled: 'welcome_drip' });
+      }
     }
 
-    return reply.code(200).send({ success: true, scheduled: 'welcome' });
+    return reply.code(200).send({ success: true, scheduled: 'skipped_flow_disabled' });
   });
 }

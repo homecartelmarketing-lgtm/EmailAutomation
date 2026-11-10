@@ -27,7 +27,8 @@ describe('Shopify Webhook Routes', () => {
     expect(res.statusCode).toBe(401);
   });
 
-  it('schedules an abandoned cart email on valid checkout webhook', async () => {
+  it('schedules an abandoned cart email on valid checkout webhook when flow is enabled', async () => {
+    db.setFlowEnabled('abandoned_cart', true);
     const payload = JSON.stringify({
       id: 202,
       email: 'cart_abandoner@homecartel.ph',
@@ -48,6 +49,29 @@ describe('Shopify Webhook Routes', () => {
 
     const jobs = db.getPendingDueJobs(new Date(Date.now() + 8000000).toISOString());
     expect(jobs.some(j => j.flow_type === 'abandoned_cart')).toBe(true);
+  });
+
+  it('does not schedule an abandoned cart job when flow is disabled (default)', async () => {
+    const payload = JSON.stringify({
+      id: 203,
+      email: 'cart_disabled@homecartel.ph',
+      abandoned_checkout_url: 'https://homecartel.net/checkout/203',
+      line_items: [{ title: 'Solomon Pendant Light', price: '4500.00', quantity: 1 }]
+    });
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/webhooks/shopify/checkouts',
+      headers: {
+        'x-shopify-hmac-sha256': sign(payload),
+        'content-type': 'application/json'
+      },
+      payload
+    });
+    expect(res.statusCode).toBe(200);
+
+    const jobs = db.getPendingDueJobs(new Date(Date.now() + 8000000).toISOString());
+    expect(jobs.some(j => j.flow_type === 'abandoned_cart')).toBe(false);
   });
 
   it('cancels pending abandoned cart jobs when order is completed', async () => {
@@ -104,7 +128,32 @@ describe('Shopify Webhook Routes', () => {
     expect(futureJobs.some(j => j.flow_type === 'post_purchase')).toBe(false);
   });
 
-  it('schedules welcome onboarding job upon customer creation', async () => {
+  it('schedules post-purchase job on fulfillment when flow is enabled', async () => {
+    db.setFlowEnabled('post_purchase', true);
+    const fulfillmentPayload = JSON.stringify({
+      id: 889,
+      email: 'fulfilled_user2@homecartel.ph',
+      order_id: 910,
+      status: 'success'
+    });
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/webhooks/shopify/fulfillments',
+      headers: {
+        'x-shopify-hmac-sha256': sign(fulfillmentPayload),
+        'content-type': 'application/json'
+      },
+      payload: fulfillmentPayload
+    });
+    expect(res.statusCode).toBe(200);
+
+    const futureJobs = db.getPendingDueJobs(new Date(Date.now() + 691200000).toISOString());
+    expect(futureJobs.some(j => j.flow_type === 'post_purchase')).toBe(true);
+  });
+
+  it('schedules welcome onboarding 3-part drip upon customer creation when flow is enabled', async () => {
+    db.setFlowEnabled('welcome', true);
     const customerPayload = JSON.stringify({
       id: 777,
       email: 'new_subscriber@homecartel.ph',
@@ -124,6 +173,11 @@ describe('Shopify Webhook Routes', () => {
     expect(res.statusCode).toBe(200);
 
     const immediateJobs = db.getPendingDueJobs(new Date().toISOString());
-    expect(immediateJobs.some(j => j.flow_type === 'welcome')).toBe(true);
+    expect(immediateJobs.some(j => j.flow_type === 'welcome_1' || j.flow_type === 'welcome')).toBe(true);
+
+    // Also verify future drip jobs are scheduled (+2 days and +5 days)
+    const futureDripJobs = db.getPendingDueJobs(new Date(Date.now() + 600000000).toISOString());
+    expect(futureDripJobs.some(j => j.flow_type === 'welcome_2')).toBe(true);
+    expect(futureDripJobs.some(j => j.flow_type === 'welcome_3')).toBe(true);
   });
 });

@@ -65,6 +65,33 @@ describe('Email Template Renderer', () => {
     expect(html).toContain('© 2026 Home Cartel');
   });
 
+  it('renders welcome drip part 2 (social proof & influencers)', () => {
+    const { subject, html } = renderTemplate('welcome_2', {
+      customerName: 'Patricia',
+      unsubscribeUrl: 'https://api.homecartel.net/unsubscribe?t=tok'
+    });
+
+    expect(subject).toMatch(/seen in beautiful spaces/i);
+    expect(html).toContain('Patricia');
+    expect(html).toContain('top interior designers, architects, and over 10,000+ homeowners');
+    expect(html).toContain('WELCOME10');
+    expect(html).not.toContain('673 Banawe Street');
+  });
+
+  it('renders welcome drip part 3 (best sellers & voucher urgency)', () => {
+    const { subject, html } = renderTemplate('welcome_3', {
+      customerName: 'Patricia',
+      unsubscribeUrl: 'https://api.homecartel.net/unsubscribe?t=tok'
+    });
+
+    expect(subject).toMatch(/homecartel best sellers/i);
+    expect(html).toContain('Our Most-Loved Lighting Fixtures');
+    expect(html).toContain('Talisa | Modern Chandelier');
+    expect(html).toContain('Kevin | Pendant Light');
+    expect(html).toContain('WELCOME10');
+    expect(html).not.toContain('673 Banawe Street');
+  });
+
   it('renders browse abandonment with luxury hero fixture and recommendations without physical address', () => {
     const { subject, html } = renderTemplate('browse_abandonment', {
       customerName: 'Claire',
@@ -96,5 +123,21 @@ describe('Email Template Renderer', () => {
     expect(html).not.toContain('673 Banawe Street');
     expect(html).toContain('homecartel.net');
     expect(html).toContain('© 2026 Home Cartel');
+  });
+
+  it('renders post-purchase review email (Flow 5) with installation notes and review CTA', () => {
+    const { subject, html } = renderTemplate('post_purchase', {
+      customerName: 'Claire',
+      orderNumber: '8910',
+      unsubscribeUrl: 'https://api.homecartel.net/unsubscribe?t=tok'
+    });
+
+    expect(subject).toContain('How is your new lighting, Claire?');
+    expect(html).toContain('Thank you for choosing HomeCartel, Claire.');
+    expect(html).toContain('#8910');
+    expect(html).toContain('Lighting Care & Installation Notes:');
+    expect(html).toContain('circuit breaker');
+    expect(html).toContain('Leave a Review & Share Your Space');
+    expect(html).not.toContain('673 Banawe Street');
   });
 });

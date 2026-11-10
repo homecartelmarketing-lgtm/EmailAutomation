@@ -19,7 +19,7 @@ describe('Admin Manual Send & Staged Behavioral Flows', () => {
   });
 
   it('stages Flow 1 to Flow 4 without sending automatically', async () => {
-    // Stage Flow 1: Abandoned Cart
+    // Stage Flow 2: Abandoned Cart
     const res1 = await app.inject({
       method: 'POST',
       url: '/api/admin/simulate',
@@ -27,7 +27,7 @@ describe('Admin Manual Send & Staged Behavioral Flows', () => {
     });
     expect(res1.statusCode).toBe(200);
 
-    // Stage Flow 2: Welcome
+    // Stage Flow 1: Welcome
     const res2 = await app.inject({
       method: 'POST',
       url: '/api/admin/simulate',
@@ -62,8 +62,8 @@ describe('Admin Manual Send & Staged Behavioral Flows', () => {
 
     // Verify all 4 flow numbers and emails are listed
     const flows = data.stagedJobs.map(j => ({ flow: j.flowNumber, email: j.recipientEmail }));
-    expect(flows).toContainEqual({ flow: 1, email: 'client1@homecartel.ph' });
-    expect(flows).toContainEqual({ flow: 2, email: 'client2@homecartel.ph' });
+    expect(flows).toContainEqual({ flow: 2, email: 'client1@homecartel.ph' });
+    expect(flows).toContainEqual({ flow: 1, email: 'client2@homecartel.ph' });
     expect(flows).toContainEqual({ flow: 3, email: 'client3@homecartel.ph' });
     expect(flows).toContainEqual({ flow: 4, email: 'client4@homecartel.ph' });
 

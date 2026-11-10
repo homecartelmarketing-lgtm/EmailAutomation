@@ -16,6 +16,8 @@ describe('End-to-End Behavioral Lifecycle', () => {
       return crypto.createHmac('sha256', secret).update(payload, 'utf8').digest('base64');
     }
 
+    server.db.setFlowEnabled('abandoned_cart', true);
+
     // 1. Checkout started
     const checkoutPayload = JSON.stringify({
       id: 5050,
@@ -65,6 +67,9 @@ describe('End-to-End Behavioral Lifecycle', () => {
     function sign(payload) {
       return crypto.createHmac('sha256', secret).update(payload, 'utf8').digest('base64');
     }
+
+    server.db.setFlowEnabled('welcome', true);
+    server.db.setFlowEnabled('winback', true);
 
     // 1. Customer created
     const custPayload = JSON.stringify({
