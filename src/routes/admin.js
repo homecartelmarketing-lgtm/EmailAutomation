@@ -240,6 +240,22 @@ export async function registerAdminRoutes(app, { db }) {
     return { success: true, message: `Staged job #${id} cancelled.` };
   });
 
+  // Cancel all pending jobs immediately (emergency safety lock)
+  app.post('/api/admin/cancel-all-pending', async () => {
+    const res = db.rawDb.prepare("UPDATE scheduled_jobs SET status = 'cancelled' WHERE status = 'pending'").run();
+    return { success: true, cancelledJobs: res.changes, message: `All ${res.changes} pending jobs cancelled.` };
+  });
+
+  // Toggle or disable auto-dispatch
+  app.post('/api/admin/autosend/toggle', async (req) => {
+    const { enabled } = req.body || {};
+    app.config.autoDispatch = typeof enabled === 'boolean' ? enabled : !app.config.autoDispatch;
+    if (!app.config.autoDispatch) {
+      db.rawDb.prepare("UPDATE scheduled_jobs SET status = 'cancelled' WHERE status = 'pending'").run();
+    }
+    return { success: true, autoDispatchEnabled: app.config.autoDispatch };
+  });
+
   // Preview the exact email that will be sent for a specific staged job
   app.get('/api/admin/jobs/:id/preview', async (req, reply) => {
     const { id } = req.params;

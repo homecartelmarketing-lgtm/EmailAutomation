@@ -193,10 +193,12 @@ if (isMain) {
   await app.listen({ port, host: '0.0.0.0' });
   console.log(`HomeCartel Email Automation server running on port ${port}`);
 
-  // Background scheduler interval (runs every 60s)
+  // Background scheduler interval (runs every 60s, only if autoDispatch is explicitly true)
   setInterval(async () => {
     try {
-      await app.runScheduler();
+      if (app.config.autoDispatch === true) {
+        await app.runScheduler();
+      }
     } catch (err) {
       console.error('Scheduler error:', err);
     }
