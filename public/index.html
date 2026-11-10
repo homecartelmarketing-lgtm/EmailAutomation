@@ -558,13 +558,15 @@
               <p class="text-xs text-dabang-muted mt-0.5">Verify exact styling and inbox deliverability before sending to real clients.</p>
             </div>
             <div class="flex flex-col sm:flex-row gap-2.5">
-              <input id="test-email-input" type="email" placeholder="Enter recipient email (e.g. yourname@gmail.com)" class="flex-1 text-xs bg-[#F8F9FA] border border-dabang-border rounded-xl px-3.5 py-2.5 text-dabang-navy focus:outline-none focus:border-dabang-primary focus:bg-white transition">
+              <input id="test-email-input" type="email" value="homecartelmarketing@gmail.com" placeholder="Enter recipient email (e.g. homecartelmarketing@gmail.com)" class="flex-1 text-xs bg-[#F8F9FA] border border-dabang-border rounded-xl px-3.5 py-2.5 text-dabang-navy focus:outline-none focus:border-dabang-primary focus:bg-white transition">
               <select id="test-email-template" class="text-xs bg-white border border-dabang-border rounded-xl px-3 py-2.5 text-dabang-navy font-medium focus:outline-none focus:border-dabang-primary cursor-pointer">
-                <option value="abandoned_cart">Flow 1: Abandoned Cart</option>
-                <option value="welcome">Flow 2: Welcome Series</option>
+                <option value="welcome_1">Flow 1: Welcome (Drip 1 - Voucher & Greeting)</option>
+                <option value="welcome_2">Flow 1: Welcome (Drip 2 - Influencer Social Proof)</option>
+                <option value="welcome_3">Flow 1: Welcome (Drip 3 - Best Sellers & Urgency)</option>
+                <option value="abandoned_cart">Flow 2: Cart Abandonment</option>
                 <option value="browse_abandonment">Flow 3: Browse Abandonment</option>
-                <option value="post_purchase">Flow 4: Post-Purchase Care</option>
-                <option value="winback">Flow 5: Winback</option>
+                <option value="winback">Flow 4: Customer Winback</option>
+                <option value="post_purchase">Flow 5: Post-Purchase Review & Care</option>
               </select>
               <button onclick="sendRealTestEmail()" id="btn-send-test" class="px-5 py-2.5 text-xs font-bold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition flex items-center justify-center gap-1.5 whitespace-nowrap shadow-sm">
                 <span>Send Test</span>
