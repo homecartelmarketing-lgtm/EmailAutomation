@@ -1,5 +1,19 @@
 # HomeCartel Behavioral Email Marketing Automation — System Design
 
+> **ARCHIVED — 2026-11-11. Status: superseded.** This was the design intent before implementation.
+> Several sections no longer describe the shipped system. Use [`docs/FLOWS.md`](../FLOWS.md) as the
+> source of truth. Corrections applied to the shipped code are listed below.
+>
+> | This spec said | Shipped behaviour |
+> | :--- | :--- |
+> | Every email must include `673 Banawe Street...` (§5) | Address deliberately removed; enforced absent by tests |
+> | Browse abandonment: 4 h after session end | 3 h (`flow_settings.delay_hours = 3`) |
+> | Post-purchase: 7 days after delivery | 120 h ≈ 5 days (`delay_hours = 120`) |
+> | Cart: optional 2nd email at 24 h | Single 2 h reminder; no follow-up |
+> | Welcome: 2-step series (+3 days) | 3-part drip: immediate, +48 h, +120 h |
+> | SQLite via `better-sqlite3` | `node:sqlite` `DatabaseSync` (no native build) |
+> | Flow 5 Winback = 60+ day daily cron scan | Winback delay is configurable via `flow_settings` |
+
 **Date:** 2026-10-27  
 **Status:** Draft for Review  
 **Target Platform:** Shopify (`homecartel.net`)  
