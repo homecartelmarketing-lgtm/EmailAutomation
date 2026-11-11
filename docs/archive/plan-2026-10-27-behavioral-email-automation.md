@@ -1,5 +1,18 @@
 # HomeCartel Behavioral Email Marketing Automation — Implementation Plan
 
+> **ARCHIVED — 2026-11-11. This is a historical planning document, not a description of the current system.**
+>
+> This plan was executed and has been superseded. Do **not** follow it to build or understand the app.
+> Current documentation lives in [`README.md`](../../README.md), [`docs/FLOWS.md`](../FLOWS.md),
+> [`docs/API.md`](../API.md) and [`docs/OPERATIONS.md`](../OPERATIONS.md).
+>
+> Known divergences from the shipped code (the code is correct, this plan is stale):
+> - Template paths `src/templates/*.html` never existed. Reality: `src/templates/canva*.js` + `postPurchase.js`.
+> - `better-sqlite3` was not used. Reality: `node:sqlite` (`DatabaseSync`) — no native dependency.
+> - The plan mandates a physical `673 Banawe Street...` footer and asserts it in a test. Reality: the address
+>   was deliberately removed; `tests/templates/*.test.js` now assert it is **abs**ent.
+> - The 5 flows and their per-flow toggles were not part of this plan. See the 2026-11-10 plan and `docs/FLOWS.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build a self-hosted, subscription-free behavioral email marketing automation engine for HomeCartel (`homecartel.net`) that ingests Shopify webhooks and storefront browsing events, manages behavioral states and delayed triggers, and renders responsive HTML email campaigns.

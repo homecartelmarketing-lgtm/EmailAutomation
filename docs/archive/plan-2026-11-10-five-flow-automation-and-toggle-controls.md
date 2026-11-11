@@ -1,5 +1,15 @@
 # 5 Behavioral Email Flows & Per-Flow Automation Toggle Controls
 
+> **ARCHIVED — 2026-11-11. Delivered.** All 19 checkboxes below were left unticked by mistake; every task in
+> this plan shipped and is covered by tests. The bash checkboxes are not a status indicator.
+>
+> For the as-built behaviour, read [`docs/FLOWS.md`](../FLOWS.md) (flows, delays, toggle semantics) and
+> [`docs/API.md`](../API.md) (endpoints). This file is kept for design history only.
+>
+> Shipped as planned: `flow_settings` table (`src/db/schema.sql`), `GET /api/admin/flows`,
+> `POST /api/admin/flows/:flowKey/toggle` and `/delay` (`src/routes/admin.js`), the scheduler gatekeeper
+> (`src/scheduler/worker.js`), and the dashboard toggle switches (`public/index.html`).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:executing-plans` or `superpowers:subagent-driven-development` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Implement 5 behavioral email flows (Welcome 3-message drip featuring influencer social proof, Cart Abandonment, Browse Abandonment, Customer Winback, and Post-Purchase Review), and equip each flow with an independent On/Off toggle switch in the Admin Dashboard and backend scheduler so unready flows can remain disabled while active flows dispatch on their behavioral delay schedule.
