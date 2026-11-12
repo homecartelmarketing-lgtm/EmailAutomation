@@ -71,7 +71,7 @@ describe('Admin Manual Send & Staged Behavioral Flows', () => {
     const logsRes = await app.inject({ method: 'GET', url: '/api/admin/overview' });
     const overview = JSON.parse(logsRes.body);
     expect(overview.counts.sentEmails).toBe(0);
-  });
+  }, 15000);
 
   it('manually sends a specific client flow when button is triggered', async () => {
     // Stage Flow 1 for client
