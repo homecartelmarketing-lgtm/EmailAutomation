@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { renderCanvaWelcomeTemplate } from '../../src/templates/canvaWelcome.js';
 
-describe('Canva Welcome Guide Template', () => {
-  it('renders the luxury welcome guide with 10% off and category links', () => {
+describe('Canva Welcome Guide Template (2nd Version)', () => {
+  it('renders the new welcome guide with 10% off, customer name, and category buy now blocks', () => {
     const { subject, html } = renderCanvaWelcomeTemplate({
       customerName: 'Sarah',
       unsubscribeUrl: 'https://homecartel.net/unsub?tok=abc123xyz',
@@ -13,23 +13,25 @@ describe('Canva Welcome Guide Template', () => {
     // Subject personalization
     expect(subject).toBe('Welcome to HomeCartel, Sarah | 10% off your first order');
 
-    // 10% Off discount promise
-    expect(html).toContain('Here’s our promise.');
-    expect(html).toContain('10% off');
-    expect(html).toContain('Thank you for signing up, Sarah! Enjoy');
+    // Headline & greeting personalization
+    expect(html).toContain('Welcome to HomeCartel, Sarah!');
+    expect(html).toContain('We’re so glad you’ve joined us.');
+    expect(html).toContain('10% discount');
+    expect(html).toContain('WELCOME10');
 
-    // Category navigation links
+    // Category navigation & buy now links
     expect(html).toContain('https://homecartel.net/collections/chandelier-1');
     expect(html).toContain('https://homecartel.net/collections/pendant-lights');
     expect(html).toContain('https://homecartel.net/collections/table-lamps');
     expect(html).toContain('https://homecartel.net/collections/all-lighting');
 
     // Production absolute image URLs (no relative images/)
-    expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/5fde53c52841ffe349002090665198c3.jpg');
-    expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/a89ad58ed97e6b7b206f01871a6f4e7c.jpg');
-    expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/fbabf6ac28afc37202c02e74f0d21b81.jpg');
-    expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/0c1e4739a88dabe014008f6e9f3ce186.jpg');
-    expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/763f33ee9394810652d07ec15d4354e3.jpg');
+    expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/1ec56b7d611bc016f4e322d3bd0e7390.png');
+    expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/5f9671122de2bf40d909440825efbbde.jpg');
+    expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/f7da9d96daf6843f1957e1f808408a37.jpg');
+    expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/4adaf5ec29dd306e10b69ad790fe50c7.jpg');
+    expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/a9eca2757cabed358d769c373f9c5fa6.jpg');
+    expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/5ee19a3503604b10d4ca522866439b81.png');
     expect(html).not.toMatch(/src=["']images\//);
 
     // Dynamic placeholders
@@ -45,6 +47,6 @@ describe('Canva Welcome Guide Template', () => {
   it('renders clean fallback when customerName is not provided', () => {
     const { subject, html } = renderCanvaWelcomeTemplate({});
     expect(subject).toBe('Welcome to HomeCartel | 10% off your first order');
-    expect(html).toContain('Thank you for signing up! Enjoy');
+    expect(html).toContain('Welcome to HomeCartel, Shopper!');
   });
 });
