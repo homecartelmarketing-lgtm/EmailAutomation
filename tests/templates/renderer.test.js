@@ -71,9 +71,10 @@ describe('Email Template Renderer', () => {
       unsubscribeUrl: 'https://api.homecartel.net/unsubscribe?t=tok'
     });
 
-    expect(subject).toMatch(/seen in beautiful spaces/i);
+    expect(subject).toBe('Loved in homes like yours, Patricia | Janeena Chan & Marian Rivera for HomeCartel');
     expect(html).toContain('Patricia');
-    expect(html).toContain('top interior designers, architects, and over 10,000+ homeowners');
+    expect(html).toContain('Marian Rivera Dantes');
+    expect(html).toContain('Janeena Chan');
     expect(html).toContain('WELCOME10');
     expect(html).not.toContain('673 Banawe Street');
   });
@@ -84,10 +85,11 @@ describe('Email Template Renderer', () => {
       unsubscribeUrl: 'https://api.homecartel.net/unsubscribe?t=tok'
     });
 
-    expect(subject).toMatch(/homecartel best sellers/i);
-    expect(html).toContain('Our Most-Loved Lighting Fixtures');
-    expect(html).toContain('Talisa | Modern Chandelier');
-    expect(html).toContain('Kevin | Pendant Light');
+    expect(subject).toBe('Which light goes where? A quick room-by-room guide, Patricia | HomeCartel');
+    expect(html).toContain('Not sure where to start');
+    expect(html).toContain('Chandeliers');
+    expect(html).toContain('Pendant Lights');
+    expect(html).toContain('Table Lamps');
     expect(html).toContain('WELCOME10');
     expect(html).not.toContain('673 Banawe Street');
   });

@@ -27,7 +27,7 @@ describe('Canva Welcome Guide Template (2nd Version)', () => {
 
     // Production absolute image URLs (no relative images/)
     expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/8c851cee0b6b492ea60a7fe8d0c52e0d.png');
-    expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/5f9671122de2bf40d909440825efbbde.jpg');
+    expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/4fc174fe067a3381d8eac24178d6be4c.jpg');
     expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/f7da9d96daf6843f1957e1f808408a37.jpg');
     expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/4adaf5ec29dd306e10b69ad790fe50c7.jpg');
     expect(html).toContain('https://emailautomation-production-d651.up.railway.app/images/a9eca2757cabed358d769c373f9c5fa6.jpg');
