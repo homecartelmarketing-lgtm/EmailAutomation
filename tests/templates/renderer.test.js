@@ -85,7 +85,7 @@ describe('Email Template Renderer', () => {
       unsubscribeUrl: 'https://api.homecartel.net/unsubscribe?t=tok'
     });
 
-    expect(subject).toBe('Which light goes where? A quick room-by-room guide, Patricia | HomeCartel');
+    expect(subject).toBe('Which light goes where? A quick guide for you, Patricia');
     expect(html).toContain('Not sure where to start');
     expect(html).toContain('Chandeliers');
     expect(html).toContain('Pendant Lights');

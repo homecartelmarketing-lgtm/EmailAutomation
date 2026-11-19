@@ -103,8 +103,8 @@ export function renderWelcomeBestSellersTemplate(context = {}) {
   html = html.replace(/\{\{\s*view_in_browser\s*\}\}/g, viewInBrowserUrl);
 
   const subject = context.subject || (customerName
-    ? `Which light goes where? A quick room-by-room guide, ${customerName} | HomeCartel`
-    : 'Which light goes where? A quick room-by-room guide | HomeCartel');
+    ? `Which light goes where? A quick guide for you, ${customerName}`
+    : 'Which light goes where? A quick guide for you');
 
   return { subject, html };
 }
