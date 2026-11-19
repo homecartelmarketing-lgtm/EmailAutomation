@@ -74,8 +74,8 @@ export function renderWelcomeSocialProofTemplate(context = {}) {
   html = html.replace(/\{\{\s*view_in_browser\s*\}\}/g, viewInBrowserUrl);
 
   const subject = context.subject || (customerName
-    ? `Loved in homes like yours, ${customerName} | Janeena Chan & Marian Rivera for HomeCartel`
-    : 'Loved in homes like yours | Janeena Chan & Marian Rivera for HomeCartel');
+    ? `Loved in homes like yours, ${customerName}`
+    : 'Loved in homes like yours');
 
   return { subject, html };
 }

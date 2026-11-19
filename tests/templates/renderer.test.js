@@ -71,7 +71,7 @@ describe('Email Template Renderer', () => {
       unsubscribeUrl: 'https://api.homecartel.net/unsubscribe?t=tok'
     });
 
-    expect(subject).toBe('Loved in homes like yours, Patricia | Janeena Chan & Marian Rivera for HomeCartel');
+    expect(subject).toBe('Loved in homes like yours, Patricia');
     expect(html).toContain('Patricia');
     expect(html).toContain('Marian Rivera Dantes');
     expect(html).toContain('Janeena Chan');
