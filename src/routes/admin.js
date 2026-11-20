@@ -679,8 +679,11 @@ export async function registerAdminRoutes(app, { db }) {
     if (scenario === 'order_complete') {
       const email = data.email || 'sophia.designer@studio.ph';
       db.cancelPendingJobsByEmail(email, 'abandoned_cart');
+      for (const flow of ['welcome', 'welcome_1', 'welcome_2', 'welcome_3']) {
+        db.cancelPendingJobsByEmail(email, flow);
+      }
       db.rawDb.prepare("UPDATE carts SET status = 'recovered' WHERE email = ?").run(email);
-      return { success: true, message: `Order completed for ${email}. Pending cart reminder cancelled!` };
+      return { success: true, message: `Order completed for ${email}. Pending cart & welcome reminders cancelled!` };
     }
 
     if (scenario === 'run_scheduler') {

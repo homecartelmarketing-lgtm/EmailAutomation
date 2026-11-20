@@ -105,6 +105,84 @@ describe('Shopify Webhook Routes', () => {
     expect(pending.filter(j => j.recipient_email === 'buyer@homecartel.ph').length).toBe(0);
   });
 
+  it('cancels pending welcome drip jobs when order is completed (Omnisend Exit Rule)', async () => {
+    // 1. Customer signs up and gets welcome 1, 2, 3 scheduled
+    const email = 'new_buyer@homecartel.ph';
+    db.scheduleJob({
+      flowType: 'welcome_1',
+      recipientEmail: email,
+      contextJson: JSON.stringify({ name: 'New Buyer' }),
+      executeAt: new Date(Date.now() + 1000).toISOString()
+    });
+    db.scheduleJob({
+      flowType: 'welcome_2',
+      recipientEmail: email,
+      contextJson: JSON.stringify({ name: 'New Buyer' }),
+      executeAt: new Date(Date.now() + 172800000).toISOString()
+    });
+    db.scheduleJob({
+      flowType: 'welcome_3',
+      recipientEmail: email,
+      contextJson: JSON.stringify({ name: 'New Buyer' }),
+      executeAt: new Date(Date.now() + 432000000).toISOString()
+    });
+
+    // 2. Customer places an order on Day 1
+    const orderPayload = JSON.stringify({
+      id: 9911,
+      email,
+      customer: { first_name: 'New', last_name: 'Buyer' },
+      line_items: [{ title: 'Talisa Chandelier', price: '27920.00', quantity: 1 }]
+    });
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/webhooks/shopify/orders',
+      headers: {
+        'x-shopify-hmac-sha256': sign(orderPayload),
+        'content-type': 'application/json'
+      },
+      payload: orderPayload
+    });
+    expect(res.statusCode).toBe(200);
+
+    // 3. Verify all pending welcome jobs for this customer are cancelled
+    const futureJobs = db.getPendingDueJobs(new Date(Date.now() + 500000000).toISOString());
+    const remainingWelcome = futureJobs.filter(j => j.recipient_email === email && j.flow_type.startsWith('welcome'));
+    expect(remainingWelcome.length).toBe(0);
+  });
+
+  it('transitions customer to post-purchase flow upon order completion when post_purchase is enabled', async () => {
+    db.setFlowEnabled('post_purchase', true);
+    const email = 'purchaser@homecartel.ph';
+
+    const orderPayload = JSON.stringify({
+      id: 9922,
+      order_number: 1045,
+      email,
+      customer: { first_name: 'Luxe', last_name: 'Buyer' },
+      line_items: [{ title: 'Kevin Pendant Light', price: '3970.00', quantity: 2 }]
+    });
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/webhooks/shopify/orders',
+      headers: {
+        'x-shopify-hmac-sha256': sign(orderPayload),
+        'content-type': 'application/json'
+      },
+      payload: orderPayload
+    });
+    expect(res.statusCode).toBe(200);
+
+    // Verify post_purchase job is scheduled (5 days / 120h in future)
+    const futureJobs = db.getPendingDueJobs(new Date(Date.now() + 691200000).toISOString());
+    const postPurchaseJob = futureJobs.find(j => j.recipient_email === email && j.flow_type === 'post_purchase');
+    expect(postPurchaseJob).toBeDefined();
+    expect(JSON.parse(postPurchaseJob.context_json).orderNumber).toBe('1045');
+    db.setFlowEnabled('post_purchase', false); // reset
+  });
+
   it('acknowledges order fulfillment webhook without scheduling post-purchase job (flow disabled)', async () => {
     const fulfillmentPayload = JSON.stringify({
       id: 888,

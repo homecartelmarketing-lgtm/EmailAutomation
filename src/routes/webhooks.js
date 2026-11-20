@@ -223,17 +223,25 @@ export async function registerWebhookRoutes(app, { db, secret }) {
     if (email) {
       const cleanEmail = String(email).trim().toLowerCase();
       db.cancelPendingJobsByEmail(cleanEmail, 'abandoned_cart');
+
+      // Omnisend Exit Rule: Cancel any remaining welcome drip emails once an order is placed
+      for (const welcomeFlow of ['welcome', 'welcome_1', 'welcome_2', 'welcome_3']) {
+        db.cancelPendingJobsByEmail(cleanEmail, welcomeFlow);
+      }
+
+      const customerName = data.customer ? `${data.customer.first_name || ''} ${data.customer.last_name || ''}`.trim() : '';
       const customerId = db.upsertCustomer({
         email: cleanEmail,
-        name: data.customer ? `${data.customer.first_name || ''} ${data.customer.last_name || ''}`.trim() : ''
+        name: customerName
       });
 
+      const orderNumber = String(data.order_number || data.name || data.id || '');
       const orderEvent = db.recordEvent({
         customerId,
         eventType: 'order_completed',
         propertiesJson: JSON.stringify({
           orderId: data.id,
-          orderNumber: data.order_number,
+          orderNumber,
           total: data.total_price,
           timestamp: new Date().toISOString()
         })
@@ -251,9 +259,26 @@ export async function registerWebhookRoutes(app, { db, secret }) {
           isIdentified: true
         }
       });
+
+      // Transition to post-purchase review & care flow if post_purchase is enabled
+      if (db.isFlowEnabled && db.isFlowEnabled('post_purchase')) {
+        const setting = db.getFlowSetting ? db.getFlowSetting('post_purchase') : null;
+        const delayHours = setting?.delay_hours ?? 120; // 5 days default
+        const executeAt = new Date(Date.now() + delayHours * 60 * 60 * 1000).toISOString();
+        db.scheduleJob({
+          flowType: 'post_purchase',
+          recipientEmail: cleanEmail,
+          contextJson: JSON.stringify({
+            orderNumber,
+            customerName,
+            items: data.line_items || []
+          }),
+          executeAt
+        });
+      }
     }
 
-    return reply.code(200).send({ success: true, cart_cancelled: true });
+    return reply.code(200).send({ success: true, cart_cancelled: true, welcome_cancelled: true });
   });
 
   // 3. Fulfillments (Post-purchase review & care flow)
@@ -273,6 +298,9 @@ export async function registerWebhookRoutes(app, { db, secret }) {
       });
 
       if (db.isFlowEnabled && db.isFlowEnabled('post_purchase')) {
+        // Align post_purchase execution time to delay_hours after actual delivery/fulfillment
+        db.cancelPendingJobsByEmail(cleanEmail, 'post_purchase');
+
         const setting = db.getFlowSetting ? db.getFlowSetting('post_purchase') : null;
         const delayHours = setting?.delay_hours ?? 120; // 5 days default
         const executeAt = new Date(Date.now() + delayHours * 60 * 60 * 1000).toISOString();
