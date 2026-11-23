@@ -1084,6 +1084,28 @@
       }
     }
 
+    async function triggerFlowForShopper(email, scenario, name) {
+      try {
+        const res = await fetch('/api/admin/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scenario, data: { email, name } })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showNotice(`✅ ${data.message}`);
+          await fetchStagedFlows();
+          await refreshOverviewCounts();
+          const target = document.getElementById('staged-flows-section');
+          if (target) target.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          showNotice(`Error: ${data.error || 'Failed to stage'}`, true);
+        }
+      } catch (e) {
+        showNotice(`Network error: ${e.message}`, true);
+      }
+    }
+
     function previewStagedJob(jobId, label, email) {
       const modal = document.getElementById('preview-modal');
       const title = document.getElementById('modal-title');
@@ -1415,6 +1437,16 @@
                     <span>Cookie: <strong class="text-dabang-navy">${shopper.visitorId}</strong></span>
                     ${shopper.customerEmail ? `<span class="text-emerald-700 font-sans font-medium">• Linked to ${shopper.customerEmail}</span>` : ''}
                   </div>
+                  ${shopper.customerEmail ? `
+                    <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+                      <button onclick="triggerFlowForShopper('${shopper.customerEmail}', 'abandoned_cart', '${(shopper.customerName || 'Shopper').replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 text-[11px] font-bold border border-amber-200 transition shadow-sm flex items-center gap-1">
+                        <span>🛒</span> Stage Cart Abandonment
+                      </button>
+                      <button onclick="triggerFlowForShopper('${shopper.customerEmail}', 'welcome', '${(shopper.customerName || 'Shopper').replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 text-[11px] font-bold border border-sky-200 transition shadow-sm flex items-center gap-1">
+                        <span>👋</span> Stage Welcome Series
+                      </button>
+                    </div>
+                  ` : ''}
                 </div>
               </div>
 
