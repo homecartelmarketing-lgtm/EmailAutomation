@@ -725,17 +725,24 @@ export async function registerAdminRoutes(app, { db }) {
   // Endpoint to preview any template directly
   app.get('/api/admin/preview/:template', async (req, reply) => {
     const { template } = req.params;
+    let items = [
+      { title: 'Soeren | Luxe White Glass Chandelier with Brass Detail', price: '₱55,495.00' },
+      { title: 'Darynthas | Pendant Light', price: '₱3,995.00' }
+    ];
+    let viewedItems = [
+      { title: 'Talisa | Modern Chandelier', price: '₱27,920.00', url: 'https://homecartel.net/products/talisa-modern-chandelier' },
+      { title: 'Kevin | Pendant Light', price: '₱3,970.00', url: 'https://homecartel.net/products/kevin-pendant-light' },
+      { title: 'Lorvanar | Alabaster Pendant Light', price: '₱41,500.00', url: 'https://homecartel.net/products/lorvanar-alabaster-pendant-light' }
+    ];
+
+    items = await enrichCartItemsWithImages(items);
+    viewedItems = await enrichCartItemsWithImages(viewedItems);
+
     const { html } = renderTemplate(template, {
       customerName: 'Maria Santos',
       storeName: 'HomeCartel',
-      items: [
-        { title: 'Aura Brass Chandelier', price: '₱18,500' },
-        { title: 'Solomon Pendant Light', price: '₱4,200' }
-      ],
-      viewedItems: [
-        { title: 'Kevin | Pendant Light', price: '₱3,970.00', url: 'https://homecartel.net/products/kevin-pendant-light' },
-        { title: 'Baron Square | Ceiling Mounted Light', price: '₱2,850.00', url: 'https://homecartel.net/products/baron-square-ceiling-light' }
-      ],
+      items,
+      viewedItems,
       recoveryUrl: 'https://homecartel.net/checkout/demo',
       unsubscribeUrl: `${app.config.appBaseUrl}/api/unsubscribe?email=demo@homecartel.ph`
     });

@@ -88,6 +88,29 @@ const DEFAULT_RECOMMENDATIONS = [
   }
 ];
 
+const KNOWN_LIGHTING_IMAGES = {
+  'kevin': 'https://cdn.shopify.com/s/files/1/1870/0659/files/Kevin-ModelPhoto-clean.jpg?v=1795013714',
+  'talisa': 'https://cdn.shopify.com/s/files/1/1870/0659/files/t2_b06b3de7-0e1d-42a9-98a9-3e015a618d6e.jpg?v=1685505425',
+  'lorvanar': 'https://cdn.shopify.com/s/files/1/1870/0659/files/64fbd9107f02d0e14fe3ca29fd6a6e0bfaab8e81_img.jpg?v=1775610039',
+  'soeren': 'https://cdn.shopify.com/s/files/1/1870/0659/products/whitebg_2b12c008-d634-40f8-84cd-5b8154745288.jpg?v=1615166204',
+  'darynthas': 'https://cdn.shopify.com/s/files/1/1870/0659/files/4019f2b8e0cd1e1fa4f912341c092de48f881ffc_img.jpg?v=1775585080',
+  'baron': 'https://cdn.shopify.com/s/files/1/1870/0659/files/11b4c063a23ac9a60c13a91525eb68d2190d83ce_SquarePhoto12_aa07dc0c_c31d_44d4_ac9c_428e728fe327.jpg?v=1754977150',
+  'anastasia': 'https://cdn.shopify.com/s/files/1/1870/0659/files/RS23012.jpg?v=1714015261',
+  'cerantia': 'https://cdn.shopify.com/s/files/1/1870/0659/files/562042_img.jpg?v=1792723459',
+  'havoris': 'https://cdn.shopify.com/s/files/1/1870/0659/files/89dc90bc3b4155b1d72a873374eecb147181c73c_imgi_66_il_fullxfull.6639179620_113w_d487fb4b-e04a-4c4b-922d-797be67c8883.jpg?v=1755670366'
+};
+
+function resolveLightingImage(title = '', currentImg = '', fallback = '') {
+  if (currentImg && !currentImg.includes('ccf0df87c4814653202adf4b19c60e5c') && !currentImg.includes('b425fe1f3e9750056ea70120b8c40f97') && !currentImg.includes('eea3c97993f62b4d9c5267094eca4cfd') && !currentImg.includes('726aa29b02c62565f3151bd782f92ef8') && !currentImg.includes('765e0aca26cd80db2d5701ca74fb1f9d')) {
+    return currentImg;
+  }
+  const lower = title.toLowerCase();
+  for (const [key, url] of Object.entries(KNOWN_LIGHTING_IMAGES)) {
+    if (lower.includes(key)) return url;
+  }
+  return fallback;
+}
+
 export function renderCanvaCartTemplate(context = {}) {
   const baseUrl = (context.baseUrl || 'https://emailautomation-production-d651.up.railway.app').replace(/\\/+$/, '');
   const rawRecoveryUrl = context.recoveryUrl || 'https://homecartel.net/cart';
@@ -120,10 +143,7 @@ export function renderCanvaCartTemplate(context = {}) {
   ];
 
   const cartItemsHtml = items.map((item, idx) => {
-    let itemImage = item.imageUrl || item.image || defaultItemImages[idx % defaultItemImages.length];
-    if (itemImage.includes('726aa29b02c62565f3151bd782f92ef8') || itemImage.includes('765e0aca26cd80db2d5701ca74fb1f9d')) {
-      itemImage = defaultItemImages[idx % defaultItemImages.length];
-    }
+    let itemImage = resolveLightingImage(item.title, item.imageUrl || item.image, defaultItemImages[idx % defaultItemImages.length]);
     const qty = item.quantity || 1;
     const priceDisplay = formatPrice(item.price);
     const itemUrl = addDiscount(item.url || rawRecoveryUrl, 'WELCOME10');
@@ -145,10 +165,7 @@ export function renderCanvaCartTemplate(context = {}) {
     if (cleanTitle && !cartTitles.has(cleanTitle.toLowerCase()) && !seenRecTitles.has(cleanTitle.toLowerCase())) {
       seenRecTitles.add(cleanTitle.toLowerCase());
       const fallbackImg = DEFAULT_RECOMMENDATIONS[recommendations.length % DEFAULT_RECOMMENDATIONS.length].imageUrl;
-      let img = v.imageUrl || v.image;
-      if (!img || img.includes('ccf0df87c4814653202adf4b19c60e5c') || img.includes('b425fe1f3e9750056ea70120b8c40f97') || img.includes('eea3c97993f62b4d9c5267094eca4cfd')) {
-        img = fallbackImg;
-      }
+      const img = resolveLightingImage(cleanTitle, v.imageUrl || v.image, fallbackImg);
       recommendations.push({
         title: cleanTitle,
         price: formatPrice(v.price),
