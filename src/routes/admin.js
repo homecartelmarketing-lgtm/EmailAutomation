@@ -189,6 +189,15 @@ export async function registerAdminRoutes(app, { db }) {
         parsedContext.items = await enrichCartItemsWithImages(parsedContext.items);
       }
 
+      if (job.flow_type === 'browse_abandonment' || job.flow_type === 'abandoned_cart') {
+        if (!Array.isArray(parsedContext.viewedItems) || parsedContext.viewedItems.length === 0) {
+          const history = db.getCustomerBrowsingHistory(job.recipient_email);
+          if (history && history.length > 0) {
+            parsedContext.viewedItems = history;
+          }
+        }
+      }
+
       const context = {
         ...parsedContext,
         email: job.recipient_email,
@@ -357,6 +366,15 @@ export async function registerAdminRoutes(app, { db }) {
 
     if (Array.isArray(parsedContext.items) && parsedContext.items.length > 0) {
       parsedContext.items = await enrichCartItemsWithImages(parsedContext.items);
+    }
+
+    if (job.flow_type === 'browse_abandonment' || job.flow_type === 'abandoned_cart') {
+      if (!Array.isArray(parsedContext.viewedItems) || parsedContext.viewedItems.length === 0) {
+        const history = db.getCustomerBrowsingHistory(job.recipient_email);
+        if (history && history.length > 0) {
+          parsedContext.viewedItems = history;
+        }
+      }
     }
 
     const context = {
@@ -707,6 +725,10 @@ export async function registerAdminRoutes(app, { db }) {
       items: [
         { title: 'Aura Brass Chandelier', price: '₱18,500' },
         { title: 'Solomon Pendant Light', price: '₱4,200' }
+      ],
+      viewedItems: [
+        { title: 'Kevin | Pendant Light', price: '₱3,970.00', url: 'https://homecartel.net/products/kevin-pendant-light' },
+        { title: 'Baron Square | Ceiling Mounted Light', price: '₱2,850.00', url: 'https://homecartel.net/products/baron-square-ceiling-light' }
       ],
       recoveryUrl: 'https://homecartel.net/checkout/demo',
       unsubscribeUrl: `${app.config.appBaseUrl}/api/unsubscribe?email=demo@homecartel.ph`

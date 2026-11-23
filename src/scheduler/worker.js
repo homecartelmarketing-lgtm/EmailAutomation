@@ -71,7 +71,7 @@ export async function runSchedulerCycle({ db, sender, renderer, now = new Date()
       if (Array.isArray(parsedContext.items) && parsedContext.items.length > 0) {
         parsedContext.items = await enrichCartItemsWithImages(parsedContext.items);
       }
-      if (job.flow_type === 'browse_abandonment') {
+      if (job.flow_type === 'browse_abandonment' || job.flow_type === 'abandoned_cart') {
         if (!Array.isArray(parsedContext.viewedItems) || parsedContext.viewedItems.length === 0) {
           const history = db.getCustomerBrowsingHistory(job.recipient_email);
           if (history && history.length > 0) {

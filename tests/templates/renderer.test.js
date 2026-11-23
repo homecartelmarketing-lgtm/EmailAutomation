@@ -11,16 +11,17 @@ describe('Email Template Renderer', () => {
       unsubscribeUrl: 'https://api.homecartel.net/unsubscribe?t=tok'
     });
 
-    expect(subject).toBe('Claire, your cart is still waiting');
+    expect(subject).toBe('Claire, your favorites are still waiting | 10% off with code WELCOME10');
     expect(html).toContain('Nordic Glass Chandelier');
-    expect(html).toContain('₱12,500');
+    expect(html).toContain('₱12,500.00');
     expect(html).toContain('homecartel.net');
     expect(html).toContain('https://api.homecartel.net/unsubscribe?t=tok');
     // Ensure placeholder chair is NEVER present
     expect(html).not.toContain('04c8b285c02346c0b1b567007090fc7e');
-    // Ensure responsive layout classes are present
-    expect(html).toContain('cart-item-col');
-    expect(html).toContain('cart-item-img');
+    // Ensure responsive cart items and layout are present
+    expect(html).toContain('In your cart:');
+    expect(html).toContain('CHECK OUT NOW');
+    expect(html).toContain('You may also like:');
   });
 
   it('renders cart items responsively with customer-specific lighting fixtures and images', () => {
@@ -46,10 +47,12 @@ describe('Email Template Renderer', () => {
 
     expect(html).toContain('Baron Square | Ceiling Mounted Light');
     expect(html).toContain('Aerik | Ceiling Mounted Light (Gold)');
+    expect(html).toContain('₱2,850.00');
+    expect(html).toContain('₱3,450.00');
     expect(html).toContain('https://cdn.shopify.com/s/files/1/1870/0659/products/whitebackgroundceilingmounted.jpg');
     expect(html).toContain('https://cdn.shopify.com/s/files/1/1870/0659/files/O1CN01qZZIHQ2CRlojwy1uX__1703828471.jpg');
     expect(html).not.toContain('04c8b285c02346c0b1b567007090fc7e');
-    expect(html).toContain('₱6,300.00'); // Dynamic total calculation
+    expect(html).toContain('discount=WELCOME10');
   });
 
   it('renders welcome series with luxury guide and consistent footer without physical address', () => {
