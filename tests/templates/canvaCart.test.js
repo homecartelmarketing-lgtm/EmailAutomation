@@ -92,7 +92,11 @@ describe('Canva Cart Abandonment Template (2nd Version)', () => {
     expect(html).toContain('₱3,450.00');
     // Cart item should not be duplicated in recommendations
     // Fallback item should be used to complete 3 cards
-    expect(html).toContain('Talisa | Modern Nordic Chandelier');
+    expect(html).toContain('Talisa | Modern Chandelier');
+    // Ensure placeholder Canva graphic hashes are never rendered
+    expect(html).not.toContain('ccf0df87c4814653202adf4b19c60e5c');
+    expect(html).not.toContain('b425fe1f3e9750056ea70120b8c40f97');
+    expect(html).not.toContain('eea3c97993f62b4d9c5267094eca4cfd');
     // Check BUY NOW links have discount auto-applied
     expect(html).toContain('https://homecartel.net/products/aura-modern-brass-chandelier?discount=WELCOME10');
   });

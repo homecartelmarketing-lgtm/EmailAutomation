@@ -196,6 +196,9 @@ export async function registerAdminRoutes(app, { db }) {
             parsedContext.viewedItems = history;
           }
         }
+        if (Array.isArray(parsedContext.viewedItems) && parsedContext.viewedItems.length > 0) {
+          parsedContext.viewedItems = await enrichCartItemsWithImages(parsedContext.viewedItems);
+        }
       }
 
       const context = {
@@ -374,6 +377,9 @@ export async function registerAdminRoutes(app, { db }) {
         if (history && history.length > 0) {
           parsedContext.viewedItems = history;
         }
+      }
+      if (Array.isArray(parsedContext.viewedItems) && parsedContext.viewedItems.length > 0) {
+        parsedContext.viewedItems = await enrichCartItemsWithImages(parsedContext.viewedItems);
       }
     }
 
@@ -858,11 +864,14 @@ export async function registerAdminRoutes(app, { db }) {
     ];
 
     const realHistory = db.getCustomerBrowsingHistory(to);
-    const viewedItems = (customViewedItems && customViewedItems.length > 0)
+    let viewedItems = (customViewedItems && customViewedItems.length > 0)
       ? customViewedItems
       : ((realHistory && realHistory.length > 0) ? realHistory : defaultViewedItems);
 
-    const items = (customItems && customItems.length > 0) ? customItems : defaultItems;
+    let items = (customItems && customItems.length > 0) ? customItems : defaultItems;
+
+    items = await enrichCartItemsWithImages(items);
+    viewedItems = await enrichCartItemsWithImages(viewedItems);
 
     const { html, subject } = renderTemplate(template, {
       customerName,

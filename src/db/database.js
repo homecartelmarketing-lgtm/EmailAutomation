@@ -256,8 +256,8 @@ export function initDatabase(dbPath = ':memory:') {
           seenTitles.add(title.toLowerCase());
           viewed.push({
             title,
-            price: p.price || null,
-            imageUrl: p.imageUrl || p.image || null,
+            price: p.price || p.productPrice || null,
+            imageUrl: p.imageUrl || p.image || p.productImage || null,
             url: p.url || (p.path ? ('https://homecartel.net' + p.path) : null) || 'https://homecartel.net'
           });
         }

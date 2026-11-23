@@ -152,16 +152,25 @@
       local_time: now.toLocaleString('en-US', { timeZone: 'Asia/Manila' })
     };
 
-    // If on a Shopify Product Page, extract product name and price
+    // If on a Shopify Product Page, extract product name, price, and authentic Shopify image
     if (pageType === 'product') {
       try {
         if (window.meta && window.meta.product) {
           properties.productId = window.meta.product.id;
           properties.productTitle = window.meta.product.name || window.meta.product.title;
           properties.productPrice = window.meta.product.price ? `₱${(window.meta.product.price / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : null;
+          if (window.meta.product.featured_image) {
+            properties.productImage = window.meta.product.featured_image.startsWith('//')
+              ? 'https:' + window.meta.product.featured_image
+              : window.meta.product.featured_image;
+          }
         } else {
           const h1 = document.querySelector('h1');
           if (h1) properties.productTitle = h1.innerText.trim();
+        }
+        if (!properties.productImage) {
+          const mainImg = document.querySelector('.product__media img, .product-single__photo img, .product__featured-media img, [data-product-main-image], img[src*="cdn.shopify.com/s/files"]');
+          if (mainImg && mainImg.src) properties.productImage = mainImg.src;
         }
       } catch (e) {}
     } else if (pageType === 'collection') {

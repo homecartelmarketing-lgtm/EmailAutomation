@@ -2,11 +2,30 @@ const imageCache = new Map();
 
 // Authentic HomeCartel lighting fixture CDN URLs
 const KNOWN_LIGHTING_IMAGES = {
+  talisa: 'https://cdn.shopify.com/s/files/1/1870/0659/files/t2_b06b3de7-0e1d-42a9-98a9-3e015a618d6e.jpg?v=1685505425',
+  kevin: 'https://cdn.shopify.com/s/files/1/1870/0659/files/Kevin-ModelPhoto-clean.jpg?v=1795013714',
+  lorvanar: 'https://cdn.shopify.com/s/files/1/1870/0659/files/64fbd9107f02d0e14fe3ca29fd6a6e0bfaab8e81_img.jpg?v=1775610039',
+  soeren: 'https://cdn.shopify.com/s/files/1/1870/0659/products/whitebg_2b12c008-d634-40f8-84cd-5b8154745288.jpg?v=1615166204',
+  darynthas: 'https://cdn.shopify.com/s/files/1/1870/0659/files/4019f2b8e0cd1e1fa4f912341c092de48f881ffc_img.jpg?v=1775585080',
   aerik: 'https://cdn.shopify.com/s/files/1/1870/0659/files/O1CN01qZZIHQ2CRlojwy1uX__1703828471.jpg?v=1713427031',
-  baron: 'https://cdn.shopify.com/s/files/1/1870/0659/products/whitebackgroundceilingmounted.jpg?v=1612841482',
+  baron: 'https://cdn.shopify.com/s/files/1/1870/0659/files/11b4c063a23ac9a60c13a91525eb68d2190d83ce_SquarePhoto12_aa07dc0c_c31d_44d4_ac9c_428e728fe327.jpg?v=1754977150',
+  cerantia: 'https://cdn.shopify.com/s/files/1/1870/0659/files/562042_img.jpg?v=1792723459',
+  havoris: 'https://cdn.shopify.com/s/files/1/1870/0659/files/89dc90bc3b4155b1d72a873374eecb147181c73c_imgi_66_il_fullxfull.6639179620_113w_d487fb4b-e04a-4c4b-922d-797be67c8883.jpg?v=1755670366',
   vanja: 'https://cdn.shopify.com/s/files/1/1870/0659/products/whitebackgroundceilingmounted.jpg?v=1612841482',
-  default: 'https://cdn.shopify.com/s/files/1/1870/0659/products/whitebackgroundceilingmounted.jpg?v=1612841482'
+  default: 'https://cdn.shopify.com/s/files/1/1870/0659/files/Kevin-ModelPhoto-clean.jpg?v=1795013714'
 };
+
+function isPlaceholderOrGeneric(url = '') {
+  if (!url) return true;
+  const s = String(url).toLowerCase();
+  return (
+    s.includes('04c8b285c02346c0b1b567007090fc7e') ||
+    s.includes('chair') ||
+    s.includes('ccf0df87c4814653202adf4b19c60e5c') ||
+    s.includes('b425fe1f3e9750056ea70120b8c40f97') ||
+    s.includes('eea3c97993f62b4d9c5267094eca4cfd')
+  );
+}
 
 /**
  * Resolves a high-resolution product image for a given cart line item
@@ -17,10 +36,10 @@ const KNOWN_LIGHTING_IMAGES = {
  */
 export async function resolveShopifyProductImage(item = {}) {
   // If already has a valid non-placeholder image, return it
-  if (item.imageUrl && !item.imageUrl.includes('04c8b285c02346c0b1b567007090fc7e') && !item.imageUrl.includes('chair')) {
+  if (item.imageUrl && !isPlaceholderOrGeneric(item.imageUrl)) {
     return item.imageUrl;
   }
-  if (item.image && !item.image.includes('04c8b285c02346c0b1b567007090fc7e') && !item.image.includes('chair')) {
+  if (item.image && !isPlaceholderOrGeneric(item.image)) {
     return item.image;
   }
 
@@ -51,10 +70,11 @@ export async function resolveShopifyProductImage(item = {}) {
           }
         }
 
-        // 2. Try first matching product
+        // 2. Try product with matching keyword in title
         if (products.length > 0) {
-          const first = products[0];
-          const foundImg = first.image || first.featured_image?.url;
+          const searchLower = searchTerms.toLowerCase();
+          const match = products.find(p => (p.title || '').toLowerCase().includes(searchLower)) || products[0];
+          const foundImg = match.image || match.featured_image?.url;
           if (foundImg) {
             imageCache.set(cacheKey, foundImg);
             return foundImg;
@@ -69,10 +89,11 @@ export async function resolveShopifyProductImage(item = {}) {
   // Keyword-based fallback for known lighting collections
   const lowerTitle = title.toLowerCase();
   let fallback = KNOWN_LIGHTING_IMAGES.default;
-  if (lowerTitle.includes('aerik')) {
-    fallback = KNOWN_LIGHTING_IMAGES.aerik;
-  } else if (lowerTitle.includes('baron')) {
-    fallback = KNOWN_LIGHTING_IMAGES.baron;
+  for (const [key, url] of Object.entries(KNOWN_LIGHTING_IMAGES)) {
+    if (key !== 'default' && lowerTitle.includes(key)) {
+      fallback = url;
+      break;
+    }
   }
 
   imageCache.set(cacheKey, fallback);

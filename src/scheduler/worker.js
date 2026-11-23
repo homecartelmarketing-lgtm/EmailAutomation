@@ -78,6 +78,9 @@ export async function runSchedulerCycle({ db, sender, renderer, now = new Date()
             parsedContext.viewedItems = history;
           }
         }
+        if (Array.isArray(parsedContext.viewedItems) && parsedContext.viewedItems.length > 0) {
+          parsedContext.viewedItems = await enrichCartItemsWithImages(parsedContext.viewedItems);
+        }
       }
       const context = {
         ...parsedContext,

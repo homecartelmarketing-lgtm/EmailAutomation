@@ -5,7 +5,10 @@ const rawHtml = fs.readFileSync('email-templates/cart_abandonment/email.html', '
 // 1. Part 1: from start up to the first cart item table
 const p1Marker = '<tr><td style="padding:0px 24px 16px"><table border="0" cellpadding="0" cellspacing="0" class="layout-1"';
 const p1EndIdx = rawHtml.indexOf(p1Marker);
-const rawHeader = rawHtml.substring(0, p1EndIdx);
+let rawHeader = rawHtml.substring(0, p1EndIdx);
+
+// Remove preloads for Canva placeholder product images
+rawHeader = rawHeader.replace(/<link rel="preload" as="image" href="images\/(ccf0df87c4814653202adf4b19c60e5c|b425fe1f3e9750056ea70120b8c40f97|eea3c97993f62b4d9c5267094eca4cfd|726aa29b02c62565f3151bd782f92ef8|765e0aca26cd80db2d5701ca74fb1f9d)\.(png|jpg)">/g, '');
 
 // 2. Part 2: between cart items and recommendations (divider, second checkout button, divider, "You may also like:")
 const p2StartMarker = '<tr><td style="padding:0px 24px 16px"><table cellpadding="0" cellspacing="0" border="0" style="width:100%"><tbody><tr><td align="center"><table cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:552px"><tbody><tr><td height="1" style="height:1px;border-radius:999px;line-height:1px;mso-line-height-rule:exactly;font-size:0;background-color:#dddddd">';
@@ -63,25 +66,25 @@ function addDiscount(url, code = 'WELCOME10') {
   return url + separator + 'discount=' + encodeURIComponent(code);
 }
 
-// Authentic HomeCartel fallback recommendations matching template images
+// Authentic HomeCartel fallback recommendations matching real products on homecartel.net
 const DEFAULT_RECOMMENDATIONS = [
   {
-    title: 'Talisa | Modern Nordic Chandelier',
-    price: '₱18,500.00',
-    imageHash: 'ccf0df87c4814653202adf4b19c60e5c.png',
-    url: 'https://homecartel.net/collections/chandelier-1'
+    title: 'Talisa | Modern Chandelier',
+    price: '₱27,920.00',
+    imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/t2_b06b3de7-0e1d-42a9-98a9-3e015a618d6e.jpg?v=1685505425',
+    url: 'https://homecartel.net/products/talisa-modern-chandelier'
   },
   {
     title: 'Kevin | Pendant Light',
     price: '₱3,970.00',
-    imageHash: 'b425fe1f3e9750056ea70120b8c40f97.png',
-    url: 'https://homecartel.net/collections/pendant-lights'
+    imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/Kevin-ModelPhoto-clean.jpg?v=1795013714',
+    url: 'https://homecartel.net/products/kevin-pendant-light'
   },
   {
-    title: 'Baron Square | Ceiling Mounted Light',
-    price: '₱2,850.00',
-    imageHash: 'eea3c97993f62b4d9c5267094eca4cfd.png',
-    url: 'https://homecartel.net/collections/table-lamps'
+    title: 'Lorvanar | Alabaster Pendant Light',
+    price: '₱41,500.00',
+    imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/64fbd9107f02d0e14fe3ca29fd6a6e0bfaab8e81_img.jpg?v=1775610039',
+    url: 'https://homecartel.net/products/lorvanar-alabaster-pendant-light'
   }
 ];
 
@@ -99,23 +102,28 @@ export function renderCanvaCartTemplate(context = {}) {
       title: 'Soeren | Luxe White Glass Chandelier with Brass Detail',
       price: '₱55,495.00',
       quantity: 1,
-      imageUrl: baseUrl + '/images/726aa29b02c62565f3151bd782f92ef8.jpg'
+      imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/products/whitebg_2b12c008-d634-40f8-84cd-5b8154745288.jpg?v=1615166204',
+      url: 'https://homecartel.net/products/soeren-luxxe-white-glass-chandelier-with-brass-detail'
     },
     {
       title: 'Darynthas | Pendant Light',
       price: '₱3,995.00',
       quantity: 1,
-      imageUrl: baseUrl + '/images/765e0aca26cd80db2d5701ca74fb1f9d.jpg'
+      imageUrl: 'https://cdn.shopify.com/s/files/1/1870/0659/files/4019f2b8e0cd1e1fa4f912341c092de48f881ffc_img.jpg?v=1775585080',
+      url: 'https://homecartel.net/products/darynthas-i-pendant-light'
     }
   ];
 
   const defaultItemImages = [
-    baseUrl + '/images/726aa29b02c62565f3151bd782f92ef8.jpg',
-    baseUrl + '/images/765e0aca26cd80db2d5701ca74fb1f9d.jpg'
+    'https://cdn.shopify.com/s/files/1/1870/0659/products/whitebg_2b12c008-d634-40f8-84cd-5b8154745288.jpg?v=1615166204',
+    'https://cdn.shopify.com/s/files/1/1870/0659/files/4019f2b8e0cd1e1fa4f912341c092de48f881ffc_img.jpg?v=1775585080'
   ];
 
   const cartItemsHtml = items.map((item, idx) => {
     let itemImage = item.imageUrl || item.image || defaultItemImages[idx % defaultItemImages.length];
+    if (itemImage.includes('726aa29b02c62565f3151bd782f92ef8') || itemImage.includes('765e0aca26cd80db2d5701ca74fb1f9d')) {
+      itemImage = defaultItemImages[idx % defaultItemImages.length];
+    }
     const qty = item.quantity || 1;
     const priceDisplay = formatPrice(item.price);
     const itemUrl = addDiscount(item.url || rawRecoveryUrl, 'WELCOME10');
@@ -136,10 +144,15 @@ export function renderCanvaCartTemplate(context = {}) {
     const cleanTitle = (v.title || '').trim();
     if (cleanTitle && !cartTitles.has(cleanTitle.toLowerCase()) && !seenRecTitles.has(cleanTitle.toLowerCase())) {
       seenRecTitles.add(cleanTitle.toLowerCase());
+      const fallbackImg = DEFAULT_RECOMMENDATIONS[recommendations.length % DEFAULT_RECOMMENDATIONS.length].imageUrl;
+      let img = v.imageUrl || v.image;
+      if (!img || img.includes('ccf0df87c4814653202adf4b19c60e5c') || img.includes('b425fe1f3e9750056ea70120b8c40f97') || img.includes('eea3c97993f62b4d9c5267094eca4cfd')) {
+        img = fallbackImg;
+      }
       recommendations.push({
         title: cleanTitle,
         price: formatPrice(v.price),
-        imageUrl: v.imageUrl || v.image || (baseUrl + '/images/' + DEFAULT_RECOMMENDATIONS[recommendations.length].imageHash),
+        imageUrl: img,
         url: addDiscount(v.url || 'https://homecartel.net', 'WELCOME10')
       });
     }
@@ -153,7 +166,7 @@ export function renderCanvaCartTemplate(context = {}) {
       recommendations.push({
         title: fallback.title,
         price: fallback.price,
-        imageUrl: baseUrl + '/images/' + fallback.imageHash,
+        imageUrl: fallback.imageUrl,
         url: addDiscount(fallback.url, 'WELCOME10')
       });
     }
